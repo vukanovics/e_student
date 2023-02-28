@@ -10,6 +10,8 @@ use routes::index;
 
 #[launch]
 fn rocket() -> _ {
+    env_logger::init();
+
     build()
         .mount("/", routes![index::get])
         .attach(Template::fairing())
