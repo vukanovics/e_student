@@ -1,8 +1,8 @@
-use rocket::get;
+use rocket::{get, http::Status};
 
 use rocket_dyn_templates::{context, Template};
 
 #[get("/")]
-pub fn get() -> Template {
-    Template::render("routes/index", context! {})
+pub fn get() -> Result<Template, Status> {
+    Ok(Template::render("routes/index", context! {}))
 }
