@@ -7,12 +7,13 @@ use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
 
 use routes::index;
+use routes::login;
 
 #[launch]
 fn rocket() -> _ {
     env_logger::init();
 
     build()
-        .mount("/", routes![index::get])
+        .mount("/", routes![index::get, login::get, login::post])
         .attach(Template::fairing())
 }

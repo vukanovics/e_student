@@ -1,0 +1,16 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<form action="/login" method="post">
+  <p>Username</p>
+  <input type="text" name="username">
+  <p>Password</p>
+  <input type="password" name="password">
+  <br>
+  <br>
+  <input type="submit" value="Submit">
+</form>
+
+{{/inline}}
+{{> base }}
