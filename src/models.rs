@@ -1,4 +1,4 @@
-use crate::schema::users;
+use crate::schema::{sessions, users};
 use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
@@ -52,4 +52,15 @@ pub struct NewUser<'a> {
     password_reset_required: bool,
     username: Option<&'a str>,
     last_login_time: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Queryable, Insertable)]
+#[diesel(table_name = sessions)]
+#[allow(unused)]
+pub struct Session {
+    session_key: Vec<u8>,
+    user_id: u32,
+    created_on: NaiveDateTime,
+    last_refreshed: NaiveDateTime,
+    timeout_duration_seconds: u32,
 }
