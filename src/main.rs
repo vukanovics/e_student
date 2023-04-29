@@ -1,6 +1,7 @@
 #![warn(clippy::pedantic)]
 #![deny(warnings)]
 
+mod base_layout_context;
 mod database;
 mod error;
 mod models;
