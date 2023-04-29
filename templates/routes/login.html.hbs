@@ -3,13 +3,26 @@
 {{#*inline "body"}}
 
 <form action="/login" method="post">
-  <p>Username</p>
-  <input type="text" name="username">
+  <p>Username or E-Mail</p>
+  <input type="text" name="username_or_email">
   <p>Password</p>
   <input type="password" name="password">
+  <p>Stay logged in for</p>
+  <select name="timeout">
+    <option value="60">1 minute</option>
+    <option value="300">5 minutes</option>
+    <option value="1200">20 minutes</option>
+    <option value="3600">1 hour</option>
+  </select>
   <br>
   <br>
   <input type="submit" value="Submit">
+  {{#if error_message}}
+    <p>Error: {{error_message}}</p
+  {{/if}}
+  {{#if success_message}}
+    <p>Success: {{success_message}}</p
+  {{/if}}
 </form>
 
 {{/inline}}

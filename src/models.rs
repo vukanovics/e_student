@@ -34,13 +34,13 @@ where
 #[derive(Debug, Queryable)]
 #[allow(unused)]
 pub struct User {
-    id: u32,
-    password: String,
-    email: String,
-    account_type: AccountType,
-    password_reset_required: bool,
-    username: Option<String>,
-    last_login_time: Option<NaiveDateTime>,
+    pub id: u32,
+    pub password: String,
+    pub email: String,
+    pub account_type: AccountType,
+    pub password_reset_required: bool,
+    pub username: Option<String>,
+    pub last_login_time: Option<NaiveDateTime>,
 }
 
 #[derive(Insertable)]
@@ -54,13 +54,13 @@ pub struct NewUser<'a> {
     last_login_time: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Queryable, Insertable)]
+#[derive(Clone, Debug, Queryable, Insertable)]
 #[diesel(table_name = sessions)]
 #[allow(unused)]
 pub struct Session {
-    session_key: Vec<u8>,
-    user_id: u32,
-    created_on: NaiveDateTime,
-    last_refreshed: NaiveDateTime,
-    timeout_duration_seconds: u32,
+    pub session_key: Vec<u8>,
+    pub user_id: u32,
+    pub created_on: NaiveDateTime,
+    pub last_refreshed: NaiveDateTime,
+    pub timeout_duration_seconds: u32,
 }
