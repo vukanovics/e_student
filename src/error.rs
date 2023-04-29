@@ -5,6 +5,7 @@ pub enum Error {
     Diesel(diesel::result::Error),
     Bcrypt(bcrypt::BcryptError),
     Rand(rand::Error),
+    Hex(hex::FromHexError),
 }
 
 impl From<diesel::result::Error> for Error {
@@ -22,6 +23,12 @@ impl From<bcrypt::BcryptError> for Error {
 impl From<rand::Error> for Error {
     fn from(value: rand::Error) -> Self {
         Self::Rand(value)
+    }
+}
+
+impl From<hex::FromHexError> for Error {
+    fn from(value: hex::FromHexError) -> Self {
+        Self::Hex(value)
     }
 }
 

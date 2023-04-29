@@ -9,23 +9,24 @@ use rocket::{
 
 use serde::Serialize;
 
-use rocket_dyn_templates::{context, Template};
+use rocket_dyn_templates::Template;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error, models::Session,
 };
 
-#[derive(Serialize, Debug)]
+#[derive(Clone, Serialize, Debug)]
 struct LoginLayoutContext {
+    #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
     error_message: Option<String>,
     success_message: Option<String>,
 }
 
 impl LoginLayoutContext {
-    pub fn new(database: &Database, jar: &CookieJar) -> Result<Self, Error> {
+    pub async fn new(database: &Database, jar: &CookieJar<'_>) -> Result<Self, Error> {
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(database, jar)?,
+            base_layout_context: BaseLayoutContext::new(database, jar).await?,
             error_message: None,
             success_message: None,
         })
@@ -43,8 +44,11 @@ impl LoginLayoutContext {
 }
 
 #[get("/login")]
-pub fn get() -> Result<Template, Status> {
-    Ok(Template::render("routes/login", context! {}))
+pub async fn get(database: Database, jar: &CookieJar<'_>) -> Result<Template, Status> {
+    Ok(Template::render(
+        "routes/login",
+        LoginLayoutContext::new(&database, jar).await?,
+    ))
 }
 
 #[derive(FromForm, Debug)]
@@ -62,9 +66,9 @@ impl LoginFormData {
 }
 
 #[post("/login", data = "<form>")]
-pub async fn post<'a>(
+pub async fn post(
     database: Database,
-    jar: &'a CookieJar<'a>,
+    jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
 ) -> Result<Template, Status> {
     if let Some(error_message) = 'requirements: {
@@ -125,13 +129,15 @@ pub async fn post<'a>(
     } {
         return Ok(Template::render(
             "routes/login",
-            LoginLayoutContext::new(&database, jar)?
+            LoginLayoutContext::new(&database, jar)
+                .await?
                 .with_error_message(Some(error_message.to_string())),
         ));
     }
     return Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(&database, jar)?
+        LoginLayoutContext::new(&database, jar)
+            .await?
             .with_success_message(Some("Successfully logged in!".to_string())),
     ));
 }

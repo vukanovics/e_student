@@ -48,4 +48,16 @@ impl Database {
             .map(|_| ())
             .map_err(|e| e.into())
     }
+
+    pub fn get_session_by_key(
+        connection: &mut diesel::MysqlConnection,
+        by_key: Vec<u8>,
+    ) -> Result<Session, Error> {
+        use crate::schema::sessions::dsl::{session_key, sessions};
+        sessions
+            .filter(session_key.eq(by_key))
+            .limit(1)
+            .first::<Session>(connection)
+            .map_err(|e| e.into())
+    }
 }
