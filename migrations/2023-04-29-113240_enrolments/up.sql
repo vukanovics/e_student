@@ -1,0 +1,10 @@
+CREATE TABLE enrolments (
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+
+  course INTEGER UNSIGNED NOT NULL,
+
+  student INTEGER UNSIGNED NOT NULL,
+
+  CONSTRAINT `fk_course` FOREIGN KEY (course) REFERENCES courses(id),
+  CONSTRAINT `fk_student` FOREIGN KEY (student) REFERENCES users(id)
+)

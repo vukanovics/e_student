@@ -1,0 +1,16 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<p>This is the page for course {{name}}</p>
+{{#each assignments}}
+  {{#if this.Grade}}
+    <p>Assignment: {{this.Grade.name}}</p>
+  {{/if}}
+  {{#if this.Point}}
+    <p>Assignment: {{this.Point.name}}</p>
+  {{/if}}
+{{/each}}
+
+{{/inline}}
+{{> base }}

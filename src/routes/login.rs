@@ -12,7 +12,11 @@ use serde::Serialize;
 use rocket_dyn_templates::Template;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, database::Database, error::Error, models::Session,
+    application,
+    base_layout_context::BaseLayoutContext,
+    database::Database,
+    error::Error,
+    models::{Session, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -24,9 +28,9 @@ struct LoginLayoutContext {
 }
 
 impl LoginLayoutContext {
-    pub async fn new(database: &Database, jar: &CookieJar<'_>) -> Result<Self, Error> {
+    pub async fn new(user: Option<User>) -> Result<Self, Error> {
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(database, jar).await?,
+            base_layout_context: BaseLayoutContext::new(user).await?,
             error_message: None,
             success_message: None,
         })
@@ -45,14 +49,14 @@ impl LoginLayoutContext {
 
 #[get("/login")]
 pub async fn get(database: Database, jar: &CookieJar<'_>) -> Result<Template, Status> {
+    let user = application::get_user_from_jar(&database, jar).await?;
     Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(&database, jar).await?,
+        LoginLayoutContext::new(user).await?,
     ))
 }
 
 #[derive(FromForm, Debug)]
-#[allow(unused)]
 pub struct LoginFormData {
     username_or_email: String,
     password: String,
@@ -127,16 +131,19 @@ pub async fn post(
 
         None
     } {
+        let user = application::get_user_from_jar(&database, jar).await?;
         return Ok(Template::render(
             "routes/login",
-            LoginLayoutContext::new(&database, jar)
+            LoginLayoutContext::new(user)
                 .await?
                 .with_error_message(Some(error_message.to_string())),
         ));
     }
+
+    let user = application::get_user_from_jar(&database, jar).await?;
     return Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(&database, jar)
+        LoginLayoutContext::new(user)
             .await?
             .with_success_message(Some("Successfully logged in!".to_string())),
     ));

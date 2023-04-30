@@ -1,10 +1,10 @@
-use crate::schema::{sessions, users};
+use crate::schema::{courses, grade_assignments, point_assignments, sessions, users};
 use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
     deserialize::FromSql,
     sql_types::{TinyInt, Unsigned},
-    AsExpression, FromSqlRow, Insertable, Queryable,
+    AsExpression, FromSqlRow, Insertable, Queryable, Selectable,
 };
 
 #[repr(u8)]
@@ -31,8 +31,7 @@ where
     }
 }
 
-#[derive(Debug, Queryable)]
-#[allow(unused)]
+#[derive(Clone, Debug, Queryable)]
 pub struct User {
     pub id: u32,
     pub password: String,
@@ -56,11 +55,42 @@ pub struct NewUser<'a> {
 
 #[derive(Clone, Debug, Queryable, Insertable)]
 #[diesel(table_name = sessions)]
-#[allow(unused)]
 pub struct Session {
     pub session_key: Vec<u8>,
     pub user_id: u32,
     pub created_on: NaiveDateTime,
     pub last_refreshed: NaiveDateTime,
     pub timeout_duration_seconds: u32,
+}
+
+#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
+#[diesel(table_name = courses)]
+pub struct Course {
+    pub id: u32,
+    pub year: u32,
+    pub name: String,
+    pub url: String,
+    pub professor: u32,
+}
+
+pub enum Assignment {
+    GradeAssignment(GradeAssignment),
+    PointAssignment(PointAssignment),
+}
+
+#[derive(Clone, Debug, Queryable, Insertable)]
+#[diesel(table_name = grade_assignments)]
+pub struct GradeAssignment {
+    pub id: u32,
+    pub course: u32,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Queryable, Insertable)]
+#[diesel(table_name = point_assignments)]
+pub struct PointAssignment {
+    pub id: u32,
+    pub course: u32,
+    pub name: String,
+    pub max_points: u32,
 }

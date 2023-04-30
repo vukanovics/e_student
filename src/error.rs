@@ -6,6 +6,7 @@ pub enum Error {
     Bcrypt(bcrypt::BcryptError),
     Rand(rand::Error),
     Hex(hex::FromHexError),
+    NotLoggedIn,
 }
 
 impl From<diesel::result::Error> for Error {

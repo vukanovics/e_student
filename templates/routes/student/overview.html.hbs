@@ -1,0 +1,18 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+{{#each courses}}
+<a href="course/{{this.url}}">Course: {{this.name}}</a>
+  {{#each this.assignments}}
+    {{#if this.Grade}}
+      <p>Assignment: {{this.Grade.name}}</p>
+    {{/if}}
+    {{#if this.Point}}
+      <p>Assignment: {{this.Point.name}}</p>
+    {{/if}}
+  {{/each}}
+{{/each}}
+
+{{/inline}}
+{{> base }}
