@@ -86,9 +86,9 @@ impl Database {
             .map_err(Error::Diesel)
     }
 
-    pub fn get_assignments_by_course_for_user_id(
+    pub fn get_assignments_for_course_for_user(
         connection: &mut diesel::MysqlConnection,
-        by_course: u32,
+        for_course: u32,
         for_user_id: u32,
     ) -> Result<Vec<Assignment>, Error> {
         use crate::schema::point_assignments;
@@ -98,7 +98,7 @@ impl Database {
             .left_join(point_assignments_progress::table)
             .filter(
                 point_assignments::course
-                    .eq(by_course)
+                    .eq(for_course)
                     .and(point_assignments_progress::student.eq(for_user_id)),
             )
             .select((
@@ -114,7 +114,7 @@ impl Database {
 
         grade_assignments::table
             .left_join(grade_assignments_progress::table)
-            .filter(grade_assignments::course.eq(by_course))
+            .filter(grade_assignments::course.eq(for_course))
             .select((
                 grade_assignments::all_columns,
                 grade_assignments_progress::grade.nullable(),

@@ -87,7 +87,7 @@ pub async fn get(database: Database, jar: &CookieJar<'_>, url: &str) -> Result<T
         .await?;
 
     let assignments = database
-        .run(move |c| Database::get_assignments_by_course_for_user_id(c, course.id, user.id))
+        .run(move |c| Database::get_assignments_for_course_for_user(c, course.id, user.id))
         .await?;
 
     let assignments = assignments
