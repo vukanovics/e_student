@@ -72,15 +72,15 @@ impl Database {
             .map_err(|e| e.into())
     }
 
-    pub fn get_enrolled_courses_by_user_id(
+    pub fn get_enrolled_courses_for_user(
         connection: &mut diesel::MysqlConnection,
-        by_user_id: u32,
+        for_user: u32,
     ) -> Result<Vec<Course>, Error> {
         use crate::schema::courses::dsl::{courses, id};
         use crate::schema::enrolments::dsl::{course, enrolments, student};
         courses
             .inner_join(enrolments.on(course.eq(id)))
-            .filter(student.eq(by_user_id))
+            .filter(student.eq(for_user))
             .select(Course::as_select())
             .load::<Course>(connection)
             .map_err(Error::Diesel)

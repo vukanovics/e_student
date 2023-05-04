@@ -85,7 +85,7 @@ pub async fn get(database: Database, jar: &CookieJar<'_>) -> Result<Template, St
 
     let user_id = user.id;
     let enrolled_courses = database
-        .run(move |c| Database::get_enrolled_courses_by_user_id(c, user_id))
+        .run(move |c| Database::get_enrolled_courses_for_user(c, user_id))
         .await?;
 
     let mut courses = Vec::new();
