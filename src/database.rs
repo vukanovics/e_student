@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::models::{
-    AssignmentWithProgress, Course, GradeAssignment, PointAssignment, Session, User,
+    Assignment, Course, GradeAssignment, PointAssignment, Session, User,
 };
 use rocket_sync_db_pools::diesel::prelude::*;
 
@@ -90,11 +90,11 @@ impl Database {
         connection: &mut diesel::MysqlConnection,
         by_course: u32,
         for_user_id: u32,
-    ) -> Result<Vec<AssignmentWithProgress>, Error> {
+    ) -> Result<Vec<Assignment>, Error> {
         use crate::schema::point_assignments;
         use crate::schema::point_assignments_progress;
 
-        let mut point_assignments: Vec<AssignmentWithProgress> = point_assignments::table
+        let mut point_assignments: Vec<Assignment> = point_assignments::table
             .left_join(point_assignments_progress::table)
             .filter(
                 point_assignments::course
@@ -106,7 +106,7 @@ impl Database {
                 point_assignments_progress::points.nullable(),
             ))
             .load::<(PointAssignment, Option<u32>)>(connection)
-            .map(|a| a.into_iter().map(AssignmentWithProgress::Point).collect())
+            .map(|a| a.into_iter().map(Assignment::Point).collect())
             .map_err(Error::Diesel)?;
 
         use crate::schema::grade_assignments;
@@ -120,9 +120,9 @@ impl Database {
                 grade_assignments_progress::grade.nullable(),
             ))
             .load::<(GradeAssignment, Option<f32>)>(connection)
-            .map(|a| a.into_iter().map(AssignmentWithProgress::Grade).collect())
+            .map(|a| a.into_iter().map(Assignment::Grade).collect())
             .map_err(Error::Diesel)
-            .map(|mut a: Vec<AssignmentWithProgress>| {
+            .map(|mut a: Vec<Assignment>| {
                 a.append(&mut point_assignments);
                 a
             })

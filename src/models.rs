@@ -90,7 +90,7 @@ pub struct PointAssignment {
     pub max_points: u32,
 }
 
-pub enum AssignmentWithProgress {
+pub enum Assignment {
     Grade((GradeAssignment, Option<f32>)),
     Point((PointAssignment, Option<u32>)),
 }

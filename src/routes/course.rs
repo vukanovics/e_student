@@ -10,7 +10,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    models::{AccountType, AssignmentWithProgress, User},
+    models::{AccountType, Assignment, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -33,15 +33,15 @@ enum AssignmentData {
 }
 
 impl AssignmentData {
-    pub fn from_assignment(assignment: AssignmentWithProgress) -> AssignmentData {
+    pub fn from_assignment(assignment: Assignment) -> AssignmentData {
         match assignment {
-            AssignmentWithProgress::Grade((assignment, grade)) => {
+            Assignment::Grade((assignment, grade)) => {
                 AssignmentData::Grade(GradeAssignmentData {
                     name: assignment.name,
                     grade: grade.unwrap_or_default(),
                 })
             }
-            AssignmentWithProgress::Point((assignment, points)) => {
+            Assignment::Point((assignment, points)) => {
                 AssignmentData::Point(PointAssignmentData {
                     name: assignment.name,
                     points: points.unwrap_or_default(),
