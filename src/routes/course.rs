@@ -10,7 +10,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    models::{AccountType, Assignment, User},
+    models::{AccountType, AssignmentWithProgress, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -33,17 +33,21 @@ enum AssignmentData {
 }
 
 impl AssignmentData {
-    pub fn from_assignment(assignment: Assignment) -> AssignmentData {
+    pub fn from_assignment(assignment: AssignmentWithProgress) -> AssignmentData {
         match assignment {
-            Assignment::GradeAssignment(assignment) => AssignmentData::Grade(GradeAssignmentData {
-                name: assignment.name,
-                grade: 0f32,
-            }),
-            Assignment::PointAssignment(assignment) => AssignmentData::Point(PointAssignmentData {
-                name: assignment.name,
-                points: 0u32,
-                max_points: assignment.max_points,
-            }),
+            AssignmentWithProgress::Grade((assignment, grade)) => {
+                AssignmentData::Grade(GradeAssignmentData {
+                    name: assignment.name,
+                    grade: grade.unwrap_or_default(),
+                })
+            }
+            AssignmentWithProgress::Point((assignment, points)) => {
+                AssignmentData::Point(PointAssignmentData {
+                    name: assignment.name,
+                    points: points.unwrap_or_default(),
+                    max_points: assignment.max_points,
+                })
+            }
         }
     }
 }
@@ -83,7 +87,7 @@ pub async fn get(database: Database, jar: &CookieJar<'_>, url: &str) -> Result<T
         .await?;
 
     let assignments = database
-        .run(move |c| Database::get_assignments_by_course(c, course.id))
+        .run(move |c| Database::get_assignments_by_course_for_user_id(c, course.id, user.id))
         .await?;
 
     let assignments = assignments

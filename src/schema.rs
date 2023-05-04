@@ -27,11 +27,29 @@ diesel::table! {
 }
 
 diesel::table! {
+    grade_assignments_progress (id) {
+        id -> Unsigned<Integer>,
+        assignment -> Unsigned<Integer>,
+        student -> Unsigned<Integer>,
+        grade -> Float,
+    }
+}
+
+diesel::table! {
     point_assignments (id) {
         id -> Unsigned<Integer>,
         course -> Unsigned<Integer>,
         name -> Varchar,
         max_points -> Unsigned<Integer>,
+    }
+}
+
+diesel::table! {
+    point_assignments_progress (id) {
+        id -> Unsigned<Integer>,
+        assignment -> Unsigned<Integer>,
+        student -> Unsigned<Integer>,
+        points -> Unsigned<Integer>,
     }
 }
 
@@ -61,14 +79,20 @@ diesel::joinable!(courses -> users (professor));
 diesel::joinable!(enrolments -> courses (course));
 diesel::joinable!(enrolments -> users (student));
 diesel::joinable!(grade_assignments -> courses (course));
+diesel::joinable!(grade_assignments_progress -> grade_assignments (assignment));
+diesel::joinable!(grade_assignments_progress -> users (student));
 diesel::joinable!(point_assignments -> courses (course));
+diesel::joinable!(point_assignments_progress -> point_assignments (assignment));
+diesel::joinable!(point_assignments_progress -> users (student));
 diesel::joinable!(sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     courses,
     enrolments,
     grade_assignments,
+    grade_assignments_progress,
     point_assignments,
+    point_assignments_progress,
     sessions,
     users,
 );

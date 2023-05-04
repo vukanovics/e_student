@@ -10,7 +10,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    models::{AccountType, Assignment, User},
+    models::{AccountType, AssignmentWithProgress, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -33,18 +33,18 @@ enum AssignmentShortInfo {
 }
 
 impl AssignmentShortInfo {
-    pub fn from_assignment(assignment: Assignment) -> AssignmentShortInfo {
+    pub fn from_assignment(assignment: AssignmentWithProgress) -> AssignmentShortInfo {
         match assignment {
-            Assignment::GradeAssignment(assignment) => {
+            AssignmentWithProgress::Grade((assignment, grade)) => {
                 AssignmentShortInfo::Grade(GradeAssignmentShortInfo {
                     name: assignment.name,
-                    grade: 0f32,
+                    grade: grade.unwrap_or_default(),
                 })
             }
-            Assignment::PointAssignment(assignment) => {
+            AssignmentWithProgress::Point((assignment, points)) => {
                 AssignmentShortInfo::Point(PointAssignmentShortInfo {
                     name: assignment.name,
-                    points: 0u32,
+                    points: points.unwrap_or_default(),
                     max_points: assignment.max_points,
                 })
             }
@@ -92,7 +92,7 @@ pub async fn get(database: Database, jar: &CookieJar<'_>) -> Result<Template, St
 
     for course in enrolled_courses {
         let assignments = database
-            .run(move |c| Database::get_assignments_by_course(c, course.id))
+            .run(move |c| Database::get_assignments_by_course_for_user_id(c, course.id, user.id))
             .await?;
         let assignments = assignments
             .into_iter()

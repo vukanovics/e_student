@@ -73,11 +73,6 @@ pub struct Course {
     pub professor: u32,
 }
 
-pub enum Assignment {
-    GradeAssignment(GradeAssignment),
-    PointAssignment(PointAssignment),
-}
-
 #[derive(Clone, Debug, Queryable, Insertable)]
 #[diesel(table_name = grade_assignments)]
 pub struct GradeAssignment {
@@ -86,11 +81,16 @@ pub struct GradeAssignment {
     pub name: String,
 }
 
-#[derive(Clone, Debug, Queryable, Insertable)]
+#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
 #[diesel(table_name = point_assignments)]
 pub struct PointAssignment {
     pub id: u32,
     pub course: u32,
     pub name: String,
     pub max_points: u32,
+}
+
+pub enum AssignmentWithProgress {
+    Grade((GradeAssignment, Option<f32>)),
+    Point((PointAssignment, Option<u32>)),
 }

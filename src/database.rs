@@ -1,5 +1,7 @@
 use crate::error::Error;
-use crate::models::{Assignment, Course, GradeAssignment, PointAssignment, Session, User};
+use crate::models::{
+    AssignmentWithProgress, Course, GradeAssignment, PointAssignment, Session, User,
+};
 use rocket_sync_db_pools::diesel::prelude::*;
 
 #[rocket_sync_db_pools::database("main_database")]
@@ -84,26 +86,43 @@ impl Database {
             .map_err(Error::Diesel)
     }
 
-    pub fn get_assignments_by_course(
+    pub fn get_assignments_by_course_for_user_id(
         connection: &mut diesel::MysqlConnection,
         by_course: u32,
-    ) -> Result<Vec<Assignment>, Error> {
+        for_user_id: u32,
+    ) -> Result<Vec<AssignmentWithProgress>, Error> {
         use crate::schema::point_assignments;
+        use crate::schema::point_assignments_progress;
 
-        let mut point_assignments = point_assignments::table
-            .filter(point_assignments::course.eq(by_course))
-            .load::<PointAssignment>(connection)
-            .map(|a| a.into_iter().map(Assignment::PointAssignment).collect())
+        let mut point_assignments: Vec<AssignmentWithProgress> = point_assignments::table
+            .left_join(point_assignments_progress::table)
+            .filter(
+                point_assignments::course
+                    .eq(by_course)
+                    .and(point_assignments_progress::student.eq(for_user_id)),
+            )
+            .select((
+                point_assignments::all_columns,
+                point_assignments_progress::points.nullable(),
+            ))
+            .load::<(PointAssignment, Option<u32>)>(connection)
+            .map(|a| a.into_iter().map(AssignmentWithProgress::Point).collect())
             .map_err(Error::Diesel)?;
 
         use crate::schema::grade_assignments;
+        use crate::schema::grade_assignments_progress;
 
         grade_assignments::table
+            .left_join(grade_assignments_progress::table)
             .filter(grade_assignments::course.eq(by_course))
-            .load::<GradeAssignment>(connection)
-            .map(|a| a.into_iter().map(Assignment::GradeAssignment).collect())
+            .select((
+                grade_assignments::all_columns,
+                grade_assignments_progress::grade.nullable(),
+            ))
+            .load::<(GradeAssignment, Option<f32>)>(connection)
+            .map(|a| a.into_iter().map(AssignmentWithProgress::Grade).collect())
             .map_err(Error::Diesel)
-            .map(|mut a: Vec<Assignment>| {
+            .map(|mut a: Vec<AssignmentWithProgress>| {
                 a.append(&mut point_assignments);
                 a
             })
