@@ -1,7 +1,5 @@
 use crate::error::Error;
-use crate::models::{
-    Assignment, Course, GradeAssignment, PointAssignment, Session, User,
-};
+use crate::models::{Assignment, Course, GradeAssignment, PointAssignment, Session, User};
 use rocket_sync_db_pools::diesel::prelude::*;
 
 #[rocket_sync_db_pools::database("main_database")]
@@ -72,15 +70,32 @@ impl Database {
             .map_err(|e| e.into())
     }
 
-    pub fn get_enrolled_courses_for_user(
+    pub fn get_all_courses(connection: &mut diesel::MysqlConnection) -> Result<Vec<Course>, Error> {
+        use crate::schema::courses::dsl::courses;
+        courses.load::<Course>(connection).map_err(Error::Diesel)
+    }
+
+    pub fn get_courses_for_student(
         connection: &mut diesel::MysqlConnection,
-        for_user: u32,
+        for_student: u32,
     ) -> Result<Vec<Course>, Error> {
         use crate::schema::courses::dsl::{courses, id};
         use crate::schema::enrolments::dsl::{course, enrolments, student};
         courses
             .inner_join(enrolments.on(course.eq(id)))
-            .filter(student.eq(for_user))
+            .filter(student.eq(for_student))
+            .select(Course::as_select())
+            .load::<Course>(connection)
+            .map_err(Error::Diesel)
+    }
+
+    pub fn get_courses_for_professor(
+        connection: &mut diesel::MysqlConnection,
+        for_professor: u32,
+    ) -> Result<Vec<Course>, Error> {
+        use crate::schema::courses::dsl::{courses, professor};
+        courses
+            .filter(professor.eq(for_professor))
             .select(Course::as_select())
             .load::<Course>(connection)
             .map_err(Error::Diesel)
