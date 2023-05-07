@@ -7,6 +7,7 @@ pub enum Error {
     Rand(rand::Error),
     Hex(hex::FromHexError),
     NotLoggedIn,
+    InvalidLanguageCode,
 }
 
 impl From<diesel::result::Error> for Error {

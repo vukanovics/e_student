@@ -16,6 +16,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
+    localization::Language,
     models::{Session, User},
 };
 
@@ -28,9 +29,9 @@ struct LoginLayoutContext {
 }
 
 impl LoginLayoutContext {
-    pub async fn new(user: Option<User>) -> Result<Self, Error> {
+    pub async fn new(language: Language, user: Option<User>) -> Result<Self, Error> {
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(user).await?,
+            base_layout_context: BaseLayoutContext::new(language, user).await?,
             error_message: None,
             success_message: None,
         })
@@ -47,12 +48,17 @@ impl LoginLayoutContext {
     }
 }
 
-#[get("/login")]
-pub async fn get(database: Database, jar: &CookieJar<'_>) -> Result<Template, Status> {
+#[get("/<language>/login")]
+pub async fn get(
+    database: Database,
+    jar: &CookieJar<'_>,
+    language: &str,
+) -> Result<Template, Status> {
     let user = application::get_user_from_jar(&database, jar).await?;
+    let language = Language::from_code(language)?;
     Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(user).await?,
+        LoginLayoutContext::new(language, user).await?,
     ))
 }
 
@@ -69,12 +75,15 @@ impl LoginFormData {
     }
 }
 
-#[post("/login", data = "<form>")]
+#[post("/<language>/login", data = "<form>")]
 pub async fn post(
     database: Database,
     jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
+    language: &str,
 ) -> Result<Template, Status> {
+    let language = Language::from_code(language)?;
+
     if let Some(error_message) = 'requirements: {
         if !form.all_fields_populated() {
             break 'requirements Some("All fields are required!");
@@ -134,7 +143,7 @@ pub async fn post(
         let user = application::get_user_from_jar(&database, jar).await?;
         return Ok(Template::render(
             "routes/login",
-            LoginLayoutContext::new(user)
+            LoginLayoutContext::new(language, user)
                 .await?
                 .with_error_message(Some(error_message.to_string())),
         ));
@@ -143,7 +152,7 @@ pub async fn post(
     let user = application::get_user_from_jar(&database, jar).await?;
     return Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(user)
+        LoginLayoutContext::new(language, user)
             .await?
             .with_success_message(Some("Successfully logged in!".to_string())),
     ));

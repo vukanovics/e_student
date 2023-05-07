@@ -10,6 +10,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
+    localization::Language,
     models::{AccountType, Assignment, User},
 };
 
@@ -35,19 +36,15 @@ enum AssignmentData {
 impl AssignmentData {
     pub fn from_assignment(assignment: Assignment) -> AssignmentData {
         match assignment {
-            Assignment::Grade((assignment, grade)) => {
-                AssignmentData::Grade(GradeAssignmentData {
-                    name: assignment.name,
-                    grade: grade.unwrap_or_default(),
-                })
-            }
-            Assignment::Point((assignment, points)) => {
-                AssignmentData::Point(PointAssignmentData {
-                    name: assignment.name,
-                    points: points.unwrap_or_default(),
-                    max_points: assignment.max_points,
-                })
-            }
+            Assignment::Grade((assignment, grade)) => AssignmentData::Grade(GradeAssignmentData {
+                name: assignment.name,
+                grade: grade.unwrap_or_default(),
+            }),
+            Assignment::Point((assignment, points)) => AssignmentData::Point(PointAssignmentData {
+                name: assignment.name,
+                points: points.unwrap_or_default(),
+                max_points: assignment.max_points,
+            }),
         }
     }
 }
@@ -61,20 +58,28 @@ struct StudentCourseLayoutContext {
 
 impl StudentCourseLayoutContext {
     pub async fn new(
+        language: Language,
         user: Option<User>,
         name: String,
         assignments: Vec<AssignmentData>,
     ) -> Result<Self, Error> {
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(user).await?,
+            base_layout_context: BaseLayoutContext::new(language, user).await?,
             name,
             assignments,
         })
     }
 }
 
-#[get("/course/<url>")]
-pub async fn get(database: Database, jar: &CookieJar<'_>, url: &str) -> Result<Template, Status> {
+#[get("/<language>/course/<url>")]
+pub async fn get(
+    database: Database,
+    jar: &CookieJar<'_>,
+    url: &str,
+    language: &str,
+) -> Result<Template, Status> {
+    let language = Language::from_code(language)?;
+
     let user = get_user_from_jar(&database, jar).await?;
     let user = match user {
         Some(user) => user,
@@ -98,15 +103,15 @@ pub async fn get(database: Database, jar: &CookieJar<'_>, url: &str) -> Result<T
     match user.account_type {
         AccountType::Student => Ok(Template::render(
             "routes/student/course",
-            StudentCourseLayoutContext::new(Some(user), course.name, assignments).await?,
+            StudentCourseLayoutContext::new(language, Some(user), course.name, assignments).await?,
         )),
         AccountType::Professor => Ok(Template::render(
             "routes/professor/course",
-            StudentCourseLayoutContext::new(Some(user), course.name, assignments).await?,
+            StudentCourseLayoutContext::new(language, Some(user), course.name, assignments).await?,
         )),
         AccountType::Administrator => Ok(Template::render(
             "routes/administrator/course",
-            StudentCourseLayoutContext::new(Some(user), course.name, assignments).await?,
+            StudentCourseLayoutContext::new(language, Some(user), course.name, assignments).await?,
         )),
     }
 }

@@ -2,12 +2,12 @@
 
 {{#*inline "body"}}
 
-<form action="/login" method="post">
-  <p>Username or E-Mail</p>
+<form action="/{{localization.code}}/login" method="post">
+  <p>{{localization.username_or_email}}</p>
   <input type="text" name="username_or_email">
-  <p>Password</p>
+  <p>{{localization.password}}</p>
   <input type="password" name="password">
-  <p>Stay logged in for</p>
+  <p>{{localization.stay_logged_in_for}}</p>
   <select name="timeout">
     <option value="60">1 minute</option>
     <option value="300">5 minutes</option>

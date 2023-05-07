@@ -5,6 +5,7 @@ mod application;
 mod base_layout_context;
 mod database;
 mod error;
+mod localization;
 mod models;
 mod routes;
 mod schema;

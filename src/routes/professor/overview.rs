@@ -3,7 +3,8 @@ use rocket_dyn_templates::Template;
 use serde::Serialize;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, database::Database, error::Error, models::User,
+    base_layout_context::BaseLayoutContext, database::Database, error::Error,
+    localization::Language, models::User,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -20,15 +21,24 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(user: Option<User>, courses: Vec<CourseShortInfo>) -> Result<Self, Error> {
+    pub async fn new(
+        language: Language,
+        user: Option<User>,
+        courses: Vec<CourseShortInfo>,
+    ) -> Result<Self, Error> {
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(user).await?,
+            base_layout_context: BaseLayoutContext::new(language, user).await?,
             courses,
         })
     }
 }
 
-pub async fn get(user: User, database: Database, _jar: &CookieJar<'_>) -> Result<Template, Status> {
+pub async fn get(
+    language: Language,
+    user: User,
+    database: Database,
+    _jar: &CookieJar<'_>,
+) -> Result<Template, Status> {
     let user_id = user.id;
 
     let enrolled_courses = database
@@ -46,7 +56,7 @@ pub async fn get(user: User, database: Database, _jar: &CookieJar<'_>) -> Result
         courses.push(short_info);
     }
 
-    let context = LayoutContext::new(Some(user.clone()), courses.clone()).await?;
+    let context = LayoutContext::new(language, Some(user.clone()), courses.clone()).await?;
 
     Ok(Template::render("routes/professor/overview", context))
 }
