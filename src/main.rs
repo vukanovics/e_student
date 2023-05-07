@@ -11,6 +11,7 @@ mod routes;
 mod schema;
 
 use database::Database;
+use rocket::fs::FileServer;
 use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
 
@@ -24,6 +25,7 @@ fn rocket() -> _ {
     env_logger::init();
 
     build()
+        .mount("/", FileServer::from("static"))
         .mount(
             "/",
             routes![
