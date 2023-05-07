@@ -1,3 +1,4 @@
 /target
 /secure
 .env
+/static/tailwind.css
