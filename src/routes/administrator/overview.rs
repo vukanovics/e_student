@@ -1,10 +1,16 @@
-use rocket::{http::{CookieJar, Status}, get};
+use rocket::{
+    get,
+    http::{CookieJar, Status},
+};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Language, user::{Administrator, User},
+    base_layout_context::BaseLayoutContext,
+    database::Database,
+    error::Error,
+    localization::Language,
+    user::{Administrator, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -33,15 +39,14 @@ impl LayoutContext {
     }
 }
 
-#[get("/<language>/overview", rank = 0)]
+#[get("/overview", rank = 0)]
 pub async fn get(
-    language: String,
+    language: Language,
     administrator: Administrator<'_>,
     database: Database,
     _jar: &CookieJar<'_>,
 ) -> Result<Template, Status> {
     let user = administrator.0;
-    let language = Language::from_code(&language)?;
 
     let all_courses = database.run(move |c| Database::get_all_courses(c)).await?;
 

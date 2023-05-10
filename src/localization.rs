@@ -1,4 +1,9 @@
 use crate::error::Error;
+use rocket::{
+    http::CookieJar,
+    request::{FromRequest, Outcome},
+    Request,
+};
 use serde::Serialize;
 
 pub enum Language {
@@ -11,13 +16,22 @@ const LANGUAGE_CODE_ENGLISH: &'static str = "en";
 const LANGUAGE_CODE_SERBIAN_LATIN: &'static str = "sr_latn";
 const LANGUAGE_CODE_SERBIAN_CYRILLIC: &'static str = "sr_cyrl";
 
-impl Language {
-    pub fn from_code<'a>(code: &'a str) -> Result<Language, Error> {
-        match code {
-            LANGUAGE_CODE_SERBIAN_LATIN => Ok(Self::SerbianLatin),
-            LANGUAGE_CODE_SERBIAN_CYRILLIC => Ok(Self::SerbianCyrillic),
-            LANGUAGE_CODE_ENGLISH => Ok(Self::English),
-            _ => Err(Error::InvalidLanguageCode),
+const DEFAULT_LANGUAGE: Language = Language::SerbianLatin;
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for Language {
+    type Error = Error;
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let jar = request.guard::<&CookieJar<'_>>().await.unwrap();
+        match jar.get("language") {
+            Some(language) => match language.value() {
+                LANGUAGE_CODE_SERBIAN_LATIN => Outcome::Success(Self::SerbianLatin),
+                LANGUAGE_CODE_SERBIAN_CYRILLIC => Outcome::Success(Self::SerbianCyrillic),
+                LANGUAGE_CODE_ENGLISH => Outcome::Success(Self::English),
+                _ => Outcome::Success(DEFAULT_LANGUAGE),
+            },
+            None => Outcome::Success(DEFAULT_LANGUAGE),
         }
     }
 }

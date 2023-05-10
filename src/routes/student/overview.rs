@@ -76,15 +76,14 @@ impl LayoutContext {
     }
 }
 
-#[get("/<language>/overview", rank = 2)]
+#[get("/overview", rank = 2)]
 pub async fn get(
-    language: String,
+    language: Language,
     user: &User,
     database: Database,
     _jar: &CookieJar<'_>,
 ) -> Result<Template, Status> {
     let user_id = user.id();
-    let language = Language::from_code(&language)?;
 
     let enrolled_courses = database
         .run(move |c| Database::get_courses_for_student(c, user_id))

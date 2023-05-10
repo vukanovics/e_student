@@ -44,9 +44,8 @@ impl LoginLayoutContext {
     }
 }
 
-#[get("/<language>/login")]
-pub async fn get(language: &str) -> Result<Template, Status> {
-    let language = Language::from_code(language)?;
+#[get("/login")]
+pub async fn get(language: Language) -> Result<Template, Status> {
     Ok(Template::render(
         "routes/login",
         LoginLayoutContext::new(language, None).await?,
@@ -66,15 +65,13 @@ impl LoginFormData {
     }
 }
 
-#[post("/<language>/login", data = "<form>")]
+#[post("/login", data = "<form>")]
 pub async fn post(
     database: Database,
     jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
-    language: &str,
+    language: Language,
 ) -> Result<Template, Status> {
-    let language = Language::from_code(language)?;
-
     if let Some(error_message) = 'requirements: {
         if !form.all_fields_populated() {
             break 'requirements Some("All fields are required!");
