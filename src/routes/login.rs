@@ -5,6 +5,8 @@ use rocket::{
     get,
     http::{Cookie, CookieJar, Status},
     post,
+    response::Redirect,
+    uri, Responder,
 };
 
 use serde::Serialize;
@@ -21,7 +23,6 @@ struct LoginLayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
     error_message: Option<String>,
-    success_message: Option<String>,
 }
 
 impl LoginLayoutContext {
@@ -29,17 +30,11 @@ impl LoginLayoutContext {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             error_message: None,
-            success_message: None,
         })
     }
 
     pub fn with_error_message(mut self, error_message: Option<String>) -> Self {
         self.error_message = error_message;
-        self
-    }
-
-    pub fn with_success_message(mut self, success_message: Option<String>) -> Self {
-        self.success_message = success_message;
         self
     }
 }
@@ -65,13 +60,19 @@ impl LoginFormData {
     }
 }
 
+#[derive(Responder)]
+pub enum LoginResponse {
+    Success(Redirect),
+    Failure(Template),
+}
+
 #[post("/login", data = "<form>")]
 pub async fn post(
     database: Database,
     jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
     language: Language,
-) -> Result<Template, Status> {
+) -> Result<LoginResponse, Status> {
     if let Some(error_message) = 'requirements: {
         if !form.all_fields_populated() {
             break 'requirements Some("All fields are required!");
@@ -128,20 +129,13 @@ pub async fn post(
 
         None
     } {
-        //let user = application::get_user_from_jar(&database, jar).await?;
-        return Ok(Template::render(
+        return Ok(LoginResponse::Failure(Template::render(
             "routes/login",
             LoginLayoutContext::new(language, None)
                 .await?
                 .with_error_message(Some(error_message.to_string())),
-        ));
+        )));
     }
 
-    //let user = application::get_user_from_jar(&database, jar).await?;
-    return Ok(Template::render(
-        "routes/login",
-        LoginLayoutContext::new(language, None)
-            .await?
-            .with_success_message(Some("Successfully logged in!".to_string())),
-    ));
+    Ok(LoginResponse::Success(Redirect::to(uri!("/overview"))))
 }
