@@ -1,10 +1,11 @@
 use log::error;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Error {
-    Diesel(diesel::result::Error),
-    Bcrypt(bcrypt::BcryptError),
-    Rand(rand::Error),
+    Diesel,
+    DatabaseEntryNotFound,
+    Bcrypt,
+    Rand,
     Hex(hex::FromHexError),
     NotLoggedIn,
     InvalidLanguageCode,
@@ -12,19 +13,22 @@ pub enum Error {
 
 impl From<diesel::result::Error> for Error {
     fn from(value: diesel::result::Error) -> Self {
-        Self::Diesel(value)
+        match value {
+            diesel::result::Error::NotFound => Self::DatabaseEntryNotFound,
+            _ => Self::Diesel,
+        }
     }
 }
 
 impl From<bcrypt::BcryptError> for Error {
-    fn from(value: bcrypt::BcryptError) -> Self {
-        Self::Bcrypt(value)
+    fn from(_value: bcrypt::BcryptError) -> Self {
+        Self::Bcrypt
     }
 }
 
 impl From<rand::Error> for Error {
-    fn from(value: rand::Error) -> Self {
-        Self::Rand(value)
+    fn from(_value: rand::Error) -> Self {
+        Self::Rand
     }
 }
 
