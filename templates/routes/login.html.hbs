@@ -14,11 +14,11 @@
   <br>
   <br>
   {{> components/button button_text=localization.login}}
-  {{#if error_message}}
-    <p>Error: {{error_message}}</p
+  {{#if show_error_all_fields_required}}
+    <p>All fields are required!</p>
   {{/if}}
-  {{#if success_message}}
-    <p>Success: {{success_message}}</p
+  {{#if show_error_invalid_login_info}}
+    <p>Invalid login info!</p>
   {{/if}}
 </form>
 
