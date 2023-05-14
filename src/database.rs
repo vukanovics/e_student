@@ -71,7 +71,6 @@ impl Database {
             .map_err(Error::from)
     }
 
-    #[allow(unused)]
     pub fn get_all_courses(connection: &mut diesel::MysqlConnection) -> Result<Vec<Course>, Error> {
         use crate::schema::courses::dsl::courses;
         courses.load::<Course>(connection).map_err(Error::from)
@@ -91,7 +90,6 @@ impl Database {
             .map_err(Error::from)
     }
 
-    #[allow(unused)]
     pub fn get_courses_for_professor(
         connection: &mut diesel::MysqlConnection,
         for_professor: u32,
@@ -144,5 +142,21 @@ impl Database {
                 a.append(&mut point_assignments);
                 a
             })
+    }
+
+    pub fn get_all_users(connection: &mut diesel::MysqlConnection) -> Result<Vec<User>, Error> {
+        use crate::schema::users;
+        users::table.load::<User>(connection).map_err(Error::from)
+    }
+
+    pub fn delete_user_by_id(
+        connection: &mut diesel::MysqlConnection,
+        by_id: u32,
+    ) -> Result<(), Error> {
+        use crate::schema::users::{self, id};
+        diesel::delete(users::table.filter(id.eq(by_id)))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
     }
 }

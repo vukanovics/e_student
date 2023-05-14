@@ -35,7 +35,10 @@ fn rocket() -> _ {
                 login::post,
                 student::overview::get,
                 professor::overview::get,
-                administrator::overview::get
+                administrator::overview::get,
+                administrator::users::get,
+                administrator::users::delete::get,
+                administrator::users::delete::post
             ],
         )
         .attach(Template::fairing())

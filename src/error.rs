@@ -13,6 +13,7 @@ pub enum Error {
 
 impl From<diesel::result::Error> for Error {
     fn from(value: diesel::result::Error) -> Self {
+        error!("Diesel error: {:?}", value);
         match value {
             diesel::result::Error::NotFound => Self::DatabaseEntryNotFound,
             _ => Self::Diesel,

@@ -1,0 +1,21 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+{{#each users}}
+  <p>
+  {{#if this.username}}
+    {{this.username}}
+  {{else}}
+    Username not set
+  {{/if}}
+  | {{this.email}}
+  | {{this.account_type}}
+  <form action="users/delete/{{this.id}}" method="get">
+    <input type="submit" value="Delete">
+  </form>
+  </p>
+{{/each}}
+
+{{/inline}}
+{{> base }}

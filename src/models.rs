@@ -6,9 +6,10 @@ use diesel::{
     sql_types::{TinyInt, Unsigned},
     AsExpression, FromSqlRow, Insertable, Queryable, Selectable,
 };
+use serde::Serialize;
 
 #[repr(u8)]
-#[derive(PartialEq, Debug, Clone, Copy, FromSqlRow, AsExpression)]
+#[derive(Serialize, PartialEq, Debug, Clone, Copy, FromSqlRow, AsExpression)]
 #[diesel(sql_type = Unsigned<TinyInt>)]
 pub enum AccountType {
     Student = 0,
