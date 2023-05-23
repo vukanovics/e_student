@@ -9,8 +9,12 @@ edition = "2021"
 bcrypt = "0.14.0"
 chrono = "0.4.24"
 diesel = { version = "2.0.4", features = ["chrono", "mysql"] }
+dotenvy = "0.15.7"
+dotenvy_macro = "0.15.7"
 env_logger = "0.10.0"
+handlebars = "4.3.7"
 hex = "0.4.3"
+lettre = { version = "0.10.4", features = ["tokio1", "tokio1-native-tls", "tracing"] }
 log = "0.4.17"
 rand = "0.8.5"
 rocket = { version = "0.5.0-rc.2", features = ["tls"] }

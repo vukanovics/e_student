@@ -6,7 +6,10 @@ pub enum Error {
     DatabaseEntryNotFound,
     Bcrypt,
     Rand,
+    HandlebarsRender,
+    HandlebarsTemplate,
     Hex(hex::FromHexError),
+    LettreSmtp,
     NotLoggedIn,
     InvalidLanguageCode,
 }
@@ -27,6 +30,19 @@ impl From<bcrypt::BcryptError> for Error {
     }
 }
 
+impl From<handlebars::RenderError> for Error {
+    fn from(_value: handlebars::RenderError) -> Self {
+        Self::HandlebarsRender
+    }
+}
+
+impl From<handlebars::TemplateError> for Error {
+    fn from(value: handlebars::TemplateError) -> Self {
+        error!("Handlebars template error: {:?}", value);
+        Self::HandlebarsTemplate
+    }
+}
+
 impl From<rand::Error> for Error {
     fn from(_value: rand::Error) -> Self {
         Self::Rand
@@ -36,6 +52,13 @@ impl From<rand::Error> for Error {
 impl From<hex::FromHexError> for Error {
     fn from(value: hex::FromHexError) -> Self {
         Self::Hex(value)
+    }
+}
+
+impl From<lettre::transport::smtp::Error> for Error {
+    fn from(value: lettre::transport::smtp::Error) -> Self {
+        error!("Lettre error: {:?}", value);
+        Self::LettreSmtp
     }
 }
 

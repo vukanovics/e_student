@@ -5,12 +5,14 @@ mod base_layout_context;
 mod database;
 mod error;
 mod localization;
+mod mail;
 mod models;
 mod routes;
 mod schema;
 mod user;
 
 use database::Database;
+use mail::Mail;
 use rocket::fs::FileServer;
 use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
@@ -43,4 +45,5 @@ fn rocket() -> _ {
         )
         .attach(Template::fairing())
         .attach(Database::fairing())
+        .attach(Mail::fairing())
 }
