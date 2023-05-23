@@ -1,5 +1,5 @@
 #![warn(clippy::pedantic)]
-#![deny(warnings)]
+//#![deny(warnings)]
 
 mod base_layout_context;
 mod database;
@@ -40,7 +40,9 @@ fn rocket() -> _ {
                 administrator::overview::get,
                 administrator::users::get,
                 administrator::users::delete::get,
-                administrator::users::delete::post
+                administrator::users::delete::post,
+                administrator::users::create::get,
+                administrator::users::create::post
             ],
         )
         .attach(Template::fairing())

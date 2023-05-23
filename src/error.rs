@@ -4,6 +4,7 @@ use log::error;
 pub enum Error {
     Diesel,
     DatabaseEntryNotFound,
+    DatabaseDuplicateEntry,
     Bcrypt,
     Rand,
     HandlebarsRender,
@@ -19,13 +20,18 @@ impl From<diesel::result::Error> for Error {
         error!("Diesel error: {:?}", value);
         match value {
             diesel::result::Error::NotFound => Self::DatabaseEntryNotFound,
+            diesel::result::Error::DatabaseError(
+                diesel::result::DatabaseErrorKind::UniqueViolation,
+                _,
+            ) => Self::DatabaseDuplicateEntry,
             _ => Self::Diesel,
         }
     }
 }
 
 impl From<bcrypt::BcryptError> for Error {
-    fn from(_value: bcrypt::BcryptError) -> Self {
+    fn from(value: bcrypt::BcryptError) -> Self {
+        error!("Bcrypt error: {:?}", value);
         Self::Bcrypt
     }
 }

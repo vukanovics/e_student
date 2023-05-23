@@ -1,0 +1,21 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<form action="create" method="post">
+  <p>Email:</p>
+  <input type="text" name="email">
+  <input type="submit" value="Create user">
+</form>
+{{#if show_success_message}}
+<p>You did it!</p>
+{{/if}}
+{{#if show_duplicate_email}}
+<p>Error: that email is already in use</p>
+{{/if}}
+{{#if show_invalid_email}}
+<p>Error: Invalid email</p>
+{{/if}}
+
+{{/inline}}
+{{> base }}

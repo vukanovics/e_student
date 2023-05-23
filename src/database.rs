@@ -1,5 +1,7 @@
 use crate::error::Error;
-use crate::models::{Assignment, Course, GradeAssignment, PointAssignment, Session, User};
+use crate::models::{
+    AccountType, Assignment, Course, GradeAssignment, NewUser, PointAssignment, Session, User,
+};
 use rocket_sync_db_pools::diesel::prelude::*;
 
 #[rocket_sync_db_pools::database("main_database")]
@@ -155,6 +157,28 @@ impl Database {
     ) -> Result<(), Error> {
         use crate::schema::users::{self, id};
         diesel::delete(users::table.filter(id.eq(by_id)))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn create_new_user<'a>(
+        connection: &mut diesel::MysqlConnection,
+        email: &'a str,
+        password: &'a str,
+        account_type: AccountType,
+    ) -> Result<(), Error> {
+        use crate::schema::users::dsl::users;
+        let new_user = NewUser {
+            password,
+            email,
+            account_type,
+            password_reset_required: true,
+            username: None,
+            last_login_time: None,
+        };
+        diesel::insert_into(users)
+            .values(new_user)
             .execute(connection)
             .map_err(Error::from)
             .map(|_| ())

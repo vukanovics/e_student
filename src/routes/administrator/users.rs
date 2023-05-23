@@ -1,4 +1,5 @@
 pub mod delete;
+pub mod create;
 
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;

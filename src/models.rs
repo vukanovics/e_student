@@ -3,13 +3,14 @@ use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
     deserialize::FromSql,
+    serialize::ToSql,
     sql_types::{TinyInt, Unsigned},
     AsExpression, FromSqlRow, Insertable, Queryable, Selectable,
 };
 use serde::Serialize;
 
 #[repr(u8)]
-#[derive(Serialize, PartialEq, Debug, Clone, Copy, FromSqlRow, AsExpression)]
+#[derive(AsExpression, FromSqlRow, Serialize, PartialEq, Debug, Clone, Copy)]
 #[diesel(sql_type = Unsigned<TinyInt>)]
 pub enum AccountType {
     Student = 0,
@@ -17,10 +18,9 @@ pub enum AccountType {
     Administrator = 2,
 }
 
-impl<Integer, DB> FromSql<Integer, DB> for AccountType
+impl<DB: Backend> FromSql<Unsigned<TinyInt>, DB> for AccountType
 where
-    DB: Backend,
-    u8: FromSql<Integer, DB>,
+    u8: FromSql<Unsigned<TinyInt>, DB>,
 {
     fn from_sql(bytes: diesel::backend::RawValue<'_, DB>) -> diesel::deserialize::Result<Self> {
         match u8::from_sql(bytes)? {
@@ -28,6 +28,22 @@ where
             1 => Ok(AccountType::Professor),
             2 => Ok(AccountType::Administrator),
             x => Err(format!("Unrecognized variant {}", x).into()),
+        }
+    }
+}
+
+impl<DB: Backend> ToSql<Unsigned<TinyInt>, DB> for AccountType
+where
+    u8: ToSql<Unsigned<TinyInt>, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        match self {
+            Self::Student => 0.to_sql(out),
+            Self::Professor => 1.to_sql(out),
+            Self::Administrator => 2.to_sql(out),
         }
     }
 }
@@ -46,12 +62,12 @@ pub struct User {
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser<'a> {
-    password: &'a str,
-    email: &'a str,
-    account_type: AccountType,
-    password_reset_required: bool,
-    username: Option<&'a str>,
-    last_login_time: Option<NaiveDateTime>,
+    pub password: &'a str,
+    pub email: &'a str,
+    pub account_type: AccountType,
+    pub password_reset_required: bool,
+    pub username: Option<&'a str>,
+    pub last_login_time: Option<NaiveDateTime>,
 }
 
 #[derive(Clone, Debug, Queryable, Insertable)]
