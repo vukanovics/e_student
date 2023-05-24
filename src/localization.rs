@@ -29,6 +29,10 @@ pub struct Localization {
     password: &'static str,
     stay_logged_in_for: &'static str,
     logged_in_as: &'static str,
+    login: &'static str,
+    minute: &'static str,
+    minutes: &'static str,
+    hour: &'static str,
 }
 
 pub const LOCALIZATION_ENGLISH: Localization = Localization {
@@ -37,6 +41,10 @@ pub const LOCALIZATION_ENGLISH: Localization = Localization {
     password: "Password",
     stay_logged_in_for: "Stay logged in for",
     logged_in_as: "Logged in as",
+    login: "Login",
+    minute: "minute",
+    minutes: "minutes",
+    hour: "hour",
 };
 
 pub const LOCALIZATION_SERBIAN_LATIN: Localization = Localization {
@@ -45,6 +53,10 @@ pub const LOCALIZATION_SERBIAN_LATIN: Localization = Localization {
     password: "Lozinka",
     stay_logged_in_for: "Ostani ulogovan",
     logged_in_as: "Ulogovan kao",
+    login: "Uloguj se",
+    minute: "minut",
+    minutes: "minuta",
+    hour: "sat",
 };
 
 pub const LOCALIZATION_SERBIAN_CYRILLIC: Localization = Localization {
@@ -53,4 +65,8 @@ pub const LOCALIZATION_SERBIAN_CYRILLIC: Localization = Localization {
     password: "Лозинка",
     stay_logged_in_for: "Остани улогован",
     logged_in_as: "Улогован као",
+    login: "Улогуј се",
+    minute: "минут",
+    minutes: "минута",
+    hour: "сат",
 };

@@ -1,22 +1,19 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-
-<form action="/{{localization.code}}/login" method="post">
-  <p>{{localization.username_or_email}}</p>
-  <input type="text" name="username_or_email">
-  <p>{{localization.password}}</p>
-  <input type="password" name="password">
-  <p>{{localization.stay_logged_in_for}}</p>
-  <select name="timeout">
-    <option value="60">1 minute</option>
-    <option value="300">5 minutes</option>
-    <option value="1200">20 minutes</option>
-    <option value="3600">1 hour</option>
-  </select>
+<p class="flex items-center px-8 h-16 font-sans text-lg font-semibold align-middle text-caption">{{localization.login}}</p>
+<form class="flex flex-col items-center py-8" action="login" method="post">
+  {{> components/input_text icon="la-user" special="focus-within:bg-ccuser" field_name="username_or_email" label_text=localization.username_or_email}}
+  {{> components/input_password icon="la-key" special="focus-within:bg-ccpass" field_name="password" label_text=localization.password}}
+  {{#> components/input_select icon="la-stopwatch" special="focus-within:bg-highbg" field_name="timeout" label_text=localization.stay_logged_in_for}}
+      <option value="60">1 {{localization.minute}}</option>
+      <option value="300">5 {{localization.minutes}}</option>
+      <option value="1200">20 {{localization.minutes}}</option>
+      <option value="3600">1 {{localization.hour}}</option>
+  {{/components/input_select}}
   <br>
   <br>
-  <input type="submit" value="Submit">
+  {{> components/button button_text=localization.login}}
   {{#if error_message}}
     <p>Error: {{error_message}}</p
   {{/if}}
