@@ -148,5 +148,5 @@ pub async fn post(
 
     jar.add(cookie);
 
-    Ok(LoginResponse::Success(Redirect::to(uri!("/overview"))))
+    Ok(LoginResponse::Success(Redirect::to(uri!("/courses"))))
 }

@@ -39,7 +39,7 @@ impl LayoutContext {
     }
 }
 
-#[get("/overview", rank = 0)]
+#[get("/courses", rank = 0)]
 pub async fn get(
     language: Language,
     administrator: Administrator<'_>,
@@ -63,5 +63,5 @@ pub async fn get(
 
     let context = LayoutContext::new(language, Some(user), courses.clone()).await?;
 
-    Ok(Template::render("routes/administrator/overview", context))
+    Ok(Template::render("routes/administrator/courses", context))
 }

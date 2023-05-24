@@ -76,7 +76,7 @@ impl LayoutContext {
     }
 }
 
-#[get("/overview", rank = 2)]
+#[get("/courses", rank = 2)]
 pub async fn get(
     language: Language,
     user: &User,
@@ -110,5 +110,5 @@ pub async fn get(
 
     let context = LayoutContext::new(language, Some(user), courses.clone()).await?;
 
-    Ok(Template::render("routes/student/overview", context))
+    Ok(Template::render("routes/student/courses", context))
 }
