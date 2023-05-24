@@ -1,4 +1,8 @@
-use crate::schema::{courses, grade_assignments, point_assignments, sessions, users};
+use std::convert::TryFrom;
+
+use crate::{
+    schema::{courses, grade_assignments, point_assignments, sessions, users}, error::Error,
+};
 use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
@@ -23,12 +27,7 @@ where
     u8: FromSql<Unsigned<TinyInt>, DB>,
 {
     fn from_sql(bytes: diesel::backend::RawValue<'_, DB>) -> diesel::deserialize::Result<Self> {
-        match u8::from_sql(bytes)? {
-            0 => Ok(AccountType::Student),
-            1 => Ok(AccountType::Professor),
-            2 => Ok(AccountType::Administrator),
-            x => Err(format!("Unrecognized variant {}", x).into()),
-        }
+        Self::try_from(u8::from_sql(bytes)?).map_err(|_| "Invalid AccountType value".into())
     }
 }
 
@@ -44,6 +43,19 @@ where
             Self::Student => 0.to_sql(out),
             Self::Professor => 1.to_sql(out),
             Self::Administrator => 2.to_sql(out),
+        }
+    }
+}
+
+impl TryFrom<u8> for AccountType {
+    type Error = Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(AccountType::Student),
+            1 => Ok(AccountType::Professor),
+            2 => Ok(AccountType::Administrator),
+            x => Err(Error::InvalidAccountTypeValue),
         }
     }
 }

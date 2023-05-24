@@ -42,7 +42,9 @@ fn rocket() -> _ {
                 administrator::users::delete::get,
                 administrator::users::delete::post,
                 administrator::users::create::get,
-                administrator::users::create::post
+                administrator::users::create::post,
+                administrator::users::edit::get,
+                administrator::users::edit::post
             ],
         )
         .attach(Template::fairing())

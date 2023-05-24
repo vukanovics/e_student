@@ -13,6 +13,7 @@ pub enum Error {
     LettreSmtp,
     NotLoggedIn,
     InvalidLanguageCode,
+    InvalidAccountTypeValue,
 }
 
 impl From<diesel::result::Error> for Error {

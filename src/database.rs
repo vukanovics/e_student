@@ -183,4 +183,46 @@ impl Database {
             .map_err(Error::from)
             .map(|_| ())
     }
+
+    pub fn update_user_username<'a>(
+        connection: &mut diesel::MysqlConnection,
+        by_id: u32,
+        new_username: &'a str,
+    ) -> Result<(), Error> {
+        use crate::schema::users::dsl::{id, username, users};
+        diesel::update(users)
+            .filter(id.eq(by_id))
+            .set(username.eq(new_username))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn update_user_email<'a>(
+        connection: &mut diesel::MysqlConnection,
+        by_id: u32,
+        new_email: &'a str,
+    ) -> Result<(), Error> {
+        use crate::schema::users::dsl::{email, id, users};
+        diesel::update(users)
+            .filter(id.eq(by_id))
+            .set(email.eq(new_email))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn update_user_account_type(
+        connection: &mut diesel::MysqlConnection,
+        by_id: u32,
+        new_account_type: AccountType,
+    ) -> Result<(), Error> {
+        use crate::schema::users::dsl::{account_type, id, users};
+        diesel::update(users)
+            .filter(id.eq(by_id))
+            .set(account_type.eq(new_account_type))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
 }
