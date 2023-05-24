@@ -8,7 +8,7 @@ use diesel::{
 };
 
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, FromSqlRow, AsExpression)]
+#[derive(PartialEq, Debug, Clone, Copy, FromSqlRow, AsExpression)]
 #[diesel(sql_type = Unsigned<TinyInt>)]
 pub enum AccountType {
     Student = 0,

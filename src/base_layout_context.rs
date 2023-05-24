@@ -4,7 +4,7 @@ use crate::{
         Language, Localization, LOCALIZATION_ENGLISH, LOCALIZATION_SERBIAN_CYRILLIC,
         LOCALIZATION_SERBIAN_LATIN,
     },
-    models::User,
+    user::User,
 };
 use serde::Serialize;
 
@@ -20,10 +20,10 @@ pub struct BaseLayoutContext {
 }
 
 impl BaseLayoutContext {
-    pub async fn new(language: Language, user: Option<User>) -> Result<Self, Error> {
+    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
         let user_info = match user {
             Some(user) => Some(UserInfo {
-                username: user.username.unwrap_or(user.email),
+                username: user.username().unwrap_or(user.email()).to_string(),
             }),
             None => None,
         };

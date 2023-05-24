@@ -15,7 +15,7 @@ impl Database {
             .filter(id.eq(user_id))
             .limit(1)
             .first::<User>(connection)
-            .map_err(|e| e.into())
+            .map_err(Error::from)
     }
 
     pub fn get_user_by_username_or_email<'a>(
@@ -31,7 +31,7 @@ impl Database {
             )
             .limit(1)
             .first::<User>(connection)
-            .map_err(|e| e.into())
+            .map_err(Error::from)
     }
 
     pub fn insert_session(
@@ -43,7 +43,7 @@ impl Database {
             .values(session)
             .execute(connection)
             .map(|_| ())
-            .map_err(|e| e.into())
+            .map_err(Error::from)
     }
 
     pub fn get_session_by_key(
@@ -55,9 +55,10 @@ impl Database {
             .filter(session_key.eq(by_key))
             .limit(1)
             .first::<Session>(connection)
-            .map_err(|e| e.into())
+            .map_err(Error::from)
     }
 
+    #[allow(unused)]
     pub fn get_course_by_url<'a>(
         connection: &mut diesel::MysqlConnection,
         by_url: &'a str,
@@ -67,12 +68,13 @@ impl Database {
             .filter(url.eq(by_url))
             .limit(1)
             .first::<Course>(connection)
-            .map_err(|e| e.into())
+            .map_err(Error::from)
     }
 
+    #[allow(unused)]
     pub fn get_all_courses(connection: &mut diesel::MysqlConnection) -> Result<Vec<Course>, Error> {
         use crate::schema::courses::dsl::courses;
-        courses.load::<Course>(connection).map_err(Error::Diesel)
+        courses.load::<Course>(connection).map_err(Error::from)
     }
 
     pub fn get_courses_for_student(
@@ -86,9 +88,10 @@ impl Database {
             .filter(student.eq(for_student))
             .select(Course::as_select())
             .load::<Course>(connection)
-            .map_err(Error::Diesel)
+            .map_err(Error::from)
     }
 
+    #[allow(unused)]
     pub fn get_courses_for_professor(
         connection: &mut diesel::MysqlConnection,
         for_professor: u32,
@@ -98,7 +101,7 @@ impl Database {
             .filter(professor.eq(for_professor))
             .select(Course::as_select())
             .load::<Course>(connection)
-            .map_err(Error::Diesel)
+            .map_err(Error::from)
     }
 
     pub fn get_assignments_for_course_for_user(
@@ -122,7 +125,7 @@ impl Database {
             ))
             .load::<(PointAssignment, Option<u32>)>(connection)
             .map(|a| a.into_iter().map(Assignment::Point).collect())
-            .map_err(Error::Diesel)?;
+            .map_err(Error::from)?;
 
         use crate::schema::grade_assignments;
         use crate::schema::grade_assignments_progress;
@@ -136,7 +139,7 @@ impl Database {
             ))
             .load::<(GradeAssignment, Option<f32>)>(connection)
             .map(|a| a.into_iter().map(Assignment::Grade).collect())
-            .map_err(Error::Diesel)
+            .map_err(Error::from)
             .map(|mut a: Vec<Assignment>| {
                 a.append(&mut point_assignments);
                 a

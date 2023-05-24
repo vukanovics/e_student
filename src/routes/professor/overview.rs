@@ -1,10 +1,13 @@
-use rocket::http::{CookieJar, Status};
+use rocket::{
+    get,
+    http::{CookieJar, Status},
+};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Language, models::User,
+    localization::Language, user::Professor, user::User,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -23,7 +26,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<User>,
+        user: Option<&User>,
         courses: Vec<CourseShortInfo>,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -33,13 +36,15 @@ impl LayoutContext {
     }
 }
 
+#[get("/overview", rank = 1)]
 pub async fn get(
     language: Language,
-    user: User,
+    professor: Professor<'_>,
     database: Database,
     _jar: &CookieJar<'_>,
 ) -> Result<Template, Status> {
-    let user_id = user.id;
+    let user = professor.0;
+    let user_id = user.id();
 
     let enrolled_courses = database
         .run(move |c| Database::get_courses_for_professor(c, user_id))
@@ -56,7 +61,7 @@ pub async fn get(
         courses.push(short_info);
     }
 
-    let context = LayoutContext::new(language, Some(user.clone()), courses.clone()).await?;
+    let context = LayoutContext::new(language, Some(user), courses.clone()).await?;
 
     Ok(Template::render("routes/professor/overview", context))
 }

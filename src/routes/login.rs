@@ -12,12 +12,8 @@ use serde::Serialize;
 use rocket_dyn_templates::Template;
 
 use crate::{
-    application,
-    base_layout_context::BaseLayoutContext,
-    database::Database,
-    error::Error,
-    localization::Language,
-    models::{Session, User},
+    base_layout_context::BaseLayoutContext, database::Database, error::Error,
+    localization::Language, models::Session, user::User,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -29,7 +25,7 @@ struct LoginLayoutContext {
 }
 
 impl LoginLayoutContext {
-    pub async fn new(language: Language, user: Option<User>) -> Result<Self, Error> {
+    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             error_message: None,
@@ -48,17 +44,11 @@ impl LoginLayoutContext {
     }
 }
 
-#[get("/<language>/login")]
-pub async fn get(
-    database: Database,
-    jar: &CookieJar<'_>,
-    language: &str,
-) -> Result<Template, Status> {
-    let user = application::get_user_from_jar(&database, jar).await?;
-    let language = Language::from_code(language)?;
+#[get("/login")]
+pub async fn get(language: Language) -> Result<Template, Status> {
     Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(language, user).await?,
+        LoginLayoutContext::new(language, None).await?,
     ))
 }
 
@@ -75,15 +65,13 @@ impl LoginFormData {
     }
 }
 
-#[post("/<language>/login", data = "<form>")]
+#[post("/login", data = "<form>")]
 pub async fn post(
     database: Database,
     jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
-    language: &str,
+    language: Language,
 ) -> Result<Template, Status> {
-    let language = Language::from_code(language)?;
-
     if let Some(error_message) = 'requirements: {
         if !form.all_fields_populated() {
             break 'requirements Some("All fields are required!");
@@ -96,7 +84,7 @@ pub async fn post(
                 .await
         } {
             Ok(user) => user,
-            Err(Error::Diesel(diesel::result::Error::NotFound)) => {
+            Err(Error::DatabaseEntryNotFound) => {
                 break 'requirements Some("Username or e-mail not recognized.");
             }
             Err(e) => {
@@ -104,14 +92,14 @@ pub async fn post(
             }
         };
 
-        if !bcrypt::verify(&form.password, &user.password).map_err(|e| Error::Bcrypt(e))? {
+        if !bcrypt::verify(&form.password, &user.password).map_err(Error::from)? {
             break 'requirements Some("Invalid password!");
         }
 
         fn generate_session_key() -> Result<[u8; 32], Error> {
             let mut session_key = [0u8; 32];
             let mut rng = rand::rngs::StdRng::from_entropy();
-            session_key.try_fill(&mut rng).map_err(|e| Error::Rand(e))?;
+            session_key.try_fill(&mut rng).map_err(Error::from)?;
             Ok(session_key)
         }
 
@@ -140,19 +128,19 @@ pub async fn post(
 
         None
     } {
-        let user = application::get_user_from_jar(&database, jar).await?;
+        //let user = application::get_user_from_jar(&database, jar).await?;
         return Ok(Template::render(
             "routes/login",
-            LoginLayoutContext::new(language, user)
+            LoginLayoutContext::new(language, None)
                 .await?
                 .with_error_message(Some(error_message.to_string())),
         ));
     }
 
-    let user = application::get_user_from_jar(&database, jar).await?;
+    //let user = application::get_user_from_jar(&database, jar).await?;
     return Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(language, user)
+        LoginLayoutContext::new(language, None)
             .await?
             .with_success_message(Some("Successfully logged in!".to_string())),
     ));

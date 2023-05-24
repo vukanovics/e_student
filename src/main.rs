@@ -1,7 +1,6 @@
 #![warn(clippy::pedantic)]
 #![deny(warnings)]
 
-mod application;
 mod base_layout_context;
 mod database;
 mod error;
@@ -9,16 +8,18 @@ mod localization;
 mod models;
 mod routes;
 mod schema;
+mod user;
 
 use database::Database;
 use rocket::fs::FileServer;
 use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
 
-use routes::course;
+use routes::administrator;
 use routes::index;
 use routes::login;
-use routes::overview;
+use routes::professor;
+use routes::student;
 
 #[launch]
 fn rocket() -> _ {
@@ -32,8 +33,9 @@ fn rocket() -> _ {
                 index::get,
                 login::get,
                 login::post,
-                course::get,
-                overview::get
+                student::overview::get,
+                professor::overview::get,
+                administrator::overview::get
             ],
         )
         .attach(Template::fairing())
