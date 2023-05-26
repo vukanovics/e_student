@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Language, models::Assignment, user::User,
+    localization::Language, models::GradedAssignment, user::User,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -30,15 +30,15 @@ enum AssignmentShortInfo {
 }
 
 impl AssignmentShortInfo {
-    pub fn from_assignment(assignment: Assignment) -> AssignmentShortInfo {
+    pub fn from_assignment(assignment: GradedAssignment) -> AssignmentShortInfo {
         match assignment {
-            Assignment::Grade((assignment, grade)) => {
+            GradedAssignment::Grade((assignment, grade)) => {
                 AssignmentShortInfo::Grade(GradeAssignmentShortInfo {
                     name: assignment.name,
                     grade: grade.unwrap_or_default(),
                 })
             }
-            Assignment::Point((assignment, points)) => {
+            GradedAssignment::Point((assignment, points)) => {
                 AssignmentShortInfo::Point(PointAssignmentShortInfo {
                     name: assignment.name,
                     points: points.unwrap_or_default(),

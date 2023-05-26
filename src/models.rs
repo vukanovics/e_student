@@ -130,6 +130,11 @@ pub struct PointAssignment {
 }
 
 pub enum Assignment {
+    Grade(GradeAssignment),
+    Point(PointAssignment),
+}
+
+pub enum GradedAssignment {
     Grade((GradeAssignment, Option<f32>)),
     Point((PointAssignment, Option<u32>)),
 }

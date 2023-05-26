@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::models::{
-    AccountType, Assignment, Course, GradeAssignment, NewCourse, NewUser, PointAssignment, Session,
-    User,
+    AccountType, Assignment, Course, GradeAssignment, GradedAssignment, NewCourse, NewUser,
+    PointAssignment, Session, User,
 };
 use rocket_sync_db_pools::diesel::prelude::*;
 
@@ -109,11 +109,11 @@ impl Database {
         connection: &mut diesel::MysqlConnection,
         for_course: u32,
         for_user: u32,
-    ) -> Result<Vec<Assignment>, Error> {
+    ) -> Result<Vec<GradedAssignment>, Error> {
         use crate::schema::point_assignments;
         use crate::schema::point_assignments_progress;
 
-        let mut point_assignments: Vec<Assignment> = point_assignments::table
+        let mut point_assignments: Vec<GradedAssignment> = point_assignments::table
             .left_join(point_assignments_progress::table)
             .filter(
                 point_assignments::course
@@ -125,7 +125,7 @@ impl Database {
                 point_assignments_progress::points.nullable(),
             ))
             .load::<(PointAssignment, Option<u32>)>(connection)
-            .map(|a| a.into_iter().map(Assignment::Point).collect())
+            .map(|a| a.into_iter().map(GradedAssignment::Point).collect())
             .map_err(Error::from)?;
 
         use crate::schema::grade_assignments;
@@ -139,6 +139,31 @@ impl Database {
                 grade_assignments_progress::grade.nullable(),
             ))
             .load::<(GradeAssignment, Option<f32>)>(connection)
+            .map(|a| a.into_iter().map(GradedAssignment::Grade).collect())
+            .map_err(Error::from)
+            .map(|mut a: Vec<GradedAssignment>| {
+                a.append(&mut point_assignments);
+                a
+            })
+    }
+
+    pub fn get_assignments_for_course(
+        connection: &mut diesel::MysqlConnection,
+        for_course: u32,
+    ) -> Result<Vec<Assignment>, Error> {
+        use crate::schema::point_assignments;
+
+        let mut point_assignments = point_assignments::table
+            .filter(point_assignments::course.eq(for_course))
+            .load::<PointAssignment>(connection)
+            .map(|a| a.into_iter().map(Assignment::Point).collect())
+            .map_err(Error::from)?;
+
+        use crate::schema::grade_assignments;
+
+        grade_assignments::table
+            .filter(grade_assignments::course.eq(for_course))
+            .load::<GradeAssignment>(connection)
             .map(|a| a.into_iter().map(Assignment::Grade).collect())
             .map_err(Error::from)
             .map(|mut a: Vec<Assignment>| {

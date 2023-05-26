@@ -2,13 +2,13 @@
 
 {{#*inline "body"}}
 
-<p>This is the page for course {{name}}</p>
-{{#each assignments}}
+<p>This is the page for course {{course.name}}</p>
+{{#each course.assignments}}
   {{#if this.Grade}}
-    <p>Assignment: {{this.Grade.name}} - Grade: {{this.Grade.grade}}</p>
+    <p>Assignment: {{this.Grade.name}}</p>
   {{/if}}
   {{#if this.Point}}
-    <p>Assignment: {{this.Point.name}} - Points: {{this.Point.points}} out of {{this.Point.max_points}}</p>
+    <p>Assignment: {{this.Point.name}} Max points: {{this.Point.max_points}}</p>
   {{/if}}
 {{/each}}
 
