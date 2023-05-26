@@ -56,7 +56,7 @@ impl TryFrom<u8> for AccountType {
             0 => Ok(AccountType::Student),
             1 => Ok(AccountType::Professor),
             2 => Ok(AccountType::Administrator),
-            x => Err(Error::InvalidAccountTypeValue),
+            _ => Err(Error::InvalidAccountTypeValue),
         }
     }
 }
