@@ -61,7 +61,6 @@ impl Database {
             .map_err(Error::from)
     }
 
-    #[allow(unused)]
     pub fn get_course_by_url<'a>(
         connection: &mut diesel::MysqlConnection,
         by_url: &'a str,
@@ -183,6 +182,17 @@ impl Database {
     ) -> Result<(), Error> {
         use crate::schema::users::{self, id};
         diesel::delete(users::table.filter(id.eq(by_id)))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn delete_course_by_id(
+        connection: &mut diesel::MysqlConnection,
+        by_id: u32,
+    ) -> Result<(), Error> {
+        use crate::schema::courses::{self, id};
+        diesel::delete(courses::table.filter(id.eq(by_id)))
             .execute(connection)
             .map_err(Error::from)
             .map(|_| ())

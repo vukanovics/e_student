@@ -1,3 +1,5 @@
+pub mod delete;
+
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;
 use serde::Serialize;

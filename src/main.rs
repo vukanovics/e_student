@@ -40,6 +40,8 @@ fn rocket() -> _ {
                 professor::courses::create::get,
                 professor::courses::create::post,
                 professor::course::get,
+                professor::course::delete::get,
+                professor::course::delete::post,
                 administrator::courses::get,
                 administrator::users::get,
                 administrator::users::delete::get,
