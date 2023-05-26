@@ -74,14 +74,14 @@ impl Mail {
 
 impl Drop for Mail {
     fn drop(&mut self) {
-        let mut sender = self.sender.take();
+        let sender = self.sender.take();
         // at this point, the rocket tokio runtime is already down
         // however, lettre needs one in order to drop the sender
         // TODO: this likely has problems
         rocket::tokio::runtime::Builder::new_current_thread()
             .build()
             .unwrap()
-            .spawn_blocking(move || drop(&mut sender));
+            .spawn_blocking(move || drop(sender));
     }
 }
 

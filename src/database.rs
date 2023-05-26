@@ -1,6 +1,7 @@
 use crate::error::Error;
 use crate::models::{
-    AccountType, Assignment, Course, GradeAssignment, NewUser, PointAssignment, Session, User,
+    AccountType, Assignment, Course, GradeAssignment, NewCourse, NewUser, PointAssignment, Session,
+    User,
 };
 use rocket_sync_db_pools::diesel::prelude::*;
 
@@ -224,5 +225,17 @@ impl Database {
             .execute(connection)
             .map_err(Error::from)
             .map(|_| ())
+    }
+
+    pub fn insert_course(
+        connection: &mut diesel::MysqlConnection,
+        new_course: NewCourse,
+    ) -> Result<(), Error> {
+        use crate::schema::courses::dsl::courses;
+        diesel::insert_into(courses)
+            .values(new_course)
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
     }
 }

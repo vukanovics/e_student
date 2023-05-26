@@ -1,7 +1,8 @@
 use std::convert::TryFrom;
 
 use crate::{
-    schema::{courses, grade_assignments, point_assignments, sessions, users}, error::Error,
+    error::Error,
+    schema::{courses, grade_assignments, point_assignments, sessions, users},
 };
 use chrono::NaiveDateTime;
 use diesel::{
@@ -92,13 +93,22 @@ pub struct Session {
     pub timeout_duration_seconds: u32,
 }
 
-#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
+#[derive(Clone, Debug, Queryable, Selectable)]
 #[diesel(table_name = courses)]
 pub struct Course {
     pub id: u32,
     pub year: u32,
     pub name: String,
     pub url: String,
+    pub professor: u32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = courses)]
+pub struct NewCourse<'a> {
+    pub year: u32,
+    pub name: &'a str,
+    pub url: &'a str,
     pub professor: u32,
 }
 

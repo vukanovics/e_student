@@ -37,6 +37,8 @@ fn rocket() -> _ {
                 login::post,
                 student::courses::get,
                 professor::courses::get,
+                professor::courses::create::get,
+                professor::courses::create::post,
                 administrator::courses::get,
                 administrator::users::get,
                 administrator::users::delete::get,
