@@ -22,7 +22,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         deleting_user: UserInfo,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -51,7 +51,7 @@ pub async fn get(
     };
 
     let user = administrator.0;
-    let context = LayoutContext::new(language, Some(user), deleting_user).await?;
+    let context = LayoutContext::new(language, user, deleting_user).await?;
     Ok(Template::render(
         "routes/administrator/users/delete",
         context,

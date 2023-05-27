@@ -57,7 +57,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         course: CourseInfo,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -93,7 +93,7 @@ pub async fn get(
         assignments,
     };
 
-    let context = LayoutContext::new(language, Some(user), course).await?;
+    let context = LayoutContext::new(language, user, course).await?;
 
     Ok(Template::render("routes/professor/course", context))
 }

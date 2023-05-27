@@ -27,7 +27,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         deleting_user: CourseInfo,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -65,7 +65,7 @@ pub async fn get(
     };
 
     let user = professor.0;
-    let context = LayoutContext::new(language, Some(user), deleting_course_info).await?;
+    let context = LayoutContext::new(language, user, deleting_course_info).await?;
 
     if deleting_course.professor != user.id() {
         return Ok(Template::render(
@@ -96,7 +96,7 @@ pub async fn post(
     };
 
     let user = professor.0;
-    let context = LayoutContext::new(language, Some(user), deleting_course_info).await?;
+    let context = LayoutContext::new(language, user, deleting_course_info).await?;
 
     if deleting_course.professor != user.id() {
         return Ok(Template::render(

@@ -25,7 +25,7 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
+    pub async fn new(language: Language, user: &User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             show_success_message: false,
@@ -55,7 +55,7 @@ pub async fn get(language: Language, administrator: Administrator<'_>) -> Result
     let user = administrator.0;
     Ok(Template::render(
         "routes/administrator/users/create",
-        LayoutContext::new(language, Some(user)).await?,
+        LayoutContext::new(language, user).await?,
     ))
 }
 
@@ -78,7 +78,7 @@ pub async fn post(
         Err(_) => {
             return Ok(Template::render(
                 "routes/administrator/users/create",
-                LayoutContext::new(language, Some(user))
+                LayoutContext::new(language, user)
                     .await?
                     .invalid_email(),
             ))
@@ -103,7 +103,7 @@ pub async fn post(
             Err(Error::DatabaseDuplicateEntry) => {
                 return Ok(Template::render(
                     "routes/administrator/users/create",
-                    LayoutContext::new(language, Some(user))
+                    LayoutContext::new(language, user)
                         .await?
                         .duplicate_email(),
                 ))
@@ -116,6 +116,6 @@ pub async fn post(
 
     Ok(Template::render(
         "routes/administrator/users/create",
-        LayoutContext::new(language, Some(user)).await?.success(),
+        LayoutContext::new(language, user).await?.success(),
     ))
 }

@@ -29,7 +29,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         courses: Vec<CourseShortInfo>,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -61,7 +61,7 @@ pub async fn get(
         courses.push(short_info);
     }
 
-    let context = LayoutContext::new(language, Some(user), courses.clone()).await?;
+    let context = LayoutContext::new(language, user, courses.clone()).await?;
 
     Ok(Template::render("routes/administrator/courses", context))
 }

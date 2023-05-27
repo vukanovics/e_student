@@ -33,7 +33,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         users: Vec<UserInfo>,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -63,7 +63,7 @@ pub async fn get(
         })
         .collect();
 
-    let context = LayoutContext::new(language, Some(user), users).await?;
+    let context = LayoutContext::new(language, user, users).await?;
 
     Ok(Template::render("routes/administrator/users", context))
 }

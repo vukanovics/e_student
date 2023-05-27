@@ -20,7 +20,7 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
+    pub async fn new(language: Language, user: &User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             show_success_message: false,
@@ -44,7 +44,7 @@ pub async fn get(language: Language, professor: Professor<'_>) -> Result<Templat
     let user = professor.0;
     Ok(Template::render(
         "routes/professor/courses/create",
-        LayoutContext::new(language, Some(user)).await?,
+        LayoutContext::new(language, user).await?,
     ))
 }
 
@@ -66,7 +66,7 @@ pub async fn post(
     if form.name.is_empty() {
         return Ok(Template::render(
             "routes/professor/courses/create",
-            LayoutContext::new(language, Some(user))
+            LayoutContext::new(language, user)
                 .await?
                 .course_name_is_required(),
         ));
@@ -101,6 +101,6 @@ pub async fn post(
 
     Ok(Template::render(
         "routes/professor/courses/create",
-        LayoutContext::new(language, Some(user)).await?.success(),
+        LayoutContext::new(language, user).await?.success(),
     ))
 }

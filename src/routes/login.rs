@@ -14,22 +14,32 @@ use serde::Serialize;
 use rocket_dyn_templates::Template;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Language, models::Session, user::User,
+    database::Database,
+    error::Error,
+    localization::{
+        Language, Localization, LOCALIZATION_ENGLISH, LOCALIZATION_SERBIAN_CYRILLIC,
+        LOCALIZATION_SERBIAN_LATIN,
+    },
+    models::Session,
 };
 
 #[derive(Clone, Serialize, Debug)]
 struct LoginLayoutContext {
-    #[serde(flatten)]
-    base_layout_context: BaseLayoutContext,
+    localization: Localization,
     show_error_all_fields_required: bool,
     show_error_invalid_login_info: bool,
 }
 
 impl LoginLayoutContext {
-    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
+    pub async fn new(language: Language) -> Result<Self, Error> {
+        let localization = match language {
+            Language::English => LOCALIZATION_ENGLISH,
+            Language::SerbianLatin => LOCALIZATION_SERBIAN_LATIN,
+            Language::SerbianCyrillic => LOCALIZATION_SERBIAN_CYRILLIC,
+        };
+
         Ok(Self {
-            base_layout_context: BaseLayoutContext::new(language, user).await?,
+            localization,
             show_error_all_fields_required: false,
             show_error_invalid_login_info: false,
         })
@@ -50,7 +60,7 @@ impl LoginLayoutContext {
 pub async fn get(language: Language) -> Result<Template, Status> {
     Ok(Template::render(
         "routes/login",
-        LoginLayoutContext::new(language, None).await?,
+        LoginLayoutContext::new(language).await?,
     ))
 }
 
@@ -83,7 +93,7 @@ pub async fn post(
     if !form.all_fields_populated() {
         return Ok(LoginResponse::Failure(Template::render(
             "routes/login",
-            LoginLayoutContext::new(language, None)
+            LoginLayoutContext::new(language)
                 .await?
                 .show_error_all_fields_required(),
         )));
@@ -99,7 +109,7 @@ pub async fn post(
         Err(Error::DatabaseEntryNotFound) => {
             return Ok(LoginResponse::Failure(Template::render(
                 "routes/login",
-                LoginLayoutContext::new(language, None)
+                LoginLayoutContext::new(language)
                     .await?
                     .show_error_invalid_login_info(),
             )));
@@ -112,7 +122,7 @@ pub async fn post(
     if !bcrypt::verify(&form.password, &user.password).map_err(Error::from)? {
         return Ok(LoginResponse::Failure(Template::render(
             "routes/login",
-            LoginLayoutContext::new(language, None)
+            LoginLayoutContext::new(language)
                 .await?
                 .show_error_invalid_login_info(),
         )));
