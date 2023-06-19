@@ -54,5 +54,5 @@ fn rocket() -> _ {
         )
         .attach(Template::fairing())
         .attach(Database::fairing())
-        .attach(Mail::fairing())
+        .manage(Mail::new().unwrap())
 }
