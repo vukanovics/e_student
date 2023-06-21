@@ -1,0 +1,19 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<p>You are about to delete user
+{{#if deleting_user.username}}
+  {{deleting_user.username}}
+{{else}}
+  Username not set
+{{/if}}
+| {{deleting_user.email}}
+| {{deleting_user.account_type}}
+<form action="{{deleting_user.id}}" method="post">
+  <input type="submit" value="Confirm">
+</form>
+</p>
+
+{{/inline}}
+{{> base }}

@@ -1,11 +1,11 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-<p class="flex items-center px-8 h-16 font-sans text-lg font-semibold align-middle text-caption">{{localization.login}}</p>
-<form class="flex flex-col items-center py-8" action="login" method="post">
-  {{> components/input_text icon="la-user" special="focus-within:bg-ccuser" field_name="username_or_email" label_text=localization.username_or_email}}
-  {{> components/input_password icon="la-key" special="focus-within:bg-ccpass" field_name="password" label_text=localization.password}}
-  {{#> components/input_select icon="la-stopwatch" special="focus-within:bg-highbg" field_name="timeout" label_text=localization.stay_logged_in_for}}
+<p class="flex items-center my-12 font-sans text-6xl font-semibold align-middle lg:my-2 lg:text-lg text-caption">{{localization.login}}</p>
+<form class="flex flex-col items-center py-16 lg:py-8" action="login" method="post">
+  {{> components/input_text icon="la-user" class="focus-within:bg-ccuser" field_name="username_or_email" label_text=localization.username_or_email}}
+  {{> components/input_password icon="la-key" class="focus-within:bg-ccpass" field_name="password" label_text=localization.password}}
+  {{#> components/input_select icon="la-clock" class="focus-within:bg-highbg" field_name="timeout" label_text=localization.stay_logged_in_for}}
       <option value="60">1 {{localization.minute}}</option>
       <option value="300">5 {{localization.minutes}}</option>
       <option value="1200">20 {{localization.minutes}}</option>
@@ -14,11 +14,11 @@
   <br>
   <br>
   {{> components/button button_text=localization.login}}
-  {{#if error_message}}
-    <p>Error: {{error_message}}</p
+  {{#if show_error_all_fields_required}}
+    {{> components/error error_text=localization.error_required_fields}}
   {{/if}}
-  {{#if success_message}}
-    <p>Success: {{success_message}}</p
+  {{#if show_error_invalid_login_info}}
+    {{> components/error error_text=localization.error_login_info}}
   {{/if}}
 </form>
 

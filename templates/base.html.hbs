@@ -8,11 +8,11 @@
     <title>E-Student</title>
   </head>
   <body class="bg-[url('circuit.svg')] bg-auto flex flex-grow flex-col">
-    <div class="flex justify-between items-center px-16 h-12 font-sans text-lg font-bold shadow-lg text-barfg bg-barbg">
+    <div class="flex justify-between items-center px-8 py-16 h-12 font-sans text-5xl font-bold shadow-lg lg:py-0 lg:text-lg text-barfg bg-barbg">
       <p class="text-maincap">E-Student</p>
       {{> components/login_information user_info=user_info}}
     </div>
-      <div class="flex flex-col items-center px-8 m-auto my-32 rounded-xl divide-y shadow-md divide-contentdiv bg-contentbg w-fit">
+      <div class="flex flex-col items-center m-auto my-32 w-full rounded-none divide-y-8 shadow-md lg:rounded-md lg:divide-y lg:px-8 divide-contentdiv bg-contentbg lg:w-fit">
           {{> body}}
       </div>
   </body>

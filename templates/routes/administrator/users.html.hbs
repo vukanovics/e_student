@@ -1,0 +1,35 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+{{#each users}}
+<div class="flex flex-col">
+  <div class="flex flex-col items-center">
+    {{#if this.username}}
+      {{> components/label id=this.username label_text=this.username}}
+    {{else}}
+      {{> components/label id=this.username label_text="Username not set"}}
+    {{/if}}
+    <div id={{this.username}}>
+      {{> components/text_small text=this.email}}
+    </div>
+    <div>
+      {{> components/text_small text=this.account_type}}
+   </div>
+  </div>
+  <div class="flex flex-row items-center">
+    <form class="flex flex-row" action="users/delete/{{this.id}}" method="get">
+      {{> components/button button_text="Delete"}}
+    </form>
+    <form class="flex flex-row" action="users/edit/{{this.id}}" method="get">
+      {{> components/button button_text="Edit"}}
+    </form>
+  </div>
+</div>
+{{/each}}
+
+<div class="flex">
+  {{> components/button_link button_href="users/create" button_text="Create a new user"}}
+</div>
+
+{{/inline}}
+{{> base }}
