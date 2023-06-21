@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 const colors = require('tailwindcss/colors')
+const plugin = require('tailwindcss/plugin')
 
 module.exports = {
   darkMode: 'class',
@@ -12,6 +13,7 @@ module.exports = {
         caption: colors.gray[500],
         input: colors.gray[600],
         inputbg: colors.white,
+        stext: colors.gray[600],
         icon: colors.white,
         iconbg: colors.gray[300],
         contentbg: colors.gray[100],
@@ -30,10 +32,18 @@ module.exports = {
         errorfg: colors.red[500],
         errorbg: colors.red[300],
         eiconbg: colors.red[400],
+
+        cccolq: colors.emerald,
+        ccexam: colors.amber,
+        cchomw: colors.sky,
       }
     },
   },
   plugins: [
+    plugin(function({ addVariant }) {
+      addVariant('progress', ['&::-moz-progress-bar', '&::-webkit-progress-value'])
+      addVariant('progress-bg', ['&::-webkit-progress-bar'])
+    })
   ],
 }
 
