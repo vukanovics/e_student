@@ -26,6 +26,10 @@ module.exports = {
 
         ccuser: colors.yellow[500],
         ccpass: colors.red[600],
+
+        errorfg: colors.red[500],
+        errorbg: colors.red[300],
+        eiconbg: colors.red[400],
       }
     },
   },

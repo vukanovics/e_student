@@ -1,16 +1,18 @@
 #![warn(clippy::pedantic)]
-#![deny(warnings)]
+//#![deny(warnings)]
 
 mod base_layout_context;
 mod database;
 mod error;
 mod localization;
+mod mail;
 mod models;
 mod routes;
 mod schema;
 mod user;
 
 use database::Database;
+use mail::Mail;
 use rocket::fs::FileServer;
 use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
@@ -33,11 +35,24 @@ fn rocket() -> _ {
                 index::get,
                 login::get,
                 login::post,
-                student::overview::get,
-                professor::overview::get,
-                administrator::overview::get
+                student::courses::get,
+                professor::courses::get,
+                professor::courses::create::get,
+                professor::courses::create::post,
+                professor::course::get,
+                professor::course::delete::get,
+                professor::course::delete::post,
+                administrator::courses::get,
+                administrator::users::get,
+                administrator::users::delete::get,
+                administrator::users::delete::post,
+                administrator::users::create::get,
+                administrator::users::create::post,
+                administrator::users::edit::get,
+                administrator::users::edit::post
             ],
         )
         .attach(Template::fairing())
         .attach(Database::fairing())
+        .attach(Mail::fairing())
 }

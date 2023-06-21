@@ -1,3 +1,5 @@
+pub mod create;
+
 use rocket::{
     get,
     http::{CookieJar, Status},
@@ -26,7 +28,7 @@ struct LayoutContext {
 impl LayoutContext {
     pub async fn new(
         language: Language,
-        user: Option<&User>,
+        user: &User,
         courses: Vec<CourseShortInfo>,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -36,7 +38,7 @@ impl LayoutContext {
     }
 }
 
-#[get("/overview", rank = 1)]
+#[get("/courses", rank = 1)]
 pub async fn get(
     language: Language,
     professor: Professor<'_>,
@@ -61,7 +63,7 @@ pub async fn get(
         courses.push(short_info);
     }
 
-    let context = LayoutContext::new(language, Some(user), courses.clone()).await?;
+    let context = LayoutContext::new(language, user, courses.clone()).await?;
 
-    Ok(Template::render("routes/professor/overview", context))
+    Ok(Template::render("routes/professor/courses", context))
 }

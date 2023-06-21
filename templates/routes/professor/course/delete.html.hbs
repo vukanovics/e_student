@@ -1,0 +1,18 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+{{#if show_success}}
+<p>Successfully deleted course {{deleting_course.name}}!</p>
+{{else}}
+<p>You are deleting a course called {{deleting_course.name}}</p>
+<form method="post">
+  <input type="submit" value="Confirm">
+</form>
+{{/if}}
+{{#if show_you_can_only_delete_own_courses}}
+<p>You can only delete your own courses!</p>
+{{/if}}
+
+{{/inline}}
+{{> base }}

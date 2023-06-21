@@ -1,14 +1,21 @@
-use crate::schema::{courses, grade_assignments, point_assignments, sessions, users};
+use std::convert::TryFrom;
+
+use crate::{
+    error::Error,
+    schema::{courses, grade_assignments, point_assignments, sessions, users},
+};
 use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
     deserialize::FromSql,
+    serialize::ToSql,
     sql_types::{TinyInt, Unsigned},
     AsExpression, FromSqlRow, Insertable, Queryable, Selectable,
 };
+use serde::Serialize;
 
 #[repr(u8)]
-#[derive(PartialEq, Debug, Clone, Copy, FromSqlRow, AsExpression)]
+#[derive(AsExpression, FromSqlRow, Serialize, PartialEq, Debug, Clone, Copy)]
 #[diesel(sql_type = Unsigned<TinyInt>)]
 pub enum AccountType {
     Student = 0,
@@ -16,17 +23,40 @@ pub enum AccountType {
     Administrator = 2,
 }
 
-impl<Integer, DB> FromSql<Integer, DB> for AccountType
+impl<DB: Backend> FromSql<Unsigned<TinyInt>, DB> for AccountType
 where
-    DB: Backend,
-    u8: FromSql<Integer, DB>,
+    u8: FromSql<Unsigned<TinyInt>, DB>,
 {
     fn from_sql(bytes: diesel::backend::RawValue<'_, DB>) -> diesel::deserialize::Result<Self> {
-        match u8::from_sql(bytes)? {
+        Self::try_from(u8::from_sql(bytes)?).map_err(|_| "Invalid AccountType value".into())
+    }
+}
+
+impl<DB: Backend> ToSql<Unsigned<TinyInt>, DB> for AccountType
+where
+    u8: ToSql<Unsigned<TinyInt>, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        match self {
+            Self::Student => 0.to_sql(out),
+            Self::Professor => 1.to_sql(out),
+            Self::Administrator => 2.to_sql(out),
+        }
+    }
+}
+
+impl TryFrom<u8> for AccountType {
+    type Error = Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
             0 => Ok(AccountType::Student),
             1 => Ok(AccountType::Professor),
             2 => Ok(AccountType::Administrator),
-            x => Err(format!("Unrecognized variant {}", x).into()),
+            _ => Err(Error::InvalidAccountTypeValue),
         }
     }
 }
@@ -45,12 +75,12 @@ pub struct User {
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser<'a> {
-    password: &'a str,
-    email: &'a str,
-    account_type: AccountType,
-    password_reset_required: bool,
-    username: Option<&'a str>,
-    last_login_time: Option<NaiveDateTime>,
+    pub password: &'a str,
+    pub email: &'a str,
+    pub account_type: AccountType,
+    pub password_reset_required: bool,
+    pub username: Option<&'a str>,
+    pub last_login_time: Option<NaiveDateTime>,
 }
 
 #[derive(Clone, Debug, Queryable, Insertable)]
@@ -63,13 +93,22 @@ pub struct Session {
     pub timeout_duration_seconds: u32,
 }
 
-#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
+#[derive(Clone, Debug, Queryable, Selectable)]
 #[diesel(table_name = courses)]
 pub struct Course {
     pub id: u32,
     pub year: u32,
     pub name: String,
     pub url: String,
+    pub professor: u32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = courses)]
+pub struct NewCourse<'a> {
+    pub year: u32,
+    pub name: &'a str,
+    pub url: &'a str,
     pub professor: u32,
 }
 
@@ -91,6 +130,11 @@ pub struct PointAssignment {
 }
 
 pub enum Assignment {
+    Grade(GradeAssignment),
+    Point(PointAssignment),
+}
+
+pub enum GradedAssignment {
     Grade((GradeAssignment, Option<f32>)),
     Point((PointAssignment, Option<u32>)),
 }

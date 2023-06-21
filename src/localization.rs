@@ -47,6 +47,8 @@ pub struct Localization {
     minute: &'static str,
     minutes: &'static str,
     hour: &'static str,
+    error_required_fields: &'static str,
+    error_login_info: &'static str,
 }
 
 pub const LOCALIZATION_ENGLISH: Localization = Localization {
@@ -59,6 +61,8 @@ pub const LOCALIZATION_ENGLISH: Localization = Localization {
     minute: "minute",
     minutes: "minutes",
     hour: "hour",
+    error_required_fields: "All fields are required!",
+    error_login_info: "Invalid login info.",
 };
 
 pub const LOCALIZATION_SERBIAN_LATIN: Localization = Localization {
@@ -71,6 +75,8 @@ pub const LOCALIZATION_SERBIAN_LATIN: Localization = Localization {
     minute: "minut",
     minutes: "minuta",
     hour: "sat",
+    error_required_fields: "Sva polja su neophodna!",
+    error_login_info: "Uneti podaci nisu validni.",
 };
 
 pub const LOCALIZATION_SERBIAN_CYRILLIC: Localization = Localization {
@@ -83,4 +89,6 @@ pub const LOCALIZATION_SERBIAN_CYRILLIC: Localization = Localization {
     minute: "минут",
     minutes: "минута",
     hour: "сат",
+    error_required_fields: "Сва поља су неопходна!",
+    error_login_info: "Унети подаци нису валидни.",
 };

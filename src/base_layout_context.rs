@@ -15,17 +15,14 @@ pub struct UserInfo {
 
 #[derive(Clone, Serialize, Debug)]
 pub struct BaseLayoutContext {
-    user_info: Option<UserInfo>,
+    user_info: UserInfo,
     localization: Localization,
 }
 
 impl BaseLayoutContext {
-    pub async fn new(language: Language, user: Option<&User>) -> Result<Self, Error> {
-        let user_info = match user {
-            Some(user) => Some(UserInfo {
-                username: user.username().unwrap_or(user.email()).to_string(),
-            }),
-            None => None,
+    pub async fn new(language: Language, user: &User) -> Result<Self, Error> {
+        let user_info = UserInfo {
+            username: user.username().unwrap_or(user.email()).to_string(),
         };
 
         let localization = match language {

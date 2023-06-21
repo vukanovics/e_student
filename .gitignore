@@ -2,3 +2,6 @@
 /secure
 .env
 /static/tailwind.css
+node_modules/
+package-lock.json
+package.json

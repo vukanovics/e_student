@@ -39,7 +39,7 @@ impl User {
     }
 
     pub fn is_professor(&self) -> bool {
-        self.account_type == AccountType::Professor
+        self.account_type == AccountType::Professor || self.is_administrator()
     }
 
     pub fn is_administrator(&self) -> bool {

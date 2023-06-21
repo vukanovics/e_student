@@ -1,1 +1,2 @@
-pub mod overview;
+pub mod courses;
+pub mod course;
