@@ -9,7 +9,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    localization::Language,
+    localization::Script,
     mail::Mail,
     models::AccountType,
     user::{Administrator, User},
@@ -25,7 +25,7 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(language: Language, user: &User) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             show_success_message: false,
@@ -51,7 +51,7 @@ impl LayoutContext {
 }
 
 #[get("/users/create", rank = 0)]
-pub async fn get(language: Language, administrator: Administrator<'_>) -> Result<Template, Status> {
+pub async fn get(language: Script, administrator: Administrator<'_>) -> Result<Template, Status> {
     let user = administrator.0;
     Ok(Template::render(
         "routes/administrator/users/create",
@@ -66,7 +66,7 @@ pub struct FormData {
 
 #[post("/users/create", data = "<form>", rank = 0)]
 pub async fn post(
-    language: Language,
+    language: Script,
     administrator: Administrator<'_>,
     database: Database,
     mail: &State<Mail>,

@@ -406,6 +406,7 @@ dependencies = [
  "rocket_dyn_templates",
  "rocket_sync_db_pools",
  "serde",
+ "translitrs",
 ]
 
 [[package]]
@@ -1917,6 +1918,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "subslice"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0a8e4809a3bb02de01f1f7faf1ba01a83af9e8eabcd4d31dd6e413d14d56aae"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "subtle"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2199,6 +2209,17 @@ dependencies = [
  "tracing",
  "tracing-core",
  "tracing-log",
+]
+
+[[package]]
+name = "translitrs"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26d6a81b7de962b5e7051e3a9b247922dd6c94d7ab7975a320d5be389cece559"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "subslice",
 ]
 
 [[package]]

@@ -6,7 +6,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    localization::Language,
+    localization::Script,
     models::NewCourse,
     user::{Professor, User},
 };
@@ -20,7 +20,7 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(language: Language, user: &User) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             show_success_message: false,
@@ -40,7 +40,7 @@ impl LayoutContext {
 }
 
 #[get("/courses/create", rank = 0)]
-pub async fn get(language: Language, professor: Professor<'_>) -> Result<Template, Status> {
+pub async fn get(language: Script, professor: Professor<'_>) -> Result<Template, Status> {
     let user = professor.0;
     Ok(Template::render(
         "routes/professor/courses/create",
@@ -56,7 +56,7 @@ pub struct FormData {
 
 #[post("/courses/create", data = "<form>", rank = 0)]
 pub async fn post(
-    language: Language,
+    language: Script,
     professor: Professor<'_>,
     database: Database,
     form: Form<FormData>,

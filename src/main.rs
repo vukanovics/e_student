@@ -27,6 +27,13 @@ use routes::student;
 fn rocket() -> _ {
     env_logger::init();
 
+    let handlebars = Template::custom(|engines| {
+        engines.handlebars.register_helper(
+            localization::ScriptHelper::name(),
+            localization::ScriptHelper::helper(),
+        )
+    });
+
     build()
         .mount("/", FileServer::from("static"))
         .mount(
@@ -52,7 +59,7 @@ fn rocket() -> _ {
                 administrator::users::edit::post
             ],
         )
-        .attach(Template::fairing())
+        .attach(handlebars)
         .attach(Database::fairing())
         .manage(Mail::new().unwrap())
 }

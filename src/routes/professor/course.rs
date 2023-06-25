@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Language, models::Assignment, user::Professor, user::User,
+    localization::Script, models::Assignment, user::Professor, user::User,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -56,7 +56,7 @@ struct LayoutContext {
 
 impl LayoutContext {
     pub async fn new(
-        language: Language,
+        language: Script,
         user: &User,
         course: CourseInfo,
     ) -> Result<Self, Error> {
@@ -69,7 +69,7 @@ impl LayoutContext {
 
 #[get("/course/<url>", rank = 1)]
 pub async fn get(
-    language: Language,
+    language: Script,
     professor: Professor<'_>,
     database: Database,
     url: String,

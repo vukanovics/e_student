@@ -6,7 +6,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    localization::Language,
+    localization::Script,
     user::{Professor, User},
 };
 
@@ -26,7 +26,7 @@ struct LayoutContext {
 
 impl LayoutContext {
     pub async fn new(
-        language: Language,
+        language: Script,
         user: &User,
         deleting_user: CourseInfo,
     ) -> Result<Self, Error> {
@@ -51,7 +51,7 @@ impl LayoutContext {
 
 #[get("/course/<url>/delete", rank = 0)]
 pub async fn get(
-    language: Language,
+    language: Script,
     professor: Professor<'_>,
     database: Database,
     url: String,
@@ -82,7 +82,7 @@ pub async fn get(
 
 #[post("/course/<url>/delete", rank = 0)]
 pub async fn post(
-    language: Language,
+    language: Script,
     professor: Professor<'_>,
     database: Database,
     url: String,

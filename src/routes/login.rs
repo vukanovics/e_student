@@ -1,4 +1,5 @@
 use chrono::Utc;
+use log::debug;
 use rand::{Fill, SeedableRng};
 use rocket::{
     form::{Form, FromForm},
@@ -13,33 +14,19 @@ use serde::Serialize;
 
 use rocket_dyn_templates::Template;
 
-use crate::{
-    database::Database,
-    error::Error,
-    localization::{
-        Language, Localization, LOCALIZATION_ENGLISH, LOCALIZATION_SERBIAN_CYRILLIC,
-        LOCALIZATION_SERBIAN_LATIN,
-    },
-    models::Session,
-};
+use crate::{database::Database, error::Error, localization::Script, models::Session};
 
 #[derive(Clone, Serialize, Debug)]
 struct LoginLayoutContext {
-    localization: Localization,
+    script: Script,
     show_error_all_fields_required: bool,
     show_error_invalid_login_info: bool,
 }
 
 impl LoginLayoutContext {
-    pub async fn new(language: Language) -> Result<Self, Error> {
-        let localization = match language {
-            Language::English => LOCALIZATION_ENGLISH,
-            Language::SerbianLatin => LOCALIZATION_SERBIAN_LATIN,
-            Language::SerbianCyrillic => LOCALIZATION_SERBIAN_CYRILLIC,
-        };
-
+    pub async fn new(script: Script) -> Result<Self, Error> {
         Ok(Self {
-            localization,
+            script,
             show_error_all_fields_required: false,
             show_error_invalid_login_info: false,
         })
@@ -57,11 +44,10 @@ impl LoginLayoutContext {
 }
 
 #[get("/login")]
-pub async fn get(language: Language) -> Result<Template, Status> {
-    Ok(Template::render(
-        "routes/login",
-        LoginLayoutContext::new(language).await?,
-    ))
+pub async fn get(language: Script) -> Result<Template, Status> {
+    let context = LoginLayoutContext::new(language).await?;
+    debug!("Context is {:?}", context);
+    Ok(Template::render("routes/login", context))
 }
 
 #[derive(FromForm, Debug)]
@@ -88,7 +74,7 @@ pub async fn post(
     database: Database,
     jar: &CookieJar<'_>,
     form: Form<LoginFormData>,
-    language: Language,
+    language: Script,
 ) -> Result<LoginResponse, Status> {
     if !form.all_fields_populated() {
         return Ok(LoginResponse::Failure(Template::render(

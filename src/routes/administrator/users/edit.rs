@@ -6,7 +6,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::Database,
     error::Error,
-    localization::Language,
+    localization::Script,
     models::AccountType,
     user::{Administrator, User},
 };
@@ -22,7 +22,7 @@ struct LayoutContext {
 
 impl LayoutContext {
     pub async fn new(
-        language: Language,
+        language: Script,
         user: &User,
         editing_user: UserInfo,
     ) -> Result<Self, Error> {
@@ -35,7 +35,7 @@ impl LayoutContext {
 
 #[get("/users/edit/<id>", rank = 0)]
 pub async fn get(
-    language: Language,
+    language: Script,
     administrator: Administrator<'_>,
     database: Database,
     id: u32,
