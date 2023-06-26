@@ -65,28 +65,26 @@ impl HelperDef for ScriptHelper {
         &self,
         h: &Helper<'reg, 'rc>,
         _: &'reg Handlebars<'reg>,
-        _: &'rc Context,
+        c: &'rc Context,
         _: &mut RenderContext<'reg, 'rc>,
     ) -> Result<ScopedJson<'reg, 'rc>, RenderError> {
         let script = Script::from_string(
-            h.param(0)
-                .ok_or(RenderError::new(
-                    "i18n requires the script as the first arg",
-                ))?
-                .value()
+            c.data()
+                .get("script")
+                .ok_or(RenderError::new("context doesn't have script set"))?
                 .as_str()
-                .ok_or(RenderError::new("i18n first arg must be a valid string"))?,
+                .ok_or(RenderError::new("script isn't a valid string"))?,
         )
-        .map_err(|_| RenderError::new("i18n received invalid script code"))?;
+        .map_err(|_| RenderError::new("script isn't a valid code"))?;
 
         let sentence = h
-            .param(1)
+            .param(0)
             .ok_or(RenderError::new(
-                "i18n requires the sentence as the second arg",
+                "i18n not provided a sentence to translate",
             ))?
             .value()
             .as_str()
-            .ok_or(RenderError::new("i18n second arg must be a valid string"))?;
+            .ok_or(RenderError::new("i18n sentence isn't a valid string"))?;
 
         match script {
             Script::Latin => {
