@@ -1,42 +1,16 @@
 use crate::error::Error;
 use crate::models::{
     AccountType, Assignment, Course, GradeAssignment, GradedAssignment, NewCourse, NewUser,
-    PointAssignment, Session, User,
+    PointAssignment, Session,
 };
 use rocket_sync_db_pools::diesel::prelude::*;
 
+pub type Connection = diesel::MysqlConnection;
+
 #[rocket_sync_db_pools::database("main_database")]
-pub struct Database(diesel::MysqlConnection);
+pub struct Database(Connection);
 
 impl Database {
-    pub fn get_user_by_id(
-        connection: &mut diesel::MysqlConnection,
-        user_id: u32,
-    ) -> Result<User, Error> {
-        use crate::schema::users::dsl::{id, users};
-        users
-            .filter(id.eq(user_id))
-            .limit(1)
-            .first::<User>(connection)
-            .map_err(Error::from)
-    }
-
-    pub fn get_user_by_username_or_email<'a>(
-        connection: &mut diesel::MysqlConnection,
-        username_or_email: &'a str,
-    ) -> Result<User, Error> {
-        use crate::schema::users::dsl::{email, username, users};
-        users
-            .filter(
-                username
-                    .eq(username_or_email)
-                    .or(email.eq(username_or_email)),
-            )
-            .limit(1)
-            .first::<User>(connection)
-            .map_err(Error::from)
-    }
-
     pub fn insert_session(
         connection: &mut diesel::MysqlConnection,
         session: &Session,
@@ -169,22 +143,6 @@ impl Database {
                 a.append(&mut point_assignments);
                 a
             })
-    }
-
-    pub fn get_all_users(connection: &mut diesel::MysqlConnection) -> Result<Vec<User>, Error> {
-        use crate::schema::users;
-        users::table.load::<User>(connection).map_err(Error::from)
-    }
-
-    pub fn delete_user_by_id(
-        connection: &mut diesel::MysqlConnection,
-        by_id: u32,
-    ) -> Result<(), Error> {
-        use crate::schema::users::{self, id};
-        diesel::delete(users::table.filter(id.eq(by_id)))
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
     }
 
     pub fn delete_course_by_id(

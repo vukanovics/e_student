@@ -61,17 +61,6 @@ impl TryFrom<u8> for AccountType {
     }
 }
 
-#[derive(Clone, Debug, Queryable)]
-pub struct User {
-    pub id: u32,
-    pub password: String,
-    pub email: String,
-    pub account_type: AccountType,
-    pub password_reset_required: bool,
-    pub username: Option<String>,
-    pub last_login_time: Option<NaiveDateTime>,
-}
-
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser<'a> {

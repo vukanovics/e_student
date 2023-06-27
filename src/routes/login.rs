@@ -14,7 +14,7 @@ use serde::Serialize;
 
 use rocket_dyn_templates::Template;
 
-use crate::{database::Database, error::Error, localization::Script, models::Session};
+use crate::{database::Database, error::Error, localization::Script, models::Session, user::User};
 
 #[derive(Clone, Serialize, Debug)]
 struct LoginLayoutContext {
@@ -88,7 +88,7 @@ pub async fn post(
     let user = match {
         let username_or_email = form.username_or_email.clone();
         database
-            .run(move |c| Database::get_user_by_username_or_email(c, &username_or_email))
+            .run(move |c| User::get_by_username_or_email(c, &username_or_email))
             .await
     } {
         Ok(user) => user,

@@ -1,4 +1,5 @@
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+use diesel::prelude::*;
 use log::info;
 use rocket::{
     http::{Cookie, CookieJar, Status},
@@ -6,36 +7,64 @@ use rocket::{
     request::{FromRequest, Outcome},
     Request,
 };
+use serde::Serialize;
 
 use crate::{
-    database::Database,
+    database::{Connection, Database},
     error::Error,
-    models::{self, AccountType, Session},
+    models::{AccountType, Session},
 };
 
-#[derive(Debug)]
+pub type UserId = u32;
+
+#[derive(Clone, Debug, Queryable, Serialize)]
 #[allow(unused)]
 pub struct User {
-    id: u32,
-    password: String,
-    email: String,
-    account_type: AccountType,
-    password_reset_required: bool,
-    username: Option<String>,
-    last_login_time: Option<NaiveDateTime>,
+    pub id: UserId,
+    pub password: String,
+    pub email: String,
+    pub account_type: AccountType,
+    pub password_reset_required: bool,
+    pub username: Option<String>,
+    pub last_login_time: Option<NaiveDateTime>,
 }
 
 impl User {
-    pub fn from_database_model(user: models::User) -> Self {
-        Self {
-            id: user.id,
-            password: user.password,
-            email: user.email,
-            account_type: user.account_type,
-            password_reset_required: user.password_reset_required,
-            username: user.username,
-            last_login_time: user.last_login_time,
-        }
+    pub fn get_by_id(connection: &mut Connection, id: UserId) -> Result<Self, Error> {
+        use crate::schema::users;
+        users::table
+            .filter(users::id.eq(id))
+            .limit(1)
+            .first::<User>(connection)
+            .map_err(Error::from)
+    }
+
+    pub fn get_by_username_or_email<'a>(
+        connection: &mut diesel::MysqlConnection,
+        username_or_email: &'a str,
+    ) -> Result<User, Error> {
+        use crate::schema::users;
+        users::table
+            .filter(
+                users::username
+                    .eq(username_or_email)
+                    .or(users::email.eq(username_or_email)),
+            )
+            .limit(1)
+            .first::<User>(connection)
+            .map_err(Error::from)
+    }
+
+    pub fn delete(&self, connection: &mut diesel::MysqlConnection) -> Result<(), Error> {
+        use crate::schema::users;
+        diesel::delete(users::table.filter(users::id.eq(self.id)))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn account_type(&self) -> AccountType {
+        self.account_type
     }
 
     pub fn is_professor(&self) -> bool {
@@ -86,9 +115,9 @@ impl<'r> FromRequest<'r> for &'r User {
 
                     if now < session_expires {
                         let user = database
-                            .run(move |c| Database::get_user_by_id(c, session.user_id))
+                            .run(move |c| User::get_by_id(c, session.user_id))
                             .await?;
-                        return Ok(Some(User::from_database_model(user)));
+                        return Ok(Some(user));
                     }
 
                     info!("User has supplied an expired session_key cookie, removing it");

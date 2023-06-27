@@ -1,10 +1,11 @@
-pub mod delete;
 pub mod create;
+pub mod delete;
 pub mod edit;
 
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
+use diesel::prelude::*;
 
 use crate::{
     base_layout_context::BaseLayoutContext,
@@ -31,11 +32,7 @@ struct LayoutContext {
 }
 
 impl LayoutContext {
-    pub async fn new(
-        language: Script,
-        user: &User,
-        users: Vec<UserInfo>,
-    ) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User, users: Vec<UserInfo>) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             users,
@@ -51,7 +48,12 @@ pub async fn get(
 ) -> Result<Template, Status> {
     let user = administrator.0;
 
-    let users = database.run(move |c| Database::get_all_users(c)).await?;
+    let users = database
+        .run(move |c| {
+            use crate::schema::users;
+            users::table.load::<User>(c).map_err(Error::from)
+        })
+        .await?;
 
     let users = users
         .into_iter()

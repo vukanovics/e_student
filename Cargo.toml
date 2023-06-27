@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 bcrypt = "0.14.0"
-chrono = "0.4.24"
+chrono = { version = "0.4.24", features = ["serde"] }
 diesel = { version = "2.0.4", features = ["chrono", "mysql"] }
 dotenvy = "0.15.7"
 dotenvy_macro = "0.15.7"

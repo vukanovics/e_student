@@ -10,21 +10,15 @@ use crate::{
     user::{Administrator, User},
 };
 
-use super::UserInfo;
-
 #[derive(Clone, Serialize, Debug)]
 struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
-    deleting_user: UserInfo,
+    deleting_user: User,
 }
 
 impl LayoutContext {
-    pub async fn new(
-        language: Script,
-        user: &User,
-        deleting_user: UserInfo,
-    ) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User, deleting_user: User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             deleting_user,
@@ -39,16 +33,7 @@ pub async fn get(
     database: Database,
     id: u32,
 ) -> Result<Template, Status> {
-    let deleting_user = database
-        .run(move |c| Database::get_user_by_id(c, id))
-        .await?;
-
-    let deleting_user = UserInfo {
-        id: deleting_user.id,
-        username: deleting_user.username,
-        email: deleting_user.email,
-        account_type: deleting_user.account_type,
-    };
+    let deleting_user = database.run(move |c| User::get_by_id(c, id)).await?;
 
     let user = administrator.0;
     let context = LayoutContext::new(language, user, deleting_user).await?;
@@ -64,9 +49,9 @@ pub async fn post(
     database: Database,
     id: u32,
 ) -> Result<Redirect, Status> {
-    database
-        .run(move |c| Database::delete_user_by_id(c, id))
-        .await?;
+    let deleting_user = database.run(move |c| User::get_by_id(c, id)).await?;
+
+    database.run(move |c| deleting_user.delete(c)).await?;
 
     Ok(Redirect::to("/users"))
 }

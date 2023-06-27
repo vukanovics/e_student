@@ -11,21 +11,15 @@ use crate::{
     user::{Administrator, User},
 };
 
-use super::UserInfo;
-
 #[derive(Clone, Serialize, Debug)]
 struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
-    editing_user: UserInfo,
+    editing_user: User,
 }
 
 impl LayoutContext {
-    pub async fn new(
-        language: Script,
-        user: &User,
-        editing_user: UserInfo,
-    ) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User, editing_user: User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             editing_user,
@@ -40,19 +34,10 @@ pub async fn get(
     database: Database,
     id: u32,
 ) -> Result<Template, Status> {
-    let editing_user = database
-        .run(move |c| Database::get_user_by_id(c, id))
-        .await?;
-
-    let deleting_user = UserInfo {
-        id: editing_user.id,
-        username: editing_user.username,
-        email: editing_user.email,
-        account_type: editing_user.account_type,
-    };
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
 
     let user = administrator.0;
-    let context = LayoutContext::new(language, user, deleting_user).await?;
+    let context = LayoutContext::new(language, user, editing_user).await?;
     Ok(Template::render("routes/administrator/users/edit", context))
 }
 
@@ -70,32 +55,34 @@ pub async fn post(
     form: Form<FormData>,
     id: u32,
 ) -> Result<Redirect, Status> {
-    let editing_user = database
-        .run(move |c| Database::get_user_by_id(c, id))
-        .await?;
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
 
     let account_type = AccountType::try_from(form.account_type)?;
 
-    if let Some(old_username) = editing_user.username {
+    let current_id = editing_user.id();
+    let current_email = editing_user.email();
+    let current_account_type = editing_user.account_type();
+
+    if let Some(old_username) = editing_user.username() {
         if let Some(new_username) = form.username.clone() {
             if old_username != new_username {
                 database
-                    .run(move |c| Database::update_user_username(c, editing_user.id, &new_username))
+                    .run(move |c| Database::update_user_username(c, current_id, &new_username))
                     .await?;
             }
         }
     }
 
     let new_email = form.email.clone();
-    if editing_user.email != form.email {
+    if current_email != form.email {
         database
-            .run(move |c| Database::update_user_email(c, editing_user.id, &new_email))
+            .run(move |c| Database::update_user_email(c, current_id, &new_email))
             .await?;
     }
 
-    if editing_user.account_type != account_type {
+    if current_account_type != account_type {
         database
-            .run(move |c| Database::update_user_account_type(c, editing_user.id, account_type))
+            .run(move |c| Database::update_user_account_type(c, current_id, account_type))
             .await?;
     }
 
