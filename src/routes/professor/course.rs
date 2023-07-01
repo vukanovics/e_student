@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Script, models::Assignment, user::Professor, user::User,
+    localization::Script, assignment::{Assignment, Assignments}, user::Professor, user::User, course::Course,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -77,12 +77,13 @@ pub async fn get(
     let user = professor.0;
 
     let course = database
-        .run(move |c| Database::get_course_by_url(c, &url))
+        .run(move |c| Course::get_by_url(c, &url))
         .await?;
 
     let assignments = database
-        .run(move |c| Database::get_assignments_for_course(c, course.id))
+        .run(move |c| Assignments::get(c, course.id))
         .await?
+        .0
         .drain(..)
         .map(AssignmentInfo::from_assignment)
         .collect();

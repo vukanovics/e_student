@@ -88,7 +88,7 @@ pub async fn post(
     let user = match {
         let username_or_email = form.username_or_email.clone();
         database
-            .run(move |c| User::get_by_username_or_email(c, &username_or_email))
+            .run(move |c| User::get_by_email(c, &username_or_email))
             .await
     } {
         Ok(user) => user,
@@ -127,7 +127,7 @@ pub async fn post(
 
     let session = Session {
         session_key: session_key.to_vec(),
-        user_id: user.id,
+        user: user.id,
         created_on: session_start.naive_utc(),
         last_refreshed: session_start.naive_utc(),
         timeout_duration_seconds: form.timeout,

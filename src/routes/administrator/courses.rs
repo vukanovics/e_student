@@ -10,7 +10,7 @@ use crate::{
     database::Database,
     error::Error,
     localization::Script,
-    user::{Administrator, User},
+    user::{Administrator, User}, course::Courses,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -48,11 +48,11 @@ pub async fn get(
 ) -> Result<Template, Status> {
     let user = administrator.0;
 
-    let all_courses = database.run(move |c| Database::get_all_courses(c)).await?;
+    let all_courses = database.run(move |c| Courses::get_all(c)).await?;
 
     let mut courses = Vec::new();
 
-    for course in all_courses {
+    for course in all_courses.0 {
         let short_info = CourseShortInfo {
             name: course.name,
             url: course.url,

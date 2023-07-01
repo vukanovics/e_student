@@ -1,7 +1,9 @@
 #![warn(clippy::pedantic)]
 //#![deny(warnings)]
 
+mod assignment;
 mod base_layout_context;
+mod course;
 mod database;
 mod error;
 mod localization;

@@ -12,27 +12,18 @@ use crate::{
     database::Database,
     error::Error,
     localization::Script,
-    models::AccountType,
     user::{Administrator, User},
 };
-
-#[derive(Clone, Serialize, Debug)]
-struct UserInfo {
-    id: u32,
-    username: Option<String>,
-    email: String,
-    account_type: AccountType,
-}
 
 #[derive(Clone, Serialize, Debug)]
 struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
-    users: Vec<UserInfo>,
+    users: Vec<User>,
 }
 
 impl LayoutContext {
-    pub async fn new(language: Script, user: &User, users: Vec<UserInfo>) -> Result<Self, Error> {
+    pub async fn new(language: Script, user: &User, users: Vec<User>) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             users,
@@ -54,16 +45,6 @@ pub async fn get(
             users::table.load::<User>(c).map_err(Error::from)
         })
         .await?;
-
-    let users = users
-        .into_iter()
-        .map(|user| UserInfo {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            account_type: user.account_type,
-        })
-        .collect();
 
     let context = LayoutContext::new(language, user, users).await?;
 

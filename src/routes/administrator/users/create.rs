@@ -11,7 +11,6 @@ use crate::{
     error::Error,
     localization::Script,
     mail::Mail,
-    models::AccountType,
     user::{Administrator, User},
 };
 
@@ -78,9 +77,7 @@ pub async fn post(
         Err(_) => {
             return Ok(Template::render(
                 "routes/administrator/users/create",
-                LayoutContext::new(language, user)
-                    .await?
-                    .invalid_email(),
+                LayoutContext::new(language, user).await?.invalid_email(),
             ))
         }
     };
@@ -94,18 +91,14 @@ pub async fn post(
     {
         let password = bcrypt::hash(plain_password.clone(), DEFAULT_COST).map_err(Error::from)?;
         match database
-            .run(move |c| {
-                Database::create_new_user(c, &form.email, &password, AccountType::Student)
-            })
+            .run(move |c| User::builder(&form.email, &password).build().create(c))
             .await
         {
             Ok(_) => (),
             Err(Error::DatabaseDuplicateEntry) => {
                 return Ok(Template::render(
                     "routes/administrator/users/create",
-                    LayoutContext::new(language, user)
-                        .await?
-                        .duplicate_email(),
+                    LayoutContext::new(language, user).await?.duplicate_email(),
                 ))
             }
             Err(e) => return Err(e.into()),

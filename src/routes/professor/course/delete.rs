@@ -4,6 +4,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext,
+    course::Course,
     database::Database,
     error::Error,
     localization::Script,
@@ -56,9 +57,7 @@ pub async fn get(
     database: Database,
     url: String,
 ) -> Result<Template, Status> {
-    let deleting_course = database
-        .run(move |c| Database::get_course_by_url(c, &url))
-        .await?;
+    let deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
 
     let deleting_course_info = CourseInfo {
         name: deleting_course.name,
@@ -74,10 +73,7 @@ pub async fn get(
         ));
     }
 
-    Ok(Template::render(
-        "routes/professor/course/delete",
-        context,
-    ))
+    Ok(Template::render("routes/professor/course/delete", context))
 }
 
 #[post("/course/<url>/delete", rank = 0)]
@@ -87,12 +83,10 @@ pub async fn post(
     database: Database,
     url: String,
 ) -> Result<Template, Status> {
-    let deleting_course = database
-        .run(move |c| Database::get_course_by_url(c, &url))
-        .await?;
+    let mut deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
 
     let deleting_course_info = CourseInfo {
-        name: deleting_course.name,
+        name: deleting_course.name.clone(),
     };
 
     let user = professor.0;
@@ -105,9 +99,8 @@ pub async fn post(
         ));
     }
 
-    database
-        .run(move |c| Database::delete_course_by_id(c, deleting_course.id))
-        .await?;
+    deleting_course.update_deleted(true);
+    database.run(move |c| deleting_course.store(c)).await?;
 
     Ok(Template::render(
         "routes/professor/course/delete",

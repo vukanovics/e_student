@@ -1,34 +1,47 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    courses (id) {
+    courses (id, created) {
         id -> Unsigned<Integer>,
+        created -> Datetime,
         year -> Unsigned<Integer>,
         name -> Varchar,
         url -> Varchar,
         professor -> Unsigned<Integer>,
+        deleted -> Bool,
     }
 }
 
 diesel::table! {
-    enrolments (id) {
-        id -> Unsigned<Integer>,
+    enrolments (course, student) {
         course -> Unsigned<Integer>,
         student -> Unsigned<Integer>,
     }
 }
 
 diesel::table! {
-    grade_assignments (id) {
+    generations (id, created) {
         id -> Unsigned<Integer>,
-        course -> Unsigned<Integer>,
-        name -> Varchar,
+        created -> Datetime,
+        year -> Unsigned<Integer>,
+        deleted -> Bool,
     }
 }
 
 diesel::table! {
-    grade_assignments_progress (id) {
+    grade_assignments (id, created) {
         id -> Unsigned<Integer>,
+        created -> Datetime,
+        course -> Unsigned<Integer>,
+        name -> Varchar,
+        deleted -> Bool,
+    }
+}
+
+diesel::table! {
+    grade_assignments_progress (id, created) {
+        id -> Unsigned<Integer>,
+        created -> Datetime,
         assignment -> Unsigned<Integer>,
         student -> Unsigned<Integer>,
         grade -> Float,
@@ -36,17 +49,32 @@ diesel::table! {
 }
 
 diesel::table! {
-    point_assignments (id) {
+    indicies (id, created) {
         id -> Unsigned<Integer>,
-        course -> Unsigned<Integer>,
-        name -> Varchar,
-        max_points -> Unsigned<Integer>,
+        created -> Datetime,
+        program -> Unsigned<Integer>,
+        generation -> Unsigned<Integer>,
+        number -> Unsigned<Integer>,
+        student -> Unsigned<Integer>,
+        deleted -> Bool,
     }
 }
 
 diesel::table! {
-    point_assignments_progress (id) {
+    point_assignments (id, created) {
         id -> Unsigned<Integer>,
+        created -> Datetime,
+        course -> Unsigned<Integer>,
+        name -> Varchar,
+        max_points -> Unsigned<Integer>,
+        deleted -> Bool,
+    }
+}
+
+diesel::table! {
+    point_assignments_progress (id, created) {
+        id -> Unsigned<Integer>,
+        created -> Datetime,
         assignment -> Unsigned<Integer>,
         student -> Unsigned<Integer>,
         points -> Unsigned<Integer>,
@@ -54,9 +82,19 @@ diesel::table! {
 }
 
 diesel::table! {
+    programs (id, created) {
+        id -> Unsigned<Integer>,
+        created -> Datetime,
+        short_name -> Char,
+        full_name -> Varchar,
+        deleted -> Bool,
+    }
+}
+
+diesel::table! {
     sessions (session_key) {
         session_key -> Binary,
-        user_id -> Unsigned<Integer>,
+        user -> Unsigned<Integer>,
         created_on -> Datetime,
         last_refreshed -> Datetime,
         timeout_duration_seconds -> Unsigned<Integer>,
@@ -64,35 +102,30 @@ diesel::table! {
 }
 
 diesel::table! {
-    users (id) {
+    users (id, created) {
         id -> Unsigned<Integer>,
+        created -> Datetime,
         password -> Varchar,
         email -> Varchar,
         account_type -> Unsigned<Tinyint>,
         password_reset_required -> Bool,
-        username -> Nullable<Varchar>,
+        first_name -> Nullable<Varchar>,
+        last_name -> Nullable<Varchar>,
         last_login_time -> Nullable<Datetime>,
+        deleted -> Bool,
     }
 }
-
-diesel::joinable!(courses -> users (professor));
-diesel::joinable!(enrolments -> courses (course));
-diesel::joinable!(enrolments -> users (student));
-diesel::joinable!(grade_assignments -> courses (course));
-diesel::joinable!(grade_assignments_progress -> grade_assignments (assignment));
-diesel::joinable!(grade_assignments_progress -> users (student));
-diesel::joinable!(point_assignments -> courses (course));
-diesel::joinable!(point_assignments_progress -> point_assignments (assignment));
-diesel::joinable!(point_assignments_progress -> users (student));
-diesel::joinable!(sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     courses,
     enrolments,
+    generations,
     grade_assignments,
     grade_assignments_progress,
+    indicies,
     point_assignments,
     point_assignments_progress,
+    programs,
     sessions,
     users,
 );

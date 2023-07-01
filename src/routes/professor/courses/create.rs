@@ -4,10 +4,10 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext,
+    course::Course,
     database::Database,
     error::Error,
     localization::Script,
-    models::NewCourse,
     user::{Professor, User},
 };
 
@@ -88,15 +88,7 @@ pub async fn post(
     let user_id = user.id();
 
     database
-        .run(move |c| {
-            let new_course = NewCourse {
-                year: form.year,
-                name: &form.name,
-                professor: user_id,
-                url: &url,
-            };
-            Database::insert_course(c, new_course)
-        })
+        .run(move |c| Course::create(c, form.year, &form.name, &url, user_id))
         .await?;
 
     Ok(Template::render(

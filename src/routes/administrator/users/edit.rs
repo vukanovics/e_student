@@ -55,36 +55,16 @@ pub async fn post(
     form: Form<FormData>,
     id: u32,
 ) -> Result<Redirect, Status> {
-    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let mut editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
 
     let account_type = AccountType::try_from(form.account_type)?;
 
-    let current_id = editing_user.id();
-    let current_email = editing_user.email();
-    let current_account_type = editing_user.account_type();
+    editing_user.update_email(&form.email);
+    editing_user.update_account_type(account_type);
 
-    if let Some(old_username) = editing_user.username() {
-        if let Some(new_username) = form.username.clone() {
-            if old_username != new_username {
-                database
-                    .run(move |c| Database::update_user_username(c, current_id, &new_username))
-                    .await?;
-            }
-        }
-    }
-
-    let new_email = form.email.clone();
-    if current_email != form.email {
-        database
-            .run(move |c| Database::update_user_email(c, current_id, &new_email))
-            .await?;
-    }
-
-    if current_account_type != account_type {
-        database
-            .run(move |c| Database::update_user_account_type(c, current_id, account_type))
-            .await?;
-    }
+    database
+        .run(move |c| editing_user.update_database(c))
+        .await?;
 
     Ok(Redirect::to("/users"))
 }

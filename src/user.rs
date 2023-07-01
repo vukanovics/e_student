@@ -13,51 +13,78 @@ use crate::{
     database::{Connection, Database},
     error::Error,
     models::{AccountType, Session},
+    query_current,
+    schema::users,
 };
 
 pub type UserId = u32;
 
-#[derive(Clone, Debug, Queryable, Serialize)]
-#[allow(unused)]
+#[derive(Clone, Debug, Queryable, Serialize, Insertable, Selectable)]
+#[diesel(table_name = users)]
 pub struct User {
     pub id: UserId,
+    pub created: NaiveDateTime,
     pub password: String,
     pub email: String,
     pub account_type: AccountType,
     pub password_reset_required: bool,
-    pub username: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub last_login_time: Option<NaiveDateTime>,
+    pub deleted: bool,
 }
 
+query_current!(User, users, UsersAlias, users_alias);
+
 impl User {
+    pub fn builder<'a>(email: &'a str, password: &'a str) -> UserBuilder<'a> {
+        UserBuilder {
+            email,
+            password,
+            account_type: AccountType::Student,
+            password_reset_required: false,
+            first_name: None,
+            last_name: None,
+            last_login_time: None,
+        }
+    }
+
     pub fn get_by_id(connection: &mut Connection, id: UserId) -> Result<Self, Error> {
-        use crate::schema::users;
-        users::table
+        User::query_current()
             .filter(users::id.eq(id))
+            .filter(users::deleted.eq(false))
             .limit(1)
             .first::<User>(connection)
             .map_err(Error::from)
     }
 
-    pub fn get_by_username_or_email<'a>(
+    pub fn get_by_email<'a>(
         connection: &mut diesel::MysqlConnection,
-        username_or_email: &'a str,
+        email: &'a str,
     ) -> Result<User, Error> {
-        use crate::schema::users;
-        users::table
-            .filter(
-                users::username
-                    .eq(username_or_email)
-                    .or(users::email.eq(username_or_email)),
-            )
+        User::query_current()
+            .filter(users::email.eq(email))
+            .filter(users::deleted.eq(false))
             .limit(1)
             .first::<User>(connection)
             .map_err(Error::from)
     }
 
-    pub fn delete(&self, connection: &mut diesel::MysqlConnection) -> Result<(), Error> {
-        use crate::schema::users;
-        diesel::delete(users::table.filter(users::id.eq(self.id)))
+    pub fn update_email<'a>(&mut self, email: &'a str) -> () {
+        self.email = email.to_string();
+    }
+
+    pub fn update_account_type(&mut self, account_type: AccountType) -> () {
+        self.account_type = account_type;
+    }
+
+    pub fn update_deleted(&mut self, deleted: bool) -> () {
+        self.deleted = deleted;
+    }
+
+    pub fn update_database(&self, connection: &mut Connection) -> Result<(), Error> {
+        diesel::insert_into(users::table)
+            .values(self)
             .execute(connection)
             .map_err(Error::from)
             .map(|_| ())
@@ -79,12 +106,58 @@ impl User {
         self.id
     }
 
-    pub fn username(&self) -> Option<&str> {
-        self.username.as_ref().map(|x| &**x)
-    }
-
     pub fn email(&self) -> &str {
         &self.email
+    }
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = users)]
+pub struct NewUser<'a> {
+    pub password: &'a str,
+    pub email: &'a str,
+    pub account_type: AccountType,
+    pub password_reset_required: bool,
+    pub first_name: Option<&'a str>,
+    pub last_name: Option<&'a str>,
+    pub last_login_time: Option<NaiveDateTime>,
+}
+
+impl NewUser<'_> {
+    pub fn create(&self, connection: &mut Connection) -> Result<User, Error> {
+        diesel::insert_into(users::table)
+            .values(self)
+            .execute(connection)?;
+        User::get_by_email(connection, self.email)
+    }
+}
+
+pub struct UserBuilder<'a> {
+    email: &'a str,
+    password: &'a str,
+    account_type: AccountType,
+    password_reset_required: bool,
+    first_name: Option<&'a str>,
+    last_name: Option<&'a str>,
+    last_login_time: Option<NaiveDateTime>,
+}
+
+impl<'a> UserBuilder<'a> {
+    pub fn with_account_type(mut self, account_type: AccountType) -> Self {
+        self.account_type = account_type;
+        self
+    }
+
+    pub fn build(self) -> NewUser<'a> {
+        NewUser {
+            password: self.password,
+            email: self.email,
+            account_type: self.account_type,
+            password_reset_required: self.password_reset_required,
+            first_name: self.first_name,
+            last_name: self.last_name,
+            last_login_time: self.last_login_time,
+        }
     }
 }
 
@@ -115,7 +188,7 @@ impl<'r> FromRequest<'r> for &'r User {
 
                     if now < session_expires {
                         let user = database
-                            .run(move |c| User::get_by_id(c, session.user_id))
+                            .run(move |c| User::get_by_id(c, session.user))
                             .await?;
                         return Ok(Some(user));
                     }

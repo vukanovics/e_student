@@ -1,1 +1,0 @@
-DROP TABLE point_assignments_progress

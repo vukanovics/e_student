@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
-{{#if user_info.username}}
-<p>{{i18n "Улогован као"}} {{user_info.username}}</p>
+{{#if user}}
+<p>{{i18n "Улогован као"}} {{user.email}}</p>
 {{else}}
 <p>Not logged in!</p>
 {{/if}}

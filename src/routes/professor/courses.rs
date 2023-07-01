@@ -8,7 +8,7 @@ use rocket_dyn_templates::Template;
 use serde::Serialize;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, database::Database, error::Error,
+    base_layout_context::BaseLayoutContext, course::Courses, database::Database, error::Error,
     localization::Script, user::Professor, user::User,
 };
 
@@ -48,13 +48,13 @@ pub async fn get(
     let user = professor.0;
     let user_id = user.id();
 
-    let enrolled_courses = database
-        .run(move |c| Database::get_courses_for_professor(c, user_id))
+    let teaching_courses = database
+        .run(move |c| Courses::get_teaching(c, user_id))
         .await?;
 
     let mut courses = Vec::new();
 
-    for course in enrolled_courses {
+    for course in teaching_courses.0 {
         let short_info = CourseShortInfo {
             name: course.name,
             url: course.url,

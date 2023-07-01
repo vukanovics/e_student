@@ -1,16 +1,13 @@
 use std::convert::TryFrom;
 
-use crate::{
-    error::Error,
-    schema::{courses, grade_assignments, point_assignments, sessions, users},
-};
+use crate::{error::Error, schema::sessions};
 use chrono::NaiveDateTime;
 use diesel::{
     backend::Backend,
     deserialize::FromSql,
     serialize::ToSql,
     sql_types::{TinyInt, Unsigned},
-    AsExpression, FromSqlRow, Insertable, Queryable, Selectable,
+    AsExpression, FromSqlRow, Insertable, Queryable,
 };
 use serde::Serialize;
 
@@ -27,7 +24,7 @@ impl<DB: Backend> FromSql<Unsigned<TinyInt>, DB> for AccountType
 where
     u8: FromSql<Unsigned<TinyInt>, DB>,
 {
-    fn from_sql(bytes: diesel::backend::RawValue<'_, DB>) -> diesel::deserialize::Result<Self> {
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
         Self::try_from(u8::from_sql(bytes)?).map_err(|_| "Invalid AccountType value".into())
     }
 }
@@ -61,69 +58,12 @@ impl TryFrom<u8> for AccountType {
     }
 }
 
-#[derive(Insertable)]
-#[diesel(table_name = users)]
-pub struct NewUser<'a> {
-    pub password: &'a str,
-    pub email: &'a str,
-    pub account_type: AccountType,
-    pub password_reset_required: bool,
-    pub username: Option<&'a str>,
-    pub last_login_time: Option<NaiveDateTime>,
-}
-
 #[derive(Clone, Debug, Queryable, Insertable)]
 #[diesel(table_name = sessions)]
 pub struct Session {
     pub session_key: Vec<u8>,
-    pub user_id: u32,
+    pub user: u32,
     pub created_on: NaiveDateTime,
     pub last_refreshed: NaiveDateTime,
     pub timeout_duration_seconds: u32,
-}
-
-#[derive(Clone, Debug, Queryable, Selectable)]
-#[diesel(table_name = courses)]
-pub struct Course {
-    pub id: u32,
-    pub year: u32,
-    pub name: String,
-    pub url: String,
-    pub professor: u32,
-}
-
-#[derive(Insertable)]
-#[diesel(table_name = courses)]
-pub struct NewCourse<'a> {
-    pub year: u32,
-    pub name: &'a str,
-    pub url: &'a str,
-    pub professor: u32,
-}
-
-#[derive(Clone, Debug, Queryable, Insertable)]
-#[diesel(table_name = grade_assignments)]
-pub struct GradeAssignment {
-    pub id: u32,
-    pub course: u32,
-    pub name: String,
-}
-
-#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
-#[diesel(table_name = point_assignments)]
-pub struct PointAssignment {
-    pub id: u32,
-    pub course: u32,
-    pub name: String,
-    pub max_points: u32,
-}
-
-pub enum Assignment {
-    Grade(GradeAssignment),
-    Point(PointAssignment),
-}
-
-pub enum GradedAssignment {
-    Grade((GradeAssignment, Option<f32>)),
-    Point((PointAssignment, Option<u32>)),
 }

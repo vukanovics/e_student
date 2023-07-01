@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext, database::Database, error::Error,
-    localization::Script, models::GradedAssignment, user::User,
+    localization::Script, assignment::{GradedAssignment, GradedAssignments}, user::User, course::Courses,
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -86,15 +86,16 @@ pub async fn get(
     let user_id = user.id();
 
     let enrolled_courses = database
-        .run(move |c| Database::get_courses_for_student(c, user_id))
+        .run(move |c| Courses::get_enrolled(c, user_id))
         .await?;
 
     let mut courses = Vec::new();
 
-    for course in enrolled_courses {
+    for course in enrolled_courses.0 {
         let assignments = database
-            .run(move |c| Database::get_assignments_for_course_for_user(c, course.id, user_id))
+            .run(move |c| GradedAssignments::get(c, course.id, user_id))
             .await?
+            .0
             .into_iter()
             .map(|a| AssignmentShortInfo::from_assignment(a))
             .collect();

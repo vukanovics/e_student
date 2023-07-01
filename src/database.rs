@@ -1,11 +1,9 @@
 use crate::error::Error;
-use crate::models::{
-    AccountType, Assignment, Course, GradeAssignment, GradedAssignment, NewCourse, NewUser,
-    PointAssignment, Session,
-};
+use crate::models::Session;
 use rocket_sync_db_pools::diesel::prelude::*;
 
 pub type Connection = diesel::MysqlConnection;
+pub type Backend = diesel::mysql::Mysql;
 
 #[rocket_sync_db_pools::database("main_database")]
 pub struct Database(Connection);
@@ -34,201 +32,41 @@ impl Database {
             .first::<Session>(connection)
             .map_err(Error::from)
     }
+}
 
-    pub fn get_course_by_url<'a>(
-        connection: &mut diesel::MysqlConnection,
-        by_url: &'a str,
-    ) -> Result<Course, Error> {
-        use crate::schema::courses::dsl::{courses, url};
-        courses
-            .filter(url.eq(by_url))
-            .limit(1)
-            .first::<Course>(connection)
-            .map_err(Error::from)
-    }
+#[macro_export]
+macro_rules! query_current {
+    ( $result:ty, $table:ident, $table_alias_type:ident, $table_alias:ident ) => {
+        diesel::alias!($table as $table_alias: $table_alias_type);
 
-    pub fn get_all_courses(connection: &mut diesel::MysqlConnection) -> Result<Vec<Course>, Error> {
-        use crate::schema::courses::dsl::courses;
-        courses.load::<Course>(connection).map_err(Error::from)
-    }
+        impl $result {
+            fn query_current() -> diesel::helper_types::Select<
+            diesel::helper_types::Filter<
+                diesel::helper_types::LeftJoin<
+                    $table::table,
+                    diesel::helper_types::On<
+                        diesel::query_source::Alias<$table_alias_type>,
+                        diesel::helper_types::And<
+                            diesel::helper_types::Eq<$table::id, diesel::query_source::AliasedField<$table_alias_type, $table::id>>,
+                            diesel::helper_types::Lt<$table::created, diesel::query_source::AliasedField<$table_alias_type, $table::created>>,
+                        >,
+                    >,
+                >,
+                diesel::helper_types::IsNull<diesel::query_source::AliasedField<$table_alias_type, $table::id>>,
+            >,
+            diesel::helper_types::AsSelect<$result, crate::database::Backend>,
+        > {
+                let id2 = $table_alias.field($table::id);
+                let created2 = $table_alias.field($table::created);
 
-    pub fn get_courses_for_student(
-        connection: &mut diesel::MysqlConnection,
-        for_student: u32,
-    ) -> Result<Vec<Course>, Error> {
-        use crate::schema::courses::dsl::{courses, id};
-        use crate::schema::enrolments::dsl::{course, enrolments, student};
-        courses
-            .inner_join(enrolments.on(course.eq(id)))
-            .filter(student.eq(for_student))
-            .select(Course::as_select())
-            .load::<Course>(connection)
-            .map_err(Error::from)
-    }
+                // approach from
+                // https://medium.com/@hanifaarrumaisha/query-greatest-n-per-group-a1516fd4b0f6
 
-    pub fn get_courses_for_professor(
-        connection: &mut diesel::MysqlConnection,
-        for_professor: u32,
-    ) -> Result<Vec<Course>, Error> {
-        use crate::schema::courses::dsl::{courses, professor};
-        courses
-            .filter(professor.eq(for_professor))
-            .select(Course::as_select())
-            .load::<Course>(connection)
-            .map_err(Error::from)
-    }
-
-    pub fn get_assignments_for_course_for_user(
-        connection: &mut diesel::MysqlConnection,
-        for_course: u32,
-        for_user: u32,
-    ) -> Result<Vec<GradedAssignment>, Error> {
-        use crate::schema::point_assignments;
-        use crate::schema::point_assignments_progress;
-
-        let mut point_assignments: Vec<GradedAssignment> = point_assignments::table
-            .left_join(point_assignments_progress::table)
-            .filter(
-                point_assignments::course
-                    .eq(for_course)
-                    .and(point_assignments_progress::student.eq(for_user)),
-            )
-            .select((
-                point_assignments::all_columns,
-                point_assignments_progress::points.nullable(),
-            ))
-            .load::<(PointAssignment, Option<u32>)>(connection)
-            .map(|a| a.into_iter().map(GradedAssignment::Point).collect())
-            .map_err(Error::from)?;
-
-        use crate::schema::grade_assignments;
-        use crate::schema::grade_assignments_progress;
-
-        grade_assignments::table
-            .left_join(grade_assignments_progress::table)
-            .filter(grade_assignments::course.eq(for_course))
-            .select((
-                grade_assignments::all_columns,
-                grade_assignments_progress::grade.nullable(),
-            ))
-            .load::<(GradeAssignment, Option<f32>)>(connection)
-            .map(|a| a.into_iter().map(GradedAssignment::Grade).collect())
-            .map_err(Error::from)
-            .map(|mut a: Vec<GradedAssignment>| {
-                a.append(&mut point_assignments);
-                a
-            })
-    }
-
-    pub fn get_assignments_for_course(
-        connection: &mut diesel::MysqlConnection,
-        for_course: u32,
-    ) -> Result<Vec<Assignment>, Error> {
-        use crate::schema::point_assignments;
-
-        let mut point_assignments = point_assignments::table
-            .filter(point_assignments::course.eq(for_course))
-            .load::<PointAssignment>(connection)
-            .map(|a| a.into_iter().map(Assignment::Point).collect())
-            .map_err(Error::from)?;
-
-        use crate::schema::grade_assignments;
-
-        grade_assignments::table
-            .filter(grade_assignments::course.eq(for_course))
-            .load::<GradeAssignment>(connection)
-            .map(|a| a.into_iter().map(Assignment::Grade).collect())
-            .map_err(Error::from)
-            .map(|mut a: Vec<Assignment>| {
-                a.append(&mut point_assignments);
-                a
-            })
-    }
-
-    pub fn delete_course_by_id(
-        connection: &mut diesel::MysqlConnection,
-        by_id: u32,
-    ) -> Result<(), Error> {
-        use crate::schema::courses::{self, id};
-        diesel::delete(courses::table.filter(id.eq(by_id)))
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
-    }
-
-    pub fn create_new_user<'a>(
-        connection: &mut diesel::MysqlConnection,
-        email: &'a str,
-        password: &'a str,
-        account_type: AccountType,
-    ) -> Result<(), Error> {
-        use crate::schema::users::dsl::users;
-        let new_user = NewUser {
-            password,
-            email,
-            account_type,
-            password_reset_required: true,
-            username: None,
-            last_login_time: None,
-        };
-        diesel::insert_into(users)
-            .values(new_user)
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
-    }
-
-    pub fn update_user_username<'a>(
-        connection: &mut diesel::MysqlConnection,
-        by_id: u32,
-        new_username: &'a str,
-    ) -> Result<(), Error> {
-        use crate::schema::users::dsl::{id, username, users};
-        diesel::update(users)
-            .filter(id.eq(by_id))
-            .set(username.eq(new_username))
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
-    }
-
-    pub fn update_user_email<'a>(
-        connection: &mut diesel::MysqlConnection,
-        by_id: u32,
-        new_email: &'a str,
-    ) -> Result<(), Error> {
-        use crate::schema::users::dsl::{email, id, users};
-        diesel::update(users)
-            .filter(id.eq(by_id))
-            .set(email.eq(new_email))
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
-    }
-
-    pub fn update_user_account_type(
-        connection: &mut diesel::MysqlConnection,
-        by_id: u32,
-        new_account_type: AccountType,
-    ) -> Result<(), Error> {
-        use crate::schema::users::dsl::{account_type, id, users};
-        diesel::update(users)
-            .filter(id.eq(by_id))
-            .set(account_type.eq(new_account_type))
-            .execute(connection)
-            .map_err(Error::from)
-            .map(|_| ())
-    }
-
-    pub fn insert_course(
-        connection: &mut diesel::MysqlConnection,
-        new_course: NewCourse,
-    ) -> Result<(), Error> {
-        use crate::schema::courses::dsl::courses;
-        diesel::insert_into(courses)
-            .values(new_course)
-            .execute(connection)
-            .map(|_| ())
-            .map_err(Error::from)
+                $table::table
+                    .left_outer_join($table_alias.on($table::id.eq(id2).and($table::created.lt(created2))))
+                    .filter(id2.is_null())
+                    .select(<$result>::as_select())
+            }
+        }
     }
 }
