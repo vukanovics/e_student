@@ -20,9 +20,9 @@ use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
 
 use routes::administrator;
-use routes::index;
 use routes::login;
 use routes::professor;
+use routes::root;
 use routes::student;
 
 #[launch]
@@ -41,7 +41,7 @@ fn rocket() -> _ {
         .mount(
             "/",
             routes![
-                index::get,
+                root::get,
                 login::get,
                 login::post,
                 student::courses::get,

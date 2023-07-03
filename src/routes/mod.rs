@@ -1,5 +1,5 @@
-pub mod index;
 pub mod login;
+pub mod root;
 
 pub mod administrator;
 pub mod professor;
