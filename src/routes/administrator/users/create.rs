@@ -11,7 +11,7 @@ use crate::{
     error::Error,
     localization::Script,
     mail::Mail,
-    user::{Administrator, User},
+    user::{AccountType, Administrator, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -61,6 +61,9 @@ pub async fn get(language: Script, administrator: Administrator<'_>) -> Result<T
 #[derive(FromForm, Debug)]
 pub struct FormData {
     email: String,
+    first_name: String,
+    last_name: String,
+    account_type: AccountType,
 }
 
 #[post("/users/create", data = "<form>", rank = 0)]
@@ -72,6 +75,8 @@ pub async fn post(
     form: Form<FormData>,
 ) -> Result<Template, Status> {
     let user = administrator.0;
+
+    // ensure the email address provided is valid
     let address = match Address::try_from(form.email.clone()) {
         Ok(address) => address,
         Err(_) => {
@@ -82,6 +87,7 @@ pub async fn post(
         }
     };
 
+    // generate a new password
     let plain_password: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
@@ -89,9 +95,28 @@ pub async fn post(
         .collect();
 
     {
+        let first_name = if form.first_name.is_empty() {
+            None
+        } else {
+            Some(form.first_name.clone())
+        };
+
+        let last_name = if form.last_name.is_empty() {
+            None
+        } else {
+            Some(form.last_name.clone())
+        };
+
         let password = bcrypt::hash(plain_password.clone(), DEFAULT_COST).map_err(Error::from)?;
         match database
-            .run(move |c| User::builder(&form.email, &password).build().create(c))
+            .run(move |c| {
+                User::builder(&form.email, &password)
+                    .with_first_name(first_name.as_deref())
+                    .with_last_name(last_name.as_deref())
+                    .with_account_type(form.account_type)
+                    .build()
+                    .create(c)
+            })
             .await
         {
             Ok(_) => (),

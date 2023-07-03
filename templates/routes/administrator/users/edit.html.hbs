@@ -3,13 +3,12 @@
 {{#*inline "body"}}
 
 <form action="{{editing_user.id}}" method="post">
-  {{#if editing_user.username}}
-    <label for="username">Username:</label>
-    <input type="text" name="username" value="{{editing_user.username}}">
-    <br>
-  {{else}}
-    <p>This user didn't set a username yet!</p>
-  {{/if}}
+  <label for="first_name">First name:</label>
+  <input type="text" name="first_name" value="{{editing_user.first_name}}">
+  <br>
+  <label for="last_name">Last name:</label>
+  <input type="text" name="last_name" value="{{editing_user.last_name}}">
+  <br>
   <label for="email">Email:</label>
   <input type="text" name="email" value="{{editing_user.email}}">
   <br>

@@ -49,11 +49,10 @@ pub async fn post(
     database: Database,
     id: u32,
 ) -> Result<Redirect, Status> {
-    let mut deleting_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let deleting_user = database.run(move |c| User::get_by_id(c, id)).await?;
 
-    deleting_user.update_deleted(true);
     database
-        .run(move |c| deleting_user.update_database(c))
+        .run(move |c| deleting_user.update_deleted(c, true))
         .await?;
 
     Ok(Redirect::to("/users"))

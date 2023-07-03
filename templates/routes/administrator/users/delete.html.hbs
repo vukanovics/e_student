@@ -3,11 +3,8 @@
 {{#*inline "body"}}
 
 <p>You are about to delete user
-{{#if deleting_user.username}}
-  {{deleting_user.username}}
-{{else}}
-  Username not set
-{{/if}}
+| {{deleting_user.first_name}}
+| {{deleting_user.last_name}}
 | {{deleting_user.email}}
 | {{deleting_user.account_type}}
 <form action="{{deleting_user.id}}" method="post">

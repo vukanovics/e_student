@@ -1,7 +1,15 @@
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
-use diesel::prelude::*;
+use diesel::{
+    backend::Backend,
+    deserialize::FromSql,
+    prelude::*,
+    serialize::ToSql,
+    sql_types::{TinyInt, Unsigned},
+    AsExpression, FromSqlRow,
+};
 use log::info;
 use rocket::{
+    form::FromFormField,
     http::{Cookie, CookieJar, Status},
     outcome::try_outcome,
     request::{FromRequest, Outcome},
@@ -12,18 +20,63 @@ use serde::Serialize;
 use crate::{
     database::{Connection, Database},
     error::Error,
-    models::{AccountType, Session},
-    query_current,
+    models::Session,
     schema::users,
 };
 
+#[repr(u8)]
+#[derive(FromFormField, AsExpression, FromSqlRow, Serialize, PartialEq, Debug, Clone, Copy)]
+#[diesel(sql_type = Unsigned<TinyInt>)]
+pub enum AccountType {
+    Student = 0,
+    Professor = 1,
+    Administrator = 2,
+}
+
+impl<DB: Backend> FromSql<Unsigned<TinyInt>, DB> for AccountType
+where
+    u8: FromSql<Unsigned<TinyInt>, DB>,
+{
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
+        Self::try_from(u8::from_sql(bytes)?).map_err(|_| "Invalid AccountType value".into())
+    }
+}
+
+impl<DB: Backend> ToSql<Unsigned<TinyInt>, DB> for AccountType
+where
+    u8: ToSql<Unsigned<TinyInt>, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        match self {
+            Self::Student => 0.to_sql(out),
+            Self::Professor => 1.to_sql(out),
+            Self::Administrator => 2.to_sql(out),
+        }
+    }
+}
+
+impl TryFrom<u8> for AccountType {
+    type Error = Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(AccountType::Student),
+            1 => Ok(AccountType::Professor),
+            2 => Ok(AccountType::Administrator),
+            _ => Err(Error::InvalidAccountTypeValue),
+        }
+    }
+}
+
 pub type UserId = u32;
 
-#[derive(Clone, Debug, Queryable, Serialize, Insertable, Selectable)]
+#[derive(Clone, Debug, Queryable, Serialize, Insertable, Selectable, AsChangeset, Identifiable)]
 #[diesel(table_name = users)]
 pub struct User {
     pub id: UserId,
-    pub created: NaiveDateTime,
     pub password: String,
     pub email: String,
     pub account_type: AccountType,
@@ -33,8 +86,6 @@ pub struct User {
     pub last_login_time: Option<NaiveDateTime>,
     pub deleted: bool,
 }
-
-query_current!(User, users, UsersAlias, users_alias);
 
 impl User {
     pub fn builder<'a>(email: &'a str, password: &'a str) -> UserBuilder<'a> {
@@ -50,7 +101,7 @@ impl User {
     }
 
     pub fn get_by_id(connection: &mut Connection, id: UserId) -> Result<Self, Error> {
-        User::query_current()
+        users::table
             .filter(users::id.eq(id))
             .filter(users::deleted.eq(false))
             .limit(1)
@@ -62,7 +113,7 @@ impl User {
         connection: &mut diesel::MysqlConnection,
         email: &'a str,
     ) -> Result<User, Error> {
-        User::query_current()
+        users::table
             .filter(users::email.eq(email))
             .filter(users::deleted.eq(false))
             .limit(1)
@@ -70,24 +121,60 @@ impl User {
             .map_err(Error::from)
     }
 
-    pub fn update_email<'a>(&mut self, email: &'a str) -> () {
-        self.email = email.to_string();
-    }
-
-    pub fn update_account_type(&mut self, account_type: AccountType) -> () {
-        self.account_type = account_type;
-    }
-
-    pub fn update_deleted(&mut self, deleted: bool) -> () {
-        self.deleted = deleted;
-    }
-
-    pub fn update_database(&self, connection: &mut Connection) -> Result<(), Error> {
-        diesel::insert_into(users::table)
-            .values(self)
+    pub fn update_email<'a>(
+        &self,
+        connection: &mut Connection,
+        email: &'a str,
+    ) -> Result<(), Error> {
+        diesel::update(self)
+            .set(users::email.eq(email))
             .execute(connection)
-            .map_err(Error::from)
             .map(|_| ())
+            .map_err(Error::from)
+    }
+
+    pub fn update_account_type(
+        &self,
+        connection: &mut Connection,
+        account_type: AccountType,
+    ) -> Result<(), Error> {
+        diesel::update(self)
+            .set(users::account_type.eq(account_type))
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+
+    pub fn update_deleted(&self, connection: &mut Connection, deleted: bool) -> Result<(), Error> {
+        diesel::update(self)
+            .set(users::deleted.eq(deleted))
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+
+    pub fn update_first_name<'a>(
+        &self,
+        connection: &mut Connection,
+        first_name: Option<&'a str>,
+    ) -> Result<(), Error> {
+        diesel::update(self)
+            .set(users::first_name.eq(first_name))
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+
+    pub fn update_last_name<'a>(
+        &self,
+        connection: &mut Connection,
+        last_name: Option<&'a str>,
+    ) -> Result<(), Error> {
+        diesel::update(self)
+            .set(users::last_name.eq(last_name))
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
     }
 
     pub fn account_type(&self) -> AccountType {
@@ -124,11 +211,12 @@ pub struct NewUser<'a> {
 }
 
 impl NewUser<'_> {
-    pub fn create(&self, connection: &mut Connection) -> Result<User, Error> {
+    pub fn create(&self, connection: &mut Connection) -> Result<(), Error> {
         diesel::insert_into(users::table)
             .values(self)
-            .execute(connection)?;
-        User::get_by_email(connection, self.email)
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
     }
 }
 
@@ -143,6 +231,16 @@ pub struct UserBuilder<'a> {
 }
 
 impl<'a> UserBuilder<'a> {
+    pub fn with_first_name(mut self, first_name: Option<&'a str>) -> Self {
+        self.first_name = first_name;
+        self
+    }
+
+    pub fn with_last_name(mut self, last_name: Option<&'a str>) -> Self {
+        self.last_name = last_name;
+        self
+    }
+
     pub fn with_account_type(mut self, account_type: AccountType) -> Self {
         self.account_type = account_type;
         self
@@ -158,6 +256,17 @@ impl<'a> UserBuilder<'a> {
             last_name: self.last_name,
             last_login_time: self.last_login_time,
         }
+    }
+}
+
+pub struct Users(pub Vec<User>);
+impl Users {
+    pub fn get_all(connection: &mut Connection) -> Result<Users, Error> {
+        users::table
+            .filter(users::deleted.eq(false))
+            .load::<User>(connection)
+            .map(|users| Users { 0: users })
+            .map_err(Error::from)
     }
 }
 

@@ -10,4 +10,8 @@ DROP TABLE sessions;
 DROP TABLE indicies;
 DROP TABLE generations;
 DROP TABLE programs;
+
+DROP TRIGGER bu_users;
+
+DROP TABLE users_revisions;
 DROP TABLE users;

@@ -102,9 +102,8 @@ diesel::table! {
 }
 
 diesel::table! {
-    users (id, created) {
+    users (id) {
         id -> Unsigned<Integer>,
-        created -> Datetime,
         password -> Varchar,
         email -> Varchar,
         account_type -> Unsigned<Tinyint>,
@@ -115,6 +114,29 @@ diesel::table! {
         deleted -> Bool,
     }
 }
+
+diesel::table! {
+    users_revisions (id, revision) {
+        id -> Unsigned<Integer>,
+        revision -> Unsigned<Integer>,
+        created -> Nullable<Datetime>,
+        password -> Varchar,
+        email -> Varchar,
+        account_type -> Unsigned<Tinyint>,
+        password_reset_required -> Bool,
+        first_name -> Nullable<Varchar>,
+        last_name -> Nullable<Varchar>,
+        last_login_time -> Nullable<Datetime>,
+        deleted -> Bool,
+    }
+}
+
+diesel::joinable!(courses -> users (professor));
+diesel::joinable!(enrolments -> users (student));
+diesel::joinable!(grade_assignments_progress -> users (student));
+diesel::joinable!(indicies -> users (student));
+diesel::joinable!(point_assignments_progress -> users (student));
+diesel::joinable!(sessions -> users (user));
 
 diesel::allow_tables_to_appear_in_same_query!(
     courses,
@@ -128,4 +150,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     programs,
     sessions,
     users,
+    users_revisions,
 );

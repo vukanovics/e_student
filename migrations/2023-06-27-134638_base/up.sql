@@ -1,32 +1,75 @@
 CREATE TABLE users (
-  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  
-  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  id INTEGER UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
 
   -- Password is stored as a bcrypt hash, 
   -- which has 60 characters
   password VARCHAR(60) NOT NULL,
   -- Type selected according to 
   -- https://stackoverflow.com/questions/9295513/nvarchar-for-email-addresses-in-sql-server
-  email NVARCHAR(320) NOT NULL,
+  email NVARCHAR(320) UNIQUE NOT NULL,
   -- Envisioned to have only three values (student, professor, admin)
   account_type TINYINT UNSIGNED NOT NULL,
 
-  password_reset_required BOOL NOT NULL,
+  password_reset_required BOOL NOT NULL DEFAULT TRUE,
 
   first_name NVARCHAR(32),
   last_name NVARCHAR(32),
 
   -- Can be NULL, in which case the user hasn't logged in yet
-  last_login_time DATETIME,
+  last_login_time DATETIME DEFAULT NULL,
 
   deleted BOOL NOT NULL DEFAULT FALSE,
 
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  INDEX in_email (email),
-  INDEX in_created (created DESC)
+  INDEX in_email (email)
 );
+
+-- Stores historic values of users
+CREATE TABLE users_revisions (
+  id INTEGER UNSIGNED NOT NULL,
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (id, revision),
+
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  password VARCHAR(60) NOT NULL,
+  email NVARCHAR(320) NOT NULL,
+  account_type TINYINT UNSIGNED NOT NULL,
+  password_reset_required BOOL NOT NULL,
+  first_name NVARCHAR(32),
+  last_name NVARCHAR(32),
+  last_login_time DATETIME,
+  deleted BOOL NOT NULL
+);
+
+-- Copies all data for user being updated into users_revisions table
+CREATE TRIGGER bu_users BEFORE UPDATE ON users FOR EACH ROW BEGIN
+  INSERT INTO users_revisions (
+    id,
+    revision,
+    created,
+    password,
+    email,
+    account_type,
+    password_reset_required,
+    first_name,
+    last_name,
+    last_login_time,
+    deleted
+  ) SELECT
+    OLD.id,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(users_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.password,
+    OLD.email,
+    OLD.account_type,
+    OLD.password_reset_required,
+    OLD.first_name,
+    OLD.last_name,
+    OLD.last_login_time,
+    OLD.deleted
+    FROM users_revisions WHERE users_revisions.id = OLD.id;
+END;
 
 CREATE TABLE programs (
   id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,

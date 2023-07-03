@@ -7,8 +7,7 @@ use crate::{
     database::Database,
     error::Error,
     localization::Script,
-    models::AccountType,
-    user::{Administrator, User},
+    user::{AccountType, Administrator, User},
 };
 
 #[derive(Clone, Serialize, Debug)]
@@ -43,7 +42,8 @@ pub async fn get(
 
 #[derive(FromForm)]
 pub struct FormData {
-    pub username: Option<String>,
+    pub first_name: String,
+    pub last_name: String,
     pub email: String,
     pub account_type: u8,
 }
@@ -55,15 +55,40 @@ pub async fn post(
     form: Form<FormData>,
     id: u32,
 ) -> Result<Redirect, Status> {
-    let mut editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
-
-    let account_type = AccountType::try_from(form.account_type)?;
-
-    editing_user.update_email(&form.email);
-    editing_user.update_account_type(account_type);
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let email = form.email.clone();
 
     database
-        .run(move |c| editing_user.update_database(c))
+        .run(move |c| editing_user.update_email(c, &email))
+        .await?;
+
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let account_type = AccountType::try_from(form.account_type)?;
+
+    database
+        .run(move |c| editing_user.update_account_type(c, account_type))
+        .await?;
+
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let first_name = if form.first_name.is_empty() {
+        None
+    } else {
+        Some(form.first_name.clone())
+    };
+
+    database
+        .run(move |c| editing_user.update_first_name(c, first_name.as_deref()))
+        .await?;
+
+    let editing_user = database.run(move |c| User::get_by_id(c, id)).await?;
+    let last_name = if form.last_name.is_empty() {
+        None
+    } else {
+        Some(form.last_name.clone())
+    };
+
+    database
+        .run(move |c| editing_user.update_last_name(c, last_name.as_deref()))
         .await?;
 
     Ok(Redirect::to("/users"))
