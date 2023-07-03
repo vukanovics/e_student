@@ -3,16 +3,18 @@
 {{#*inline "body"}}
 
 {{#each courses}}
-<a class="flex flex-row items-center" href="course/{{this.url}}">
-  <div class="font-sans text-2xl font-bold text-caption" >{{this.name}}</div>
-  {{#each this.assignments}}
-    {{#if this.Grade}}
-      {{> components/gradebar value=this.Grade.grade icon="la-plus-circle" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
-    {{/if}}
-    {{#if this.Point}}
-      {{> components/pointbar value=this.Point.points maxvalue=this.Point.max_points icon="la-plus-circle" bgcol="bg-cccolq-500 progress-bg:bg-cccolq-500" accentcol="progress:bg-cccolq-300" textcol="text-cccolq-50" iconcol="text-cccolq-200"}}
-    {{/if}}
-  {{/each}}
+<a class="flex flex-col justify-start items-center p-16 space-y-16 w-full lg:p-8 odd:bg-contentbgodd lg:space-x-16 lg:space-y-0 lg:flex-row lg:basis-1/2" href="course/{{this.url}}">
+  <div class="font-sans text-6xl font-bold lg:text-2xl text-caption shrink-0" >{{this.name}}</div>
+  <div class="flex flex-col space-y-8 w-full lg:space-y-4">
+    {{#each this.assignments}}
+      {{#if this.Grade}}
+        {{> components/gradebar value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-500" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
+      {{/if}}
+      {{#if this.Point}}
+        {{> components/pointbar value=this.Point.points maxvalue=this.Point.max_points icon="la-plus-circle" border="border-cccolq-500" bgcol="bg-cccolq-500 progress-bg:bg-cccolq-500" accentcol="progress:bg-cccolq-300" textcol="text-cccolq-50" iconcol="text-cccolq-200"}}
+      {{/if}}
+    {{/each}}
+  </div>
 </a>
 {{/each}}
 

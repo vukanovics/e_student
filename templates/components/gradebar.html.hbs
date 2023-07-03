@@ -1,6 +1,6 @@
 {{! vim: set ft=html: }}
 
 {{#> components/progressbar}}
-    <progress class="h-8 rounded-r-md {{bgcol}} {{accentcol}} progress-bg:rounded-r-md" value={{value}} max="10"></progress>
-    <div class="absolute z-10 {{textcol}}">{{value}}</div>
+    <progress class="w-full h-32 lg:h-8 {{bgcol}} {{accentcol}}" value={{value}} max="10"></progress>
+    <div class="absolute z-10 text-6xl lg:text-base {{textcol}}">{{value}}</div>
 {{/components/progressbar}}

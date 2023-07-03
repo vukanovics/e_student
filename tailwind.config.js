@@ -7,31 +7,43 @@ module.exports = {
   darkMode: 'class',
   content: ["templates/**/*.html.hbs"],
   theme: {
+    fontFamily: {
+      'sans': ['"Nunito"'],
+    },
     extend: {
       colors: {
-        maincap: colors.violet[500],
+        maincap: colors.teal[500],
         caption: colors.gray[500],
         input: colors.gray[600],
         inputbg: colors.white,
         stext: colors.gray[600],
         icon: colors.white,
         iconbg: colors.gray[300],
-        contentbg: colors.gray[100],
+        contentbg: colors.white,
+        contentbgodd: colors.gray[50],
         contentdiv: colors.gray[200],
-        barbg: colors.gray[200],
-        barfg: colors.gray[400],
+        barbg: colors.white,
+        barfg: colors.gray[200],
+        barborder: colors.gray[200],
         highbg: colors.violet[500],
         highfg: colors.violet[100],
+        highborder: colors.violet[600],
         highbghov: colors.violet[600],
         highbgact: colors.violet[400],
         highfgact: colors.violet[50],
 
         ccuser: colors.yellow[500],
         ccpass: colors.red[600],
+        ccemail: colors.cyan[600],
+        cctime: colors.blue[600],
 
         errorfg: colors.red[500],
         errorbg: colors.red[300],
         eiconbg: colors.red[400],
+
+        successfg: colors.green[500],
+        successbg: colors.green[300],
+        siconbg: colors.green[400],
 
         cccolq: colors.emerald,
         ccexam: colors.amber,

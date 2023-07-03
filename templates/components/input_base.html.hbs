@@ -1,7 +1,11 @@
 {{! vim: set ft=html: }}
 
-{{> components/label id=field_name}}
-<div class="flex items-center rounded-xl lg:rounded-md shadow-lg transition duration-300 ease-out bg-iconbg {{class}}">
-    <i class="las {{icon}} text-8xl lg:text-4xl text-icon"></i>
-    {{> @partial-block}}
+<div class="flex flex-col items-center space-y-12 lg:space-y-4">
+    {{> components/label id=field_name}}
+    <div class="border-4 lg:border-2 w-fit {{border}}">
+        <div class="flex items-center shadow-lg transition duration-300 ease-out w-fit {{class}}">
+            <i class="text-8xl las {{icon}} lg:text-4xl text-icon"></i>
+            {{> @partial-block}}
+        </div>
+    </div>
 </div>

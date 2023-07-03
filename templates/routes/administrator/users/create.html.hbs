@@ -2,9 +2,7 @@
 
 {{#*inline "body"}}
 
-<form action="create" method="post">
-  <p>Email:</p>
-  <input type="text" name="email">
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="post">
   <p>First name:</p>
   <input type="text" name="first_name">
   <p>Last name:</p>
@@ -15,16 +13,17 @@
     <option value="Professor">Professor</option>
     <option value="Administrator">Administrator</option>
   </select>
-  <input type="submit" value="Create user">
+  {{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" label_text=(i18n "Имејл адреса")}}
+  {{> components/button_link button_href="users/create" button_text=(i18n "Креирај корисника")}}
 </form>
 {{#if show_success_message}}
-<p>You did it!</p>
+  {{> components/success text=(i18n "Корисник је успешно креиран!")}}
 {{/if}}
 {{#if show_duplicate_email}}
-<p>Error: that email is already in use</p>
+  {{> components/error text=(i18n "Имејл је већ у употреби")}}
 {{/if}}
 {{#if show_invalid_email}}
-<p>Error: Invalid email</p>
+  {{> components/error text=(i18n "Неисправан унет имејл")}}
 {{/if}}
 
 {{/inline}}
