@@ -137,6 +137,7 @@ diesel::joinable!(grade_assignments_progress -> users (student));
 diesel::joinable!(indicies -> users (student));
 diesel::joinable!(point_assignments_progress -> users (student));
 diesel::joinable!(sessions -> users (user));
+diesel::joinable!(users_revisions -> users (id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     courses,

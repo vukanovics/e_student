@@ -38,7 +38,9 @@ CREATE TABLE users_revisions (
   first_name NVARCHAR(32),
   last_name NVARCHAR(32),
   last_login_time DATETIME,
-  deleted BOOL NOT NULL
+  deleted BOOL NOT NULL,
+
+  CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES users(id)
 );
 
 -- Copies all data for user being updated into users_revisions table
