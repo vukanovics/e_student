@@ -1,26 +1,17 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-
-<form action="{{editing_user.id}}" method="post">
-  <label for="first_name">First name:</label>
-  <input type="text" name="first_name" value="{{editing_user.first_name}}">
-  <br>
-  <label for="last_name">Last name:</label>
-  <input type="text" name="last_name" value="{{editing_user.last_name}}">
-  <br>
-  <label for="email">Email:</label>
-  <input type="text" name="email" value="{{editing_user.email}}">
-  <br>
-  <p>Current account type is {{editing_user.account_type}}</p>
-  <label for="account_type">New account type:</label>
-  <select name="account_type">
-    <option value="0">Student</option>
-    <option value="1">Professor</option>
-    <option value="2">Administrator</option>
-  </select>
-  <br>
-  <input type="submit" value="Confirm">
+{{> components/caption text=(i18n "Измени корисника")}}
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{editing_user.id}}" method="post">
+  {{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="account_type" label_text=(i18n "Нови тип налога")}}
+    <option value="0">{{i18n "Студент"}}</option>
+    <option value="1">{{i18n "Професор"}}</option>
+    <option value="2">{{i18n "Администратор"}}</option>
+  {{/components/input_select}}
+  {{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" value=editing_user.email label_text=(i18n "Нова имејл адреса")}}
+  {{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" value=editing_user.first_name label_text=(i18n "Ново име")}}
+  {{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" value=editing_user.last_name label_text=(i18n "Ново презиме")}}
+  {{> components/button_link button_href="users/create" button_text=(i18n "Потврди")}}
 </form>
 
 {{/inline}}

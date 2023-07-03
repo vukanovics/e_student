@@ -1,16 +1,13 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-
-<p>You are about to delete user
-| {{deleting_user.first_name}}
-| {{deleting_user.last_name}}
-| {{deleting_user.email}}
-| {{deleting_user.account_type}}
-<form action="{{deleting_user.id}}" method="post">
-  <input type="submit" value="Confirm">
+{{> components/caption text=(i18n "Обриши корисника")}}
+{{> components/label label_text=deleting_user.first_name}}
+{{> components/label label_text=deleting_user.last_name}}
+{{> components/label label_text=deleting_user.account_type}}
+{{> components/text_small text=deleting_user.email}}
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{deleting_user.id}}" method="post"></form>
+  {{> components/button button_text=(i18n "Обриши корисника")}}
 </form>
-</p>
-
 {{/inline}}
 {{> base }}

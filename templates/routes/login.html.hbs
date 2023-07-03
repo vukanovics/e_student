@@ -2,7 +2,7 @@
 
 {{#*inline "body"}}
 <div class="flex flex-col items-center">
-<p class="flex items-center font-sans text-6xl font-semibold align-middle lg:text-lg text-caption">{{i18n "Улогуј се"}}</p>
+{{> components/caption text=(i18n "Улогуј се")}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="login" method="post">
   {{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="username_or_email" label_text=(i18n "Корисничко име или имејл адреса")}}
   {{> components/input_password icon="la-key" border="border-ccpass" class="bg-ccpass" field_name="password" label_text=(i18n "Лозинка")}}
