@@ -64,6 +64,10 @@ fn rocket() -> _ {
                 administrator::generations::post,
                 administrator::generations::delete::get,
                 administrator::generations::delete::post,
+                administrator::programs::get,
+                administrator::programs::post,
+                administrator::programs::delete::get,
+                administrator::programs::delete::post,
             ],
         )
         .attach(handlebars)

@@ -2,7 +2,11 @@ use diesel::query_dsl::RunQueryDsl;
 use diesel::{ExpressionMethods, Identifiable, Insertable, QueryDsl, Queryable, Selectable};
 use serde::Serialize;
 
-use crate::{database::Connection, error::Error, schema::generations};
+use crate::{
+    database::Connection,
+    error::Error,
+    schema::{generations, programs},
+};
 
 #[derive(Queryable, Selectable, Debug, Serialize, Identifiable)]
 pub struct Generation {
@@ -49,5 +53,62 @@ impl Generations {
             .get_results(connection)
             .map_err(Error::from)
             .map(|g| Generations { 0: g })
+    }
+}
+
+#[derive(Queryable, Selectable, Debug, Serialize, Identifiable)]
+pub struct Program {
+    pub id: u32,
+    pub short_name: String,
+    pub full_name: String,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = programs)]
+struct NewProgram {
+    short_name: String,
+    full_name: String,
+}
+
+impl Program {
+    pub fn create(
+        connection: &mut Connection,
+        short_name: String,
+        full_name: String,
+    ) -> Result<(), Error> {
+        diesel::insert_into(programs::table)
+            .values(NewProgram {
+                short_name,
+                full_name,
+            })
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+
+    pub fn get_by_id(connection: &mut Connection, id: u32) -> Result<Program, Error> {
+        programs::table
+            .filter(programs::id.eq(id))
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+
+    pub fn delete(&self, connection: &mut Connection) -> Result<(), Error> {
+        diesel::delete(self)
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+}
+
+pub struct Programs(pub Vec<Program>);
+
+impl Programs {
+    pub fn get(connection: &mut Connection) -> Result<Programs, Error> {
+        programs::table
+            .get_results(connection)
+            .map_err(Error::from)
+            .map(|g| Programs { 0: g })
     }
 }

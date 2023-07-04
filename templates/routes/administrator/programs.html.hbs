@@ -1,0 +1,38 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<div class="flex flex-col items-center lg:grid lg:grid-cols-4">
+  {{#each programs}}
+    <div>
+      {{> components/label label_text=this.short_name}}
+      {{> components/label label_text=this.full_name}}
+    </div>
+    <div class="flex flex-row items-center space-x-16">
+      <form action="programs/delete/{{this.id}}" method="get">
+        {{> components/button button_text="Delete"}}
+      </form>
+    </div>
+  {{/each}}
+</div>
+<div class="flex">
+  <form action="programs" method="post">
+    {{> components/label label_text="Short name" }}
+    {{> components/input_text field_name="short_name" }}
+    {{> components/label label_text="Full name" }}
+    {{> components/input_text field_name="full_name" }}
+    {{> components/button button_text="Create a program"}}
+  </form>
+  {{#if show_error_duplicate_name}}
+    {{> components/error text=(i18n "Програм са тим именом већ постоји!")}}
+  {{/if}}
+  {{#if show_error_short_name_too_long}}
+    {{> components/error text=(i18n "Кратко име је предугачко!")}}
+  {{/if}}
+  {{#if show_success_message}}
+    {{> components/success text=(i18n "Програм додат!")}}
+  {{/if}}
+</div>
+
+{{/inline}}
+{{> base }}
