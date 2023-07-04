@@ -1,0 +1,10 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+{{> components/caption text=(i18n "Обриши генерацију")}}
+{{> components/label label_text=deleting_generation.year}}
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{deleting_generation.id}}" method="post">
+  {{> components/button button_text=(i18n "Обриши генерацију")}}
+</form>
+{{/inline}}
+{{> base }}

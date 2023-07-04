@@ -1,0 +1,32 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+
+<div class="flex flex-col items-center lg:grid lg:grid-cols-4">
+  {{#each generations}}
+    <div>
+      {{> components/label label_text=this.year}}
+    </div>
+    <div class="flex flex-row items-center space-x-16">
+      <form action="generations/delete/{{this.id}}" method="get">
+        {{> components/button button_text="Delete"}}
+      </form>
+    </div>
+  {{/each}}
+</div>
+<div class="flex">
+  <form action="generations" method="post">
+    {{> components/label label_text="Year" }}
+    {{> components/input_base_text type="number" field_name="year" }}
+    {{> components/button button_text="Create a generation"}}
+  </form>
+  {{#if show_error_duplicate_year}}
+    {{> components/error text=(i18n "Генерација са том годином већ постоји!")}}
+  {{/if}}
+  {{#if show_success_message}}
+    {{> components/success text=(i18n "Генерација додата!")}}
+  {{/if}}
+</div>
+
+{{/inline}}
+{{> base }}

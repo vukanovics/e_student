@@ -6,6 +6,7 @@ mod base_layout_context;
 mod course;
 mod database;
 mod error;
+mod index;
 mod localization;
 mod mail;
 mod models;
@@ -58,7 +59,11 @@ fn rocket() -> _ {
                 administrator::users::create::get,
                 administrator::users::create::post,
                 administrator::users::edit::get,
-                administrator::users::edit::post
+                administrator::users::edit::post,
+                administrator::generations::get,
+                administrator::generations::post,
+                administrator::generations::delete::get,
+                administrator::generations::delete::post,
             ],
         )
         .attach(handlebars)
