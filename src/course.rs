@@ -1,17 +1,18 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use serde::Serialize;
 
 use crate::{
     database::Connection,
     error::Error,
     query_current,
     schema::{courses, enrolments},
-    user::UserId,
+    user::{User, UserId},
 };
 
 pub type CourseId = u32;
 
-#[derive(Clone, Debug, Queryable, Selectable)]
+#[derive(Clone, Debug, Queryable, Selectable, Serialize)]
 #[diesel(table_name = courses)]
 pub struct Course {
     pub id: CourseId,
@@ -141,5 +142,9 @@ impl Course {
             .execute(connection)
             .map(|_| ())
             .map_err(Error::from)
+    }
+
+    pub fn authorized_to_edit(&self, user: &User) -> bool {
+        user.is_administrator() || self.professor == user.id()
     }
 }

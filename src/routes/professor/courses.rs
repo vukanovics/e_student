@@ -5,38 +5,10 @@ use rocket::{
     http::{CookieJar, Status},
 };
 use rocket_dyn_templates::Template;
-use serde::Serialize;
 
 use crate::{
-    base_layout_context::BaseLayoutContext, course::Courses, database::Database, error::Error,
-    localization::Script, user::Professor, user::User,
+    course::Courses, database::Database, localization::Script, routes::courses, user::Professor,
 };
-
-#[derive(Clone, Serialize, Debug)]
-struct CourseShortInfo {
-    name: String,
-    url: String,
-}
-
-#[derive(Clone, Serialize, Debug)]
-struct LayoutContext {
-    #[serde(flatten)]
-    base_layout_context: BaseLayoutContext,
-    courses: Vec<CourseShortInfo>,
-}
-
-impl LayoutContext {
-    pub async fn new(
-        language: Script,
-        user: &User,
-        courses: Vec<CourseShortInfo>,
-    ) -> Result<Self, Error> {
-        Ok(Self {
-            base_layout_context: BaseLayoutContext::new(language, user).await?,
-            courses,
-        })
-    }
-}
 
 #[get("/courses", rank = 1)]
 pub async fn get(
@@ -48,22 +20,12 @@ pub async fn get(
     let user = professor.0;
     let user_id = user.id();
 
-    let teaching_courses = database
+    let courses = database
         .run(move |c| Courses::get_teaching(c, user_id))
-        .await?;
+        .await?
+        .0;
 
-    let mut courses = Vec::new();
-
-    for course in teaching_courses.0 {
-        let short_info = CourseShortInfo {
-            name: course.name,
-            url: course.url,
-        };
-
-        courses.push(short_info);
-    }
-
-    let context = LayoutContext::new(language, user, courses.clone()).await?;
+    let context = courses::LayoutContext::new(language, user, courses).await?;
 
     Ok(Template::render("routes/professor/courses", context))
 }

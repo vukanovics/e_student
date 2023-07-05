@@ -11,17 +11,11 @@ use crate::{
     user::{Professor, User},
 };
 
-#[derive(Clone, Debug, Serialize)]
-struct CourseInfo {
-    pub name: String,
-}
-
 #[derive(Clone, Serialize, Debug)]
 struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
-    deleting_course: CourseInfo,
-    show_you_can_only_delete_own_courses: bool,
+    deleting_course: Course,
     show_success: bool,
 }
 
@@ -29,19 +23,13 @@ impl LayoutContext {
     pub async fn new(
         language: Script,
         user: &User,
-        deleting_user: CourseInfo,
+        deleting_course: Course,
     ) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
-            deleting_course: deleting_user,
-            show_you_can_only_delete_own_courses: false,
+            deleting_course,
             show_success: false,
         })
-    }
-
-    pub fn you_can_only_delete_own_courses(mut self) -> Self {
-        self.show_you_can_only_delete_own_courses = true;
-        self
     }
 
     pub fn success(mut self) -> Self {
@@ -59,21 +47,13 @@ pub async fn get(
 ) -> Result<Template, Status> {
     let deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
 
-    let deleting_course_info = CourseInfo {
-        name: deleting_course.name,
-    };
-
     let user = professor.0;
-    let context = LayoutContext::new(language, user, deleting_course_info).await?;
+    let context = LayoutContext::new(language, user, deleting_course.clone()).await?;
 
-    if deleting_course.professor != user.id() {
-        return Ok(Template::render(
-            "routes/professor/course/delete",
-            context.you_can_only_delete_own_courses(),
-        ));
+    match deleting_course.authorized_to_edit(&user) {
+        true => Ok(Template::render("routes/professor/course/delete", context)),
+        false => Err(Status::Unauthorized),
     }
-
-    Ok(Template::render("routes/professor/course/delete", context))
 }
 
 #[post("/course/<url>/delete", rank = 0)]
@@ -85,25 +65,19 @@ pub async fn post(
 ) -> Result<Template, Status> {
     let mut deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
 
-    let deleting_course_info = CourseInfo {
-        name: deleting_course.name.clone(),
-    };
-
     let user = professor.0;
-    let context = LayoutContext::new(language, user, deleting_course_info).await?;
+    let context = LayoutContext::new(language, user, deleting_course.clone()).await?;
 
-    if deleting_course.professor != user.id() {
-        return Ok(Template::render(
-            "routes/professor/course/delete",
-            context.you_can_only_delete_own_courses(),
-        ));
+    match deleting_course.authorized_to_edit(&user) {
+        true => {
+            deleting_course.update_deleted(true);
+            database.run(move |c| deleting_course.store(c)).await?;
+
+            Ok(Template::render(
+                "routes/professor/course/delete",
+                context.success(),
+            ))
+        }
+        false => Err(Status::Unauthorized),
     }
-
-    deleting_course.update_deleted(true);
-    database.run(move |c| deleting_course.store(c)).await?;
-
-    Ok(Template::render(
-        "routes/professor/course/delete",
-        context.success(),
-    ))
 }
