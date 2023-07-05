@@ -1,9 +1,21 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    courses (id, created) {
+    courses (id) {
         id -> Unsigned<Integer>,
-        created -> Datetime,
+        year -> Unsigned<Integer>,
+        name -> Varchar,
+        url -> Varchar,
+        professor -> Unsigned<Integer>,
+        deleted -> Bool,
+    }
+}
+
+diesel::table! {
+    courses_revisions (id, revision) {
+        id -> Unsigned<Integer>,
+        revision -> Unsigned<Integer>,
+        created -> Nullable<Datetime>,
         year -> Unsigned<Integer>,
         name -> Varchar,
         url -> Varchar,
@@ -126,17 +138,22 @@ diesel::table! {
 }
 
 diesel::joinable!(courses -> users (professor));
+diesel::joinable!(courses_revisions -> courses (id));
+diesel::joinable!(enrolments -> courses (course));
 diesel::joinable!(enrolments -> users (student));
+diesel::joinable!(grade_assignments -> courses (course));
 diesel::joinable!(grade_assignments_progress -> users (student));
 diesel::joinable!(indicies -> generations (generation));
 diesel::joinable!(indicies -> programs (program));
 diesel::joinable!(indicies -> users (student));
+diesel::joinable!(point_assignments -> courses (course));
 diesel::joinable!(point_assignments_progress -> users (student));
 diesel::joinable!(sessions -> users (user));
 diesel::joinable!(users_revisions -> users (id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     courses,
+    courses_revisions,
     enrolments,
     generations,
     grade_assignments,

@@ -63,15 +63,14 @@ pub async fn post(
     database: Database,
     url: String,
 ) -> Result<Template, Status> {
-    let mut deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
+    let deleting_course = database.run(move |c| Course::get_by_url(c, &url)).await?;
 
     let user = professor.0;
     let context = LayoutContext::new(language, user, deleting_course.clone()).await?;
 
     match deleting_course.authorized_to_edit(&user) {
         true => {
-            deleting_course.update_deleted(true);
-            database.run(move |c| deleting_course.store(c)).await?;
+            database.run(move |c| deleting_course.delete(c)).await?;
 
             Ok(Template::render(
                 "routes/professor/course/delete",

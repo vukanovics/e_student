@@ -26,6 +26,7 @@ CREATE TABLE users (
 -- Stores historic values of users
 CREATE TABLE users_revisions (
   id INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_users_revisions_id FOREIGN KEY (id) REFERENCES users(id),
   revision INTEGER UNSIGNED NOT NULL,
   CONSTRAINT PRIMARY KEY (id, revision),
 
@@ -38,9 +39,7 @@ CREATE TABLE users_revisions (
   first_name NVARCHAR(32),
   last_name NVARCHAR(32),
   last_login_time DATETIME,
-  deleted BOOL NOT NULL,
-
-  CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES users(id)
+  deleted BOOL NOT NULL
 );
 
 -- Copies all data for user being updated into users_revisions table
@@ -112,22 +111,66 @@ CREATE TABLE sessions (
 );
 
 CREATE TABLE courses (
-  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 
+  -- Year the course is created during
   year INTEGER UNSIGNED NOT NULL,
   name NVARCHAR(255) NOT NULL,
 
-  url VARCHAR(255) NOT NULL,
+  -- Combination of year & name is unique
+  CONSTRAINT uq_year_name UNIQUE (year, name),
+
+  -- URL over which the course can be accessed
+  -- VARCHAR because it can only be ASCII
+  url VARCHAR(255) UNIQUE NOT NULL,
 
   professor INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_professor FOREIGN KEY (professor) REFERENCES users(id),
 
   deleted BOOL NOT NULL DEFAULT FALSE,
 
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  CONSTRAINT fk_professor FOREIGN KEY (professor) REFERENCES users(id) ON DELETE CASCADE
+  INDEX in_url (url)
 );
+
+CREATE TABLE courses_revisions (
+  id INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_courses_revisions_id FOREIGN KEY (id) REFERENCES courses(id),
+
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (id, revision),
+
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  year INTEGER UNSIGNED NOT NULL,
+  name NVARCHAR(255) NOT NULL,
+  url VARCHAR(255) NOT NULL,
+  professor INTEGER UNSIGNED NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+-- Copies all data for course being updated into courses_revisions table
+CREATE TRIGGER bu_courses BEFORE UPDATE ON courses FOR EACH ROW BEGIN
+  INSERT INTO courses_revisions (
+    id,
+    revision,
+    created,
+    year,
+    name,
+    url,
+    professor,
+    deleted
+  ) SELECT
+    OLD.id,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(courses_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.year,
+    OLD.name,
+    OLD.url,
+    OLD.professor,
+    OLD.deleted
+    FROM courses_revisions WHERE courses_revisions.id = OLD.id;
+END;
 
 CREATE TABLE enrolments (
   course INTEGER UNSIGNED NOT NULL,
