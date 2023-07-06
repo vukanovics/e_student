@@ -18,6 +18,7 @@ use crate::{
 struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
+    account_type: Option<AccountType>,
     show_success_message: bool,
     show_invalid_email: bool,
     show_duplicate_email: bool,
@@ -27,6 +28,7 @@ impl LayoutContext {
     pub async fn new(language: Script, user: &User) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
+            account_type: None,
             show_success_message: false,
             show_duplicate_email: false,
             show_invalid_email: false,
@@ -47,14 +49,42 @@ impl LayoutContext {
         self.show_invalid_email = true;
         self
     }
+
+    pub fn with_account_type(mut self, account_type: Option<AccountType>) -> Self {
+        self.account_type = account_type;
+        self
+    }
 }
 
-#[get("/users/create", rank = 0)]
-pub async fn get(language: Script, administrator: Administrator<'_>) -> Result<Template, Status> {
+#[get("/users/create", rank = 2)]
+pub async fn get_no_data(
+    language: Script,
+    administrator: Administrator<'_>,
+) -> Result<Template, Status> {
     let user = administrator.0;
     Ok(Template::render(
         "routes/administrator/users/create",
         LayoutContext::new(language, user).await?,
+    ))
+}
+
+#[get("/users/create?<account_type>", rank = 1)]
+pub async fn get_with_account_type(
+    language: Script,
+    administrator: Administrator<'_>,
+    account_type: AccountType,
+) -> Result<Template, Status> {
+    let user = administrator.0;
+    let template_path = match account_type {
+        AccountType::Student => "student",
+        AccountType::Professor => "professor",
+        AccountType::Administrator => "administrator",
+    };
+    Ok(Template::render(
+        format!("routes/administrator/users/create/{}", template_path),
+        LayoutContext::new(language, user)
+            .await?
+            .with_account_type(Some(account_type)),
     ))
 }
 
