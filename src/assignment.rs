@@ -5,6 +5,7 @@ use crate::{
 };
 use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable};
+use serde::Serialize;
 
 use crate::{
     course::CourseId,
@@ -14,7 +15,7 @@ use crate::{
 };
 use diesel::prelude::*;
 
-#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
+#[derive(Serialize, Debug, Queryable, Insertable, Selectable)]
 #[diesel(table_name = grade_assignments)]
 pub struct GradeAssignment {
     pub id: u32,
@@ -24,7 +25,7 @@ pub struct GradeAssignment {
     pub deleted: bool,
 }
 
-#[derive(Clone, Debug, Queryable, Insertable, Selectable)]
+#[derive(Serialize, Debug, Queryable, Insertable, Selectable)]
 #[diesel(table_name = point_assignments)]
 pub struct PointAssignment {
     pub id: u32,
@@ -35,6 +36,7 @@ pub struct PointAssignment {
     pub deleted: bool,
 }
 
+#[derive(Debug, Serialize)]
 pub enum Assignment {
     Grade(GradeAssignment),
     Point(PointAssignment),
@@ -76,6 +78,7 @@ impl Assignments {
     }
 }
 
+#[derive(Serialize, Debug)]
 pub enum GradedAssignment {
     Grade((GradeAssignment, Option<f32>)),
     Point((PointAssignment, Option<u32>)),
