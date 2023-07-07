@@ -1,3 +1,4 @@
+pub mod assignments;
 pub mod delete;
 
 use rocket::{get, http::Status};

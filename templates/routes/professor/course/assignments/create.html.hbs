@@ -1,0 +1,22 @@
+{{! vim: set ft=html: }}
+
+{{#*inline "body"}}
+{{> components/caption text=(i18n "Креирај задатак")}}
+
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="get">
+{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="assignment_type" label_text=(i18n "Тип налога")}}
+  <option value="Grade">{{i18n "Оцена"}}</option>
+  <option value="Point">{{i18n "Поени"}}</option>
+{{/components/input_select}}
+{{> components/button button_text=(i18n "Даље")}}
+</form>
+
+{{#if show_success_message}}
+  {{> components/success text=(i18n "Задатак је успешно креиран!")}}
+{{/if}}
+{{#if show_error_all_fields_required}}
+  {{> components/error text=(i18n "Сва поља су неопходна!")}}
+{{/if}}
+
+{{/inline}}
+{{> base }}

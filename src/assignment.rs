@@ -5,6 +5,7 @@ use crate::{
 };
 use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable};
+use rocket::FromFormField;
 use serde::Serialize;
 
 use crate::{
@@ -25,6 +26,27 @@ pub struct GradeAssignment {
     pub deleted: bool,
 }
 
+#[derive(Insertable)]
+#[diesel(table_name = grade_assignments)]
+pub struct NewGradeAssignment<'a> {
+    pub course: CourseId,
+    pub name: &'a str,
+}
+
+impl GradeAssignment {
+    pub fn create<'a>(
+        connection: &mut Connection,
+        course: CourseId,
+        name: &'a str,
+    ) -> Result<(), Error> {
+        diesel::insert_into(grade_assignments::table)
+            .values(NewGradeAssignment { course, name })
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+}
+
 #[derive(Serialize, Debug, Queryable, Insertable, Selectable)]
 #[diesel(table_name = point_assignments)]
 pub struct PointAssignment {
@@ -34,6 +56,33 @@ pub struct PointAssignment {
     pub name: String,
     pub max_points: u32,
     pub deleted: bool,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = point_assignments)]
+pub struct NewPointAssignment<'a> {
+    pub course: CourseId,
+    pub name: &'a str,
+    pub max_points: u32,
+}
+
+impl PointAssignment {
+    pub fn create<'a>(
+        connection: &mut Connection,
+        course: CourseId,
+        name: &'a str,
+        max_points: u32,
+    ) -> Result<(), Error> {
+        diesel::insert_into(point_assignments::table)
+            .values(NewPointAssignment {
+                course,
+                name,
+                max_points,
+            })
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -134,4 +183,10 @@ impl GradedAssignments {
                 GradedAssignments { 0: a }
             })
     }
+}
+
+#[derive(Serialize, Debug, FromFormField, Clone)]
+pub enum AssignmentType {
+    Grade,
+    Point,
 }

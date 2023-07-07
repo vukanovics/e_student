@@ -1,2 +1,2 @@
-pub mod courses;
 pub mod course;
+pub mod courses;
