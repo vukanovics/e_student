@@ -1,9 +1,7 @@
 use crate::{
-    query_current,
     schema::{grade_assignments_progress, point_assignments_progress},
     user::UserId,
 };
-use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable};
 use rocket::FromFormField;
 use serde::Serialize;
@@ -20,7 +18,6 @@ use diesel::prelude::*;
 #[diesel(table_name = grade_assignments)]
 pub struct GradeAssignment {
     pub id: u32,
-    pub created: NaiveDateTime,
     pub course: u32,
     pub name: String,
     pub deleted: bool,
@@ -51,7 +48,6 @@ impl GradeAssignment {
 #[diesel(table_name = point_assignments)]
 pub struct PointAssignment {
     pub id: u32,
-    pub created: NaiveDateTime,
     pub course: u32,
     pub name: String,
     pub max_points: u32,
@@ -93,29 +89,15 @@ pub enum Assignment {
 
 pub struct Assignments(pub Vec<Assignment>);
 
-query_current!(
-    PointAssignment,
-    point_assignments,
-    PointAssignmentsAlias,
-    point_assignments_alias
-);
-
-query_current!(
-    GradeAssignment,
-    grade_assignments,
-    GradeAssignmentsAlias,
-    grade_assignments_alias
-);
-
 impl Assignments {
     pub fn get(connection: &mut Connection, course: CourseId) -> Result<Assignments, Error> {
-        let mut point_assignments = PointAssignment::query_current()
+        let mut point_assignments = point_assignments::table
             .filter(point_assignments::course.eq(course))
             .load::<PointAssignment>(connection)
             .map(|a| a.into_iter().map(Assignment::Point).collect())
             .map_err(Error::from)?;
 
-        GradeAssignment::query_current()
+        grade_assignments::table
             .filter(grade_assignments::course.eq(course))
             .load::<GradeAssignment>(connection)
             .map(|a| a.into_iter().map(Assignment::Grade).collect())
@@ -141,7 +123,7 @@ impl GradedAssignments {
         course: CourseId,
         student: UserId,
     ) -> Result<GradedAssignments, Error> {
-        let mut point_assignments: Vec<GradedAssignment> = PointAssignment::query_current()
+        let mut point_assignments: Vec<GradedAssignment> = point_assignments::table
             .left_join(
                 point_assignments_progress::table.on(point_assignments::id
                     .eq(point_assignments_progress::assignment)
@@ -160,7 +142,7 @@ impl GradedAssignments {
             .map(|a| a.into_iter().map(GradedAssignment::Point).collect())
             .map_err(Error::from)?;
 
-        GradeAssignment::query_current()
+        grade_assignments::table
             .left_join(
                 grade_assignments_progress::table.on(grade_assignments::id
                     .eq(grade_assignments_progress::assignment)

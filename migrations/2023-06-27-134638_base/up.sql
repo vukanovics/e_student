@@ -183,64 +183,184 @@ CREATE TABLE enrolments (
 );
 
 CREATE TABLE point_assignments (
-  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 
   course INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_point_assignments_course FOREIGN KEY (course) REFERENCES courses(id),
 
-  name NVARCHAR(255) NOT NULL,
+  name NVARCHAR(255) UNIQUE NOT NULL,
   max_points INTEGER UNSIGNED NOT NULL,
 
-  deleted BOOL NOT NULL DEFAULT FALSE,
-
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  CONSTRAINT fk_point_assignments_course FOREIGN KEY (course) REFERENCES courses(id) ON DELETE CASCADE
+  deleted BOOL NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE point_assignments_progress (
+CREATE TABLE point_assignments_revisions (
   id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_point_assignments_revisions_id FOREIGN KEY (id) REFERENCES point_assignments(id),
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (id, revision),
 
-  assignment INTEGER UNSIGNED NOT NULL,
-
-  student INTEGER UNSIGNED NOT NULL,
-
-  points INTEGER UNSIGNED NOT NULL,
-
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  CONSTRAINT fk_point_assignments_progress_assignment FOREIGN KEY (assignment) REFERENCES point_assignments(id) ON DELETE CASCADE,
-  CONSTRAINT fk_point_assignments_progress_student FOREIGN KEY (student) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE grade_assignments (
-  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   course INTEGER UNSIGNED NOT NULL,
-
   name NVARCHAR(255) NOT NULL,
-
-  deleted BOOL NOT NULL DEFAULT FALSE,
-
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  CONSTRAINT fk_grade_assignments_course FOREIGN KEY (course) REFERENCES courses(id) ON DELETE CASCADE
+  max_points INTEGER UNSIGNED NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
 );
+
+-- Copies all data for point assignment being updated into point_assignments_revisions table
+CREATE TRIGGER bu_point_assignments BEFORE UPDATE ON point_assignments FOR EACH ROW BEGIN
+  INSERT INTO point_assignments_revisions (
+    id,
+    revision,
+    created,
+    course,
+    name,
+    max_points,
+    deleted
+  ) SELECT
+    OLD.id,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(point_assignments_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.course,
+    OLD.name,
+    OLD.max_points,
+    OLD.deleted
+    FROM point_assignments_revisions WHERE point_assignments_revisions.id = OLD.id;
+END;
+
+CREATE TABLE point_assignments_progress (
+  assignment INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_point_assignments_progress_assignment FOREIGN KEY (assignment) REFERENCES point_assignments(id),
+  student INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_point_assignments_progress_student FOREIGN KEY (student) REFERENCES users(id),
+  CONSTRAINT PRIMARY KEY (assignment, student),
+
+  points INTEGER UNSIGNED NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE point_assignments_progress_revisions (
+  assignment INTEGER UNSIGNED NOT NULL,
+  student INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_point_assignments_progress_revisions_id FOREIGN KEY (assignment, student) REFERENCES point_assignments_progress(assignment, student),
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (assignment, student, revision),
+
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  points INTEGER UNSIGNED NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+CREATE TRIGGER bu_point_assignments_progress BEFORE UPDATE ON point_assignments_progress FOR EACH ROW BEGIN
+  INSERT INTO point_assignments_progress_revisions (
+    assignment,
+    student,
+    revision,
+    created,
+    points,
+    deleted
+  ) SELECT
+    OLD.assignment,
+    OLD.student,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(point_assignments_progress_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.points,
+    OLD.deleted
+    FROM point_assignments_progress_revisions WHERE point_assignments_progress_revisions.assignment = OLD.assignment
+                                              AND   point_assignments_progress_revisions.student = OLD.student;
+END;
+
+
+-- GRADE ASSIGNMENTS
+CREATE TABLE grade_assignments (
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+
+  course INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_grade_assignments_course FOREIGN KEY (course) REFERENCES courses(id),
+
+  name NVARCHAR(255) UNIQUE NOT NULL,
+
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE grade_assignments_revisions (
+  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  CONSTRAINT fk_grade_assignments_revisions_id FOREIGN KEY (id) REFERENCES grade_assignments(id),
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (id, revision),
+
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  course INTEGER UNSIGNED NOT NULL,
+  name NVARCHAR(255) NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+-- Copies all data for point assignment being updated into grade_assignments_revisions table
+CREATE TRIGGER bu_grade_assignments BEFORE UPDATE ON grade_assignments FOR EACH ROW BEGIN
+  INSERT INTO grade_assignments_revisions (
+    id,
+    revision,
+    created,
+    course,
+    name,
+    deleted
+  ) SELECT
+    OLD.id,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(grade_assignments_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.course,
+    OLD.name,
+    OLD.deleted
+    FROM grade_assignments_revisions WHERE grade_assignments_revisions.id = OLD.id;
+END;
 
 CREATE TABLE grade_assignments_progress (
-  id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   assignment INTEGER UNSIGNED NOT NULL,
-
+  CONSTRAINT fk_grade_assignments_progress_assignment FOREIGN KEY (assignment) REFERENCES grade_assignments(id),
   student INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_grade_assignments_progress_student FOREIGN KEY (student) REFERENCES users(id),
+  CONSTRAINT PRIMARY KEY (assignment, student),
 
   grade FLOAT NOT NULL,
-
-  CONSTRAINT PRIMARY KEY (id, created),
-
-  CONSTRAINT fk_grade_assignments_progress_assignment FOREIGN KEY (assignment) REFERENCES grade_assignments(id) ON DELETE CASCADE,
-  CONSTRAINT fk_grade_assignments_progress_student FOREIGN KEY (student) REFERENCES users(id) ON DELETE CASCADE
+  deleted BOOL NOT NULL DEFAULT FALSE
 );
+
+CREATE TABLE grade_assignments_progress_revisions (
+  assignment INTEGER UNSIGNED NOT NULL,
+  student INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_grade_assignments_progress_revisions_id FOREIGN KEY (assignment, student) REFERENCES grade_assignments_progress(assignment, student),
+  revision INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT PRIMARY KEY (assignment, student, revision),
+
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  grade FLOAT NOT NULL,
+  deleted BOOL NOT NULL DEFAULT FALSE
+);
+
+CREATE TRIGGER bu_grade_assignments_progress BEFORE UPDATE ON grade_assignments_progress FOR EACH ROW BEGIN
+  INSERT INTO grade_assignments_progress_revisions (
+    assignment,
+    student,
+    revision,
+    created,
+    grade,
+    deleted
+  ) SELECT
+    OLD.assignment,
+    OLD.student,
+    -- AUTO_INCREMENT the revision
+    IFNULL(MAX(grade_assignments_progress_revisions.revision), 0) + 1,
+    NOW(),
+    OLD.grade,
+    OLD.deleted
+    FROM grade_assignments_progress_revisions WHERE grade_assignments_progress_revisions.assignment = OLD.assignment
+                                              AND   grade_assignments_progress_revisions.student = OLD.student;
+END;
+
