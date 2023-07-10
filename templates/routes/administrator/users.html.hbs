@@ -1,33 +1,52 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-<div class="flex flex-col items-center lg:grid lg:grid-cols-4">
-  {{#each users}}
+
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="post">
+  <div class="flex flex-col items-center lg:grid lg:grid-cols-5">
+    {{! Filters }}
+    <input type="text" name="filter_first_name" value={{form.filter_first_name}}>
+    <input type="text" name="filter_last_name" value={{form.filter_last_name}}>
+    <input type="email" name="filter_email" value={{form.filter_email}}>
     <div>
-      {{#if this.username}}
-        {{> components/label id=this.username label_text=this.username}}
+      <input type="checkbox" name="filter_account_type_enabled" {{#if form.filter_account_type_enabled}}checked{{/if}}>
+      {{> components/input_select_account_type name="filter_account_type" previous=form.filter_account_type}}
+    </div>
+    {{> components/button button_text=(i18n "Примени")}}
+    {{! Sorts }}
+    {{> components/input_select_sort name="sort_first_name" previous=form.sort_first_name }}
+    {{> components/input_select_sort name="sort_last_name" previous=form.sort_last_name }}
+    {{> components/input_select_sort name="sort_email" previous=form.sort_email }}
+    {{> components/input_select_sort name="sort_account_type" previous=form.sort_account_type}}
+    {{! Don't wanna sort by the buttons xD }}
+    <div></div>
+    {{#each users}}
+      {{#if this.first_name}}
+        {{> components/text_small text=this.first_name}}
       {{else}}
-        {{> components/label id=this.username label_text="Username not set"}}
+        {{> components/text_small text=(i18n "Није намештено")}}
       {{/if}}
-    </div>
-    <div id={{this.username}}>
-      {{> components/text_small text=this.email}}
-    </div>
-    <div>
-      {{> components/text_small text=this.account_type}}
-    </div>
-    <div class="flex flex-row items-center space-x-16">
-      <form action="users/delete/{{this.id}}" method="get">
-        {{> components/button button_text="Delete"}}
-      </form>
-      <form action="users/edit/{{this.id}}" method="get">
-        {{> components/button button_text="Edit"}}
-      </form>
-    </div>
-    {{/each}}
-</div>
-<div class="flex">
-  {{> components/button_link button_href="users/create" button_text="Create a new user"}}
-</div>
+      {{#if this.last_name}}
+        {{> components/text_small text=this.last_name}}
+      {{else}}
+        {{> components/text_small text=(i18n "Није намештено")}}
+      {{/if}}
+      <div id={{this.username}}>
+        {{> components/text_small text=this.email}}
+      </div>
+      <div>
+        {{> components/text_small text=this.account_type}}
+      </div>
+      <div class="flex flex-row items-center space-x-16">
+        {{> components/button_link button_href=(concat "users/delete/" this.id) button_text="Delete"}}
+        {{> components/button_link button_href=(concat "users/edit/" this.id) button_text="Edit"}}
+      </div>
+      {{/each}}
+  </div>
+  <div class="flex">
+    {{> components/button_link button_href="users/create" button_text="Create a new user"}}
+  </div>
+</form>
+
 {{/inline}}
 {{> base }}

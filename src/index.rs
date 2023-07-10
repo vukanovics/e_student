@@ -112,3 +112,5 @@ impl Programs {
             .map(|g| Programs { 0: g })
     }
 }
+
+pub type IndexNumber = u32;

@@ -6,6 +6,7 @@ mod base_layout_context;
 mod course;
 mod database;
 mod error;
+mod handlebars;
 mod index;
 mod localization;
 mod mail;
@@ -34,7 +35,15 @@ fn rocket() -> _ {
         engines.handlebars.register_helper(
             localization::ScriptHelper::name(),
             localization::ScriptHelper::helper(),
-        )
+        );
+
+        engines.handlebars.register_helper(
+            handlebars::ConcatHelper::name(),
+            handlebars::ConcatHelper::helper(),
+        );
+        engines
+            .handlebars
+            .register_helper(handlebars::EqHelper::name(), handlebars::EqHelper::helper());
     });
 
     build()
@@ -57,6 +66,7 @@ fn rocket() -> _ {
                 professor::course::assignments::create::post_point,
                 administrator::courses::get,
                 administrator::users::get,
+                administrator::users::post,
                 administrator::users::delete::get,
                 administrator::users::delete::post,
                 administrator::users::create::get_no_data,

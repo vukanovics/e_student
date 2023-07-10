@@ -18,8 +18,9 @@ use rocket::{
 use serde::Serialize;
 
 use crate::{
-    database::{Connection, Database},
+    database::{Connection, Database, SortDirection},
     error::Error,
+    index::{Generation, IndexNumber, Program},
     models::Session,
     schema::users,
 };
@@ -259,11 +260,96 @@ impl<'a> UserBuilder<'a> {
     }
 }
 
+#[derive(Debug)]
+pub struct UsersRetrievalOptions {
+    pub filter_email: Option<String>,
+    pub filter_account_type: Option<AccountType>,
+    pub filter_first_name: Option<String>,
+    pub filter_last_name: Option<String>,
+    pub filter_program: Option<Program>,
+    pub filter_generation: Option<Generation>,
+    pub filter_index_number: Option<IndexNumber>,
+
+    pub sort_by_email: Option<SortDirection>,
+    pub sort_by_account_type: Option<SortDirection>,
+    pub sort_by_first_name: Option<SortDirection>,
+    pub sort_by_last_name: Option<SortDirection>,
+    // sorts by program, then generation, and finally the index number
+    pub sort_by_index: Option<SortDirection>,
+}
+
+impl UsersRetrievalOptions {
+    pub fn new() -> Self {
+        Self {
+            filter_email: None,
+            filter_account_type: None,
+            filter_first_name: None,
+            filter_last_name: None,
+            filter_program: None,
+            filter_generation: None,
+            filter_index_number: None,
+            sort_by_email: None,
+            sort_by_account_type: None,
+            sort_by_first_name: None,
+            sort_by_last_name: None,
+            sort_by_index: None,
+        }
+    }
+}
+
 pub struct Users(pub Vec<User>);
 impl Users {
-    pub fn get_all(connection: &mut Connection) -> Result<Users, Error> {
-        users::table
-            .filter(users::deleted.eq(false))
+    pub fn get_all(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+    ) -> Result<Users, Error> {
+        let mut query = users::table.filter(users::deleted.eq(false)).into_boxed();
+
+        if let Some(filter) = options.filter_email {
+            query = query.filter(users::email.like(format!("%{}%", filter)))
+        }
+
+        if let Some(filter) = options.filter_account_type {
+            query = query.filter(users::account_type.eq(filter))
+        }
+
+        if let Some(filter) = options.filter_first_name {
+            query = query.filter(users::first_name.like(format!("%{}%", filter)))
+        }
+
+        if let Some(filter) = options.filter_last_name {
+            query = query.filter(users::last_name.like(format!("%{}%", filter)))
+        }
+
+        if let Some(order) = options.sort_by_first_name {
+            query = match order {
+                SortDirection::Ascending => query.then_order_by(users::first_name.asc()),
+                SortDirection::Descending => query.then_order_by(users::first_name.desc()),
+            };
+        }
+
+        if let Some(order) = options.sort_by_last_name {
+            query = match order {
+                SortDirection::Ascending => query.then_order_by(users::last_name.asc()),
+                SortDirection::Descending => query.then_order_by(users::last_name.desc()),
+            };
+        }
+
+        if let Some(order) = options.sort_by_email {
+            query = match order {
+                SortDirection::Ascending => query.then_order_by(users::email.asc()),
+                SortDirection::Descending => query.then_order_by(users::email.desc()),
+            };
+        }
+
+        if let Some(order) = options.sort_by_account_type {
+            query = match order {
+                SortDirection::Ascending => query.then_order_by(users::account_type.asc()),
+                SortDirection::Descending => query.then_order_by(users::account_type.desc()),
+            };
+        }
+
+        query
             .load::<User>(connection)
             .map(|users| Users { 0: users })
             .map_err(Error::from)

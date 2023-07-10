@@ -1,6 +1,8 @@
 use crate::error::Error;
 use crate::models::Session;
+use rocket::FromFormField;
 use rocket_sync_db_pools::diesel::prelude::*;
+use serde::Serialize;
 
 pub type Connection = diesel::MysqlConnection;
 
@@ -31,4 +33,10 @@ impl Database {
             .first::<Session>(connection)
             .map_err(Error::from)
     }
+}
+
+#[derive(Debug, FromFormField, Serialize)]
+pub enum SortDirection {
+    Ascending,
+    Descending,
 }
