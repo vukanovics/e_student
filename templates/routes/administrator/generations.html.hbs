@@ -5,7 +5,7 @@
 <div class="flex flex-col items-center lg:grid lg:grid-cols-4">
   {{#each generations}}
     <div>
-      {{> components/label label_text=this.year}}
+      {{> components/label text=this.year}}
     </div>
     <div class="flex flex-row items-center space-x-16">
       <form action="generations/delete/{{this.id}}" method="get">
@@ -16,7 +16,7 @@
 </div>
 <div class="flex">
   <form action="generations" method="post">
-    {{> components/label label_text="Year" }}
+    {{> components/label text="Year" }}
     {{> components/input_base_text type="number" field_name="year" }}
     {{> components/button button_text="Create a generation"}}
   </form>

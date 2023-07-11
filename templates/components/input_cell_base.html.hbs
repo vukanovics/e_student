@@ -1,0 +1,10 @@
+{{! vim: set ft=html: }}
+
+<div class="border-4 lg:border-2 {{border}}">
+    <div class="flex items-center transition duration-300 ease-out {{class}}">
+        {{#if icon}}
+            <i class="text-8xl w-32 lg:w-10 las {{icon}} lg:text-4xl text-icon"></i>
+        {{/if}}
+        {{> @partial-block}}
+    </div>
+</div>

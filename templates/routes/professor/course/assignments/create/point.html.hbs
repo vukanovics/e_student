@@ -6,12 +6,12 @@
 
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="post">
 
-{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="assignment_type" label_text=(i18n "Тип налога") readonly=true}}
+{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="assignment_type" text=(i18n "Тип налога") readonly=true}}
   <option value="Grade" disabled>{{i18n "Оцена"}}</option>
   <option value="Point" selected>{{i18n "Поени"}}</option>
 {{/components/input_select}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="name" label_text=(i18n "Име")}}
-{{> components/input_number icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="max_points" label_text=(i18n "Максимално поена")}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="name" text=(i18n "Име")}}
+{{> components/input_number icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="max_points" text=(i18n "Максимално поена")}}
 {{> components/button button_text=(i18n "Направи")}}
 
 {{#if show_success_message}}

@@ -33,6 +33,7 @@ module.exports = {
         highfgact: colors.violet[50],
 
         ccuser: colors.yellow[500],
+        ccacctype: colors.orange[500],
         ccpass: colors.red[600],
         ccemail: colors.cyan[600],
         cctime: colors.blue[600],

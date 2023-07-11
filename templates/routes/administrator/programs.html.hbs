@@ -5,8 +5,8 @@
 <div class="flex flex-col items-center lg:grid lg:grid-cols-4">
   {{#each programs}}
     <div>
-      {{> components/label label_text=this.short_name}}
-      {{> components/label label_text=this.full_name}}
+      {{> components/label text=this.short_name}}
+      {{> components/label text=this.full_name}}
     </div>
     <div class="flex flex-row items-center space-x-16">
       <form action="programs/delete/{{this.id}}" method="get">
@@ -17,9 +17,9 @@
 </div>
 <div class="flex">
   <form action="programs" method="post">
-    {{> components/label label_text="Short name" }}
+    {{> components/label text="Short name" }}
     {{> components/input_text field_name="short_name" }}
-    {{> components/label label_text="Full name" }}
+    {{> components/label text="Full name" }}
     {{> components/input_text field_name="full_name" }}
     {{> components/button button_text="Create a program"}}
   </form>

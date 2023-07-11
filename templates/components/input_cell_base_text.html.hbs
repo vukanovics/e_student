@@ -1,0 +1,6 @@
+{{! vim: set ft=html: }}
+
+{{#> components/input_cell_base}}
+    <input class="px-4 py-6 w-full h-full text-4xl lg:h-12 lg:text-xl lg:px-2 lg:py-1 bg-inputbg text-input" {{#if value}} value={{value}} {{/if}} id={{field_name}} type={{type}} name={{field_name}}>
+
+{{/components/input_cell_base}}

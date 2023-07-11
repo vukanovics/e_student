@@ -3,7 +3,7 @@
 {{#*inline "body"}}
 {{> components/caption text=(i18n "Креирај корисника")}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="get">
-{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="account_type" label_text=(i18n "Тип налога")}}
+{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="account_type" text=(i18n "Тип налога")}}
   <option value="Student">{{i18n "Студент"}}</option>
   <option value="Professor">{{i18n "Професор"}}</option>
   <option value="Administrator">{{i18n "Администратор"}}</option>

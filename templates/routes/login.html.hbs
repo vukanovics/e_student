@@ -2,25 +2,25 @@
 
 {{#*inline "body"}}
 <div class="flex flex-col items-center">
-{{> components/caption text=(i18n "Улогуј се")}}
-<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="login" method="post">
-  {{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="username_or_email" label_text=(i18n "Корисничко име или имејл адреса")}}
-  {{> components/input_password icon="la-key" border="border-ccpass" class="bg-ccpass" field_name="password" label_text=(i18n "Лозинка")}}
-  {{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="timeout" label_text=(i18n "Остани улогован")}}
-      <option value="99999999">{{i18n "ОК време"}}</option>
-      <option value="300">5 {{i18n "минута"}}</option>
-      <option value="1200">20 {{i18n "минута"}}</option>
-      <option value="3600">1 {{i18n "сат"}}</option>
-      <option value="10800">3 {{i18n "сата"}}</option>
-  {{/components/input_select}}
-  {{> components/button button_text=(i18n "Улогуј се")}}
-  {{#if show_error_all_fields_required}}
-    {{> components/error text=(i18n "Сва поља су неопходна")}}
-  {{/if}}
-  {{#if show_error_invalid_login_info}}
-    {{> components/error text=(i18n "Неисправни унети подаци")}}
-  {{/if}}
-</form>
+  {{> components/caption text=(i18n "Улогуј се")}}
+  <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="login" method="post">
+    {{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="username_or_email" text=(i18n "Корисничко име или имејл адреса")}}
+    {{> components/input_password icon="la-key" border="border-ccpass" class="bg-ccpass" field_name="password" text=(i18n "Лозинка")}}
+    {{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="timeout" text=(i18n "Остани улогован")}}
+        <option value="99999999">{{i18n "ОК време"}}</option>
+        <option value="300">5 {{i18n "минута"}}</option>
+        <option value="1200">20 {{i18n "минута"}}</option>
+        <option value="3600">1 {{i18n "сат"}}</option>
+        <option value="10800">3 {{i18n "сата"}}</option>
+    {{/components/input_select}}
+    {{> components/button button_text=(i18n "Улогуј се")}}
+    {{#if show_error_all_fields_required}}
+      {{> components/error text=(i18n "Сва поља су неопходна")}}
+    {{/if}}
+    {{#if show_error_invalid_login_info}}
+      {{> components/error text=(i18n "Неисправни унети подаци")}}
+    {{/if}}
+  </form>
 </div>
 {{/inline}}
 {{> base }}
