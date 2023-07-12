@@ -2,19 +2,52 @@
 
 {{#*inline "body"}}
 {{> components/caption text=(i18n "Креирај корисника")}}
+
+{{#if account_type}}
+<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="post">
+{{> components/input_select_account_type field_name="account_type" previous=account_type disabled=true}}
+{{else}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="get">
-{{#> components/input_select icon="la-user-circle" border="border-ccuser" class="bg-ccuser" field_name="account_type" text=(i18n "Тип налога")}}
-  <option value="Student">{{i18n "Студент"}}</option>
-  <option value="Professor">{{i18n "Професор"}}</option>
-  <option value="Administrator">{{i18n "Администратор"}}</option>
+{{> components/input_select_account_type field_name="account_type"}}
+{{/if}}
+
+{{#if account_type.Student}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса")}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име")}}
+{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме")}}
+{{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="program" text=(i18n "Програм")}}
+  {{#each account_type.Student.programs}}
+    <option value="{{this.short_name}}">{{i18n (concat this.short_name " - " this.full_name)}}</option>
+  {{/each}}
 {{/components/input_select}}
+{{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="generation" text=(i18n "Генерација")}}
+  {{#each account_type.Student.generations}}
+    <option value="{{this.year}}">{{this.year}}</option>
+  {{/each}}
+{{/components/input_select}}
+{{> components/input_base_text type="number" field_name="index_number" }}
+
+{{/if}}
+
+{{#if account_type.Professor}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса")}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име")}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме")}}
+{{/if}}
+
+{{#if account_type.Administrator}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" label_text=(i18n "Имејл адреса")}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" label_text=(i18n "Име")}}
+{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" label_text=(i18n "Презиме")}}
+{{/if}}
+
 {{> components/button button_text=(i18n "Даље")}}
 </form>
 {{#if show_success_message}}
   {{> components/success text=(i18n "Корисник је успешно креиран!")}}
 {{/if}}
-{{#if show_duplicate_email}}
-  {{> components/error text=(i18n "Имејл је већ у употреби")}}
+{{#if show_duplicate_data}}
+  {{> components/error text=(i18n "Имејл или број индекса су већ у употреби")}}
 {{/if}}
 {{#if show_invalid_email}}
   {{> components/error text=(i18n "Неисправан унет имејл")}}

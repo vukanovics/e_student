@@ -11,7 +11,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     database::{Database, SortDirection},
     error::Error,
-    index::{Generation, IndexNumber, Program},
+    index::IndexNumber,
     localization::Script,
     user::{AccountType, Administrator, User, Users, UsersRetrievalOptions},
 };

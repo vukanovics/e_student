@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#> components/input_cell_base}}
-  <select class="p-4 w-full text-5xl cursor-pointer lg:h-12 lg:text-base lg:p-2 bg-inputbg text-input" name={{field_name}}>
+  <select class="p-4 w-full text-5xl cursor-pointer lg:h-12 lg:text-base lg:p-2 bg-inputbg text-input" name={{field_name}} {{#if disabled}}disabled{{/if}}>
     <option value="Student" {{#if (eq previous "Student")}}selected{{/if}}>{{i18n "Студент"}}</option>
     <option value="Professor" {{#if (eq previous "Professor")}}selected{{/if}}>{{i18n "Професор"}}</option>
     <option value="Administrator" {{#if (eq previous "Administrator")}}selected{{/if}}>{{i18n "Администратор"}}</option>

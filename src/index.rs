@@ -2,6 +2,8 @@ use diesel::query_dsl::RunQueryDsl;
 use diesel::{ExpressionMethods, Identifiable, Insertable, QueryDsl, Queryable, Selectable};
 use serde::Serialize;
 
+use crate::schema::indicies;
+use crate::user::UserId;
 use crate::{
     database::Connection,
     error::Error,
@@ -37,6 +39,14 @@ impl Generation {
             .map_err(Error::from)
     }
 
+    pub fn get_by_year(connection: &mut Connection, year: u32) -> Result<Generation, Error> {
+        generations::table
+            .filter(generations::year.eq(year))
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+
     pub fn delete(&self, connection: &mut Connection) -> Result<(), Error> {
         diesel::delete(self)
             .execute(connection)
@@ -45,6 +55,7 @@ impl Generation {
     }
 }
 
+#[derive(Serialize, Debug)]
 pub struct Generations(pub Vec<Generation>);
 
 impl Generations {
@@ -94,6 +105,17 @@ impl Program {
             .map_err(Error::from)
     }
 
+    pub fn get_by_short_name<'a>(
+        connection: &mut Connection,
+        short_name: &'a str,
+    ) -> Result<Program, Error> {
+        programs::table
+            .filter(programs::short_name.eq(short_name))
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+
     pub fn delete(&self, connection: &mut Connection) -> Result<(), Error> {
         diesel::delete(self)
             .execute(connection)
@@ -102,6 +124,7 @@ impl Program {
     }
 }
 
+#[derive(Serialize, Debug)]
 pub struct Programs(pub Vec<Program>);
 
 impl Programs {
@@ -114,3 +137,41 @@ impl Programs {
 }
 
 pub type IndexNumber = u32;
+
+pub struct Index {
+    pub id: u32,
+    pub program: u32,
+    pub generation: u32,
+    pub number: IndexNumber,
+    pub student: UserId,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = indicies)]
+pub struct NewIndex {
+    program: u32,
+    generation: u32,
+    number: IndexNumber,
+    student: UserId,
+}
+
+impl Index {
+    pub fn create(
+        connection: &mut Connection,
+        program: u32,
+        generation: u32,
+        number: IndexNumber,
+        student: UserId,
+    ) -> Result<(), Error> {
+        diesel::insert_into(indicies::table)
+            .values(NewIndex {
+                program,
+                generation,
+                number,
+                student,
+            })
+            .execute(connection)
+            .map(|_| ())
+            .map_err(Error::from)
+    }
+}

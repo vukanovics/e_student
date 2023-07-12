@@ -89,7 +89,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn builder<'a>(email: &'a str, password: &'a str) -> UserBuilder<'a> {
+    pub fn builder<'a>(email: String, password: String) -> UserBuilder {
         UserBuilder {
             email,
             password,
@@ -221,23 +221,23 @@ impl NewUser<'_> {
     }
 }
 
-pub struct UserBuilder<'a> {
-    email: &'a str,
-    password: &'a str,
+pub struct UserBuilder {
+    email: String,
+    password: String,
     account_type: AccountType,
     password_reset_required: bool,
-    first_name: Option<&'a str>,
-    last_name: Option<&'a str>,
+    first_name: Option<String>,
+    last_name: Option<String>,
     last_login_time: Option<NaiveDateTime>,
 }
 
-impl<'a> UserBuilder<'a> {
-    pub fn with_first_name(mut self, first_name: Option<&'a str>) -> Self {
+impl UserBuilder {
+    pub fn with_first_name(mut self, first_name: Option<String>) -> Self {
         self.first_name = first_name;
         self
     }
 
-    pub fn with_last_name(mut self, last_name: Option<&'a str>) -> Self {
+    pub fn with_last_name(mut self, last_name: Option<String>) -> Self {
         self.last_name = last_name;
         self
     }
@@ -247,14 +247,14 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> NewUser<'a> {
+    pub fn build<'a>(&'a self) -> NewUser<'a> {
         NewUser {
-            password: self.password,
-            email: self.email,
+            password: &self.password,
+            email: &self.email,
             account_type: self.account_type,
             password_reset_required: self.password_reset_required,
-            first_name: self.first_name,
-            last_name: self.last_name,
+            first_name: self.first_name.as_deref(),
+            last_name: self.last_name.as_deref(),
             last_login_time: self.last_login_time,
         }
     }
