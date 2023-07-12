@@ -16,28 +16,20 @@ impl HelperDef for ConcatHelper {
         _: &mut RenderContext,
         out: &mut dyn Output,
     ) -> HelperResult {
-        let first = h
-            .param(0)
-            .ok_or(RenderError::new("missing first parameter"))?
-            .value();
-        // trying to get the param as a proper string, but failing that,
-        // give me literally anything
-        // lets us concat numbers with strings
-        let first = first
-            .as_str()
-            .map(|s| s.to_owned())
-            .unwrap_or_else(|| first.to_string());
+        let mut result = String::new();
 
-        let second = h
-            .param(1)
-            .ok_or(RenderError::new("missing second parameter"))?
-            .value();
-        let second = second
-            .as_str()
-            .map(|s| s.to_owned())
-            .unwrap_or_else(|| second.to_string());
+        for param in h.params() {
+            // trying to get the param as a proper string, but failing that,
+            // give me literally anything
+            // lets us concat numbers with strings
+            let value = param.value();
+            let value = value
+                .as_str()
+                .map(|s| s.to_owned())
+                .unwrap_or_else(|| value.to_string());
 
-        let result = first + &second;
+            result += &value;
+        }
 
         out.write(&result)?;
         Ok(())
