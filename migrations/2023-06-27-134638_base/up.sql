@@ -92,6 +92,8 @@ CREATE TABLE indicies (
   generation INTEGER UNSIGNED NOT NULL,
   number INTEGER UNSIGNED NOT NULL,
 
+  CONSTRAINT uq_program_generation_number UNIQUE (program, generation, number),
+
   student INTEGER UNSIGNED UNIQUE NOT NULL,
 
   CONSTRAINT fk_program FOREIGN KEY (program) REFERENCES programs(id) ON DELETE CASCADE,
