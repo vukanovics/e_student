@@ -1,0 +1,6 @@
+{{! vim: set ft=html: }}
+
+<div class="flex flex-row items-center">
+    {{> components/label id=field_name text=text}}
+    <input class="{{color}} h-12 w-12 lg:h-6 lg:w-6 focus:ring-offset-0 border-2 {{bg}} {{border}}" type="checkbox" name={{field_name}} {{#if value}}checked{{/if}}>
+</div>

@@ -56,7 +56,8 @@ module.exports = {
     plugin(function({ addVariant }) {
       addVariant('progress', ['&::-moz-progress-bar', '&::-webkit-progress-value'])
       addVariant('progress-bg', ['&::-webkit-progress-bar'])
-    })
+    }),
+    require("@tailwindcss/forms")
   ],
 }
 
