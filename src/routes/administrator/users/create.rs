@@ -20,33 +20,51 @@ use crate::{
 struct StudentData {
     programs: Vec<Program>,
     generations: Vec<Generation>,
+    previous: Option<FormDataStudent>,
+}
+
+#[derive(Serialize, Debug)]
+struct ProfessorData {
+    previous: Option<FormDataProfessor>,
+}
+
+#[derive(Serialize, Debug)]
+struct AdministratorData {
+    previous: Option<FormDataAdministrator>,
 }
 
 #[derive(Serialize, Debug)]
 enum AccountTypeWithData {
     Student(StudentData),
-    Professor,
-    Administrator,
+    Professor(ProfessorData),
+    Administrator(AdministratorData),
 }
 
 impl AccountTypeWithData {
-    pub async fn from_account_type(
-        account_type: AccountType,
+    pub async fn new_student(
         database: &Database,
+        previous: Option<FormDataStudent>,
     ) -> Result<AccountTypeWithData, Error> {
-        match account_type {
-            AccountType::Student => Self::load_student(database).await,
-            AccountType::Professor => Ok(AccountTypeWithData::Professor),
-            AccountType::Administrator => Ok(AccountTypeWithData::Administrator),
-        }
-    }
-
-    pub async fn load_student(database: &Database) -> Result<AccountTypeWithData, Error> {
         let generations = database.run(|c| Generations::get(c)).await?.0;
         let programs = database.run(|c| Programs::get(c)).await?.0;
         Ok(AccountTypeWithData::Student(StudentData {
             programs,
             generations,
+            previous,
+        }))
+    }
+
+    pub async fn new_professor(
+        previous: Option<FormDataProfessor>,
+    ) -> Result<AccountTypeWithData, Error> {
+        Ok(AccountTypeWithData::Professor(ProfessorData { previous }))
+    }
+
+    pub async fn new_administrator(
+        previous: Option<FormDataAdministrator>,
+    ) -> Result<AccountTypeWithData, Error> {
+        Ok(AccountTypeWithData::Administrator(AdministratorData {
+            previous,
         }))
     }
 }
@@ -116,7 +134,11 @@ pub async fn get_with_account_type(
 
     let template_path = "routes/administrator/users/create";
 
-    let account_type = AccountTypeWithData::from_account_type(account_type, &database).await?;
+    let account_type = match account_type {
+        AccountType::Student => AccountTypeWithData::new_student(&database, None).await?,
+        AccountType::Professor => AccountTypeWithData::new_professor(None).await?,
+        AccountType::Administrator => AccountTypeWithData::new_administrator(None).await?,
+    };
 
     let context = LayoutContext::new(language, user)
         .await?
@@ -135,7 +157,7 @@ fn generate_random_password() -> String {
         .collect()
 }
 
-#[derive(FromForm, Debug)]
+#[derive(Serialize, FromForm, Debug, Clone)]
 pub struct FormDataAdministrator {
     email: String,
     first_name: String,
@@ -154,7 +176,9 @@ pub async fn post_administrator(
 
     let context = LayoutContext::new(language, user)
         .await?
-        .with_account_type(Some(AccountTypeWithData::Administrator));
+        .with_account_type(Some(
+            AccountTypeWithData::new_administrator(Some(form.clone())).await?,
+        ));
     let template_path = "routes/administrator/users/create";
 
     let address = match Address::try_from(form.email.clone()) {
@@ -186,7 +210,7 @@ pub async fn post_administrator(
     Ok(Template::render(template_path, context.success()))
 }
 
-#[derive(FromForm, Debug)]
+#[derive(Serialize, FromForm, Debug, Clone)]
 pub struct FormDataProfessor {
     email: String,
     first_name: String,
@@ -205,7 +229,9 @@ pub async fn post_professor(
 
     let context = LayoutContext::new(language, user)
         .await?
-        .with_account_type(Some(AccountTypeWithData::Professor));
+        .with_account_type(Some(
+            AccountTypeWithData::new_professor(Some(form.clone())).await?,
+        ));
     let template_path = "routes/administrator/users/create";
 
     let address = match Address::try_from(form.email.clone()) {
@@ -237,7 +263,7 @@ pub async fn post_professor(
     Ok(Template::render(template_path, context.success()))
 }
 
-#[derive(FromForm, Debug)]
+#[derive(FromForm, Debug, Serialize, Clone)]
 pub struct FormDataStudent {
     email: String,
     first_name: String,
@@ -257,8 +283,7 @@ pub async fn post_student(
 ) -> Result<Template, Status> {
     let user = administrator.0;
 
-    let account_type =
-        AccountTypeWithData::from_account_type(AccountType::Student, &database).await?;
+    let account_type = AccountTypeWithData::new_student(&database, Some(form.clone())).await?;
 
     let context = LayoutContext::new(language, user)
         .await?

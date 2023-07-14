@@ -5,40 +5,52 @@
 
 {{#if account_type}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="post">
-{{> components/input_select_account_type field_name="account_type" previous=account_type disabled=true}}
+
+{{#if account_type.Administrator}}
+<p>{{i18n "Нови администраторски налог"}}</p>
+{{/if}}
+
+{{#if account_type.Professor}}
+<p>{{i18n "Нови професорски налог"}}</p>
+{{/if}}
+
+{{#if account_type.Student}}
+<p>{{i18n "Нови студентски налог"}}</p>
+{{/if}}
+
 {{else}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="get">
 {{> components/input_select_account_type field_name="account_type"}}
 {{/if}}
 
 {{#if account_type.Student}}
-{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса")}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име")}}
-{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме")}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Student.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Student.previous.first_name}}
+{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Student.previous.last_name}}
 {{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="program" text=(i18n "Програм")}}
   {{#each account_type.Student.programs}}
-    <option value="{{this.short_name}}">{{i18n (concat this.short_name " - " this.full_name)}}</option>
+    <option value="{{this.short_name}}" {{#if (eq ../account_type.Student.previous.program this.short_name)}}selected{{/if}}>{{i18n (concat this.short_name " - " this.full_name)}}</option>
   {{/each}}
 {{/components/input_select}}
 {{#> components/input_select icon="la-clock" border="border-cctime" class="bg-cctime" field_name="generation" text=(i18n "Генерација")}}
   {{#each account_type.Student.generations}}
-    <option value="{{this.year}}">{{this.year}}</option>
+    <option value="{{this.year}}"{{#if (eq ../account_type.Student.previous.generation this.year)}}selected{{/if}}>{{this.year}}</option>
   {{/each}}
 {{/components/input_select}}
-{{> components/input_base_text type="number" field_name="index_number" }}
+{{> components/input_base_text type="number" field_name="index_number" value=account_type.Student.previous.index_number}}
 
 {{/if}}
 
 {{#if account_type.Professor}}
-{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса")}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име")}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме")}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Professor.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Professor.previous.first_name}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Professor.previous.last_name}}
 {{/if}}
 
 {{#if account_type.Administrator}}
-{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" label_text=(i18n "Имејл адреса")}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" label_text=(i18n "Име")}}
-{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" label_text=(i18n "Презиме")}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" label_text=(i18n "Имејл адреса") value=account_type.Administrator.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" label_text=(i18n "Име") value=account_type.Administrator.previous.first_name}}
+{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" label_text=(i18n "Презиме") value=account_type.Administrator.previous.last_name}}
 {{/if}}
 
 {{> components/button button_text=(i18n "Даље")}}
