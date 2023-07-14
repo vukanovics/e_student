@@ -138,6 +138,8 @@ impl Programs {
 
 pub type IndexNumber = u32;
 
+#[derive(Debug, Serialize, Selectable, Queryable, Identifiable)]
+#[diesel(table_name = indicies)]
 pub struct Index {
     pub id: u32,
     pub program: u32,

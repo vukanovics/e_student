@@ -3,7 +3,7 @@
 {{#*inline "body"}}
 <div class="overflow-x-auto overflow-hidden lg:w-fit w-[90vw]">
   <form class="flex flex-col items-center py-16 space-y-32 min-w-max lg:space-y-16 lg:py-8" action="" method="post">
-    <div class="grid grid-cols-5 items-end">
+    <div class="grid grid-cols-6 items-end">
       {{! Filters }}
       <div>
         {{> components/label id="filer_first_name" text=(i18n "Име")}}
@@ -29,6 +29,14 @@
         {{> components/input_select_account_type field_name="filter_account_type" previous=form.filter_account_type icon="la-user-circle" border="border-ccacctype" class="bg-ccacctype" text=(i18n "Тип налога")}}
         {{> components/input_select_sort field_name="sort_account_type" previous=form.sort_account_type border="border-ccacctype" class="bg-ccacctype"}}
       </div>
+      <div>
+        <div class="flex flex-row flex-shrink">
+          {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name="filter_program" value=form.filter_program}}
+          {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name="filter_index_number" value=form.filter_index_number}}
+          {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name="filter_generation" value=form.filter_generation}}
+        </div>
+        {{> components/input_select_sort field_name="sort_index" previous=form.sort_index border="border-ccuser" class="bg-ccuser"}}
+      </div>
       <div class="h-full">
         {{> components/button_table button_text=(i18n "Примени")}}
       </div>
@@ -46,6 +54,11 @@
         {{/if}}
         {{> components/cell_text text=this.email}}
         {{> components/cell_text text=this.account_type}}
+        {{#if this.index}}
+        {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
+        {{else}}
+        {{> components/cell_text text=(i18n "Нема број индекса")}}
+        {{/if}}
         <div class="flex flex-row items-center">
           {{> components/button_link_table button_href=(concat "users/delete/" this.id) button_text="Delete"}}
           {{> components/button_link_table button_href=(concat "users/edit/" this.id) button_text="Edit"}}

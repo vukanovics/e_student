@@ -20,9 +20,9 @@ use serde::Serialize;
 use crate::{
     database::{Connection, Database, SortDirection},
     error::Error,
-    index::{Generation, IndexNumber, Program},
+    index::{Generation, Index, IndexNumber, Program},
     models::Session,
-    schema::users,
+    schema::{generations, indicies, programs, users},
 };
 
 #[repr(u8)]
@@ -86,6 +86,21 @@ pub struct User {
     pub last_name: Option<String>,
     pub last_login_time: Option<NaiveDateTime>,
     pub deleted: bool,
+}
+
+#[derive(Serialize, Debug)]
+pub struct IndexGenerationProgram {
+    index: Index,
+    generation: Generation,
+    program: Program,
+}
+
+#[derive(Serialize, Debug)]
+pub struct UserWithIndex {
+    #[serde(flatten)]
+    pub user: User,
+    #[serde(flatten)]
+    pub index: Option<IndexGenerationProgram>,
 }
 
 impl User {
@@ -266,8 +281,8 @@ pub struct UsersRetrievalOptions {
     pub filter_account_type: Option<AccountType>,
     pub filter_first_name: Option<String>,
     pub filter_last_name: Option<String>,
-    pub filter_program: Option<Program>,
-    pub filter_generation: Option<Generation>,
+    pub filter_program: Option<String>,
+    pub filter_generation: Option<u32>,
     pub filter_index_number: Option<IndexNumber>,
 
     pub sort_by_email: Option<SortDirection>,
@@ -297,13 +312,20 @@ impl UsersRetrievalOptions {
     }
 }
 
-pub struct Users(pub Vec<User>);
+pub struct Users(pub Vec<UserWithIndex>);
 impl Users {
     pub fn get_all(
         connection: &mut Connection,
         options: UsersRetrievalOptions,
     ) -> Result<Users, Error> {
-        let mut query = users::table.filter(users::deleted.eq(false)).into_boxed();
+        let mut query = users::table
+            .left_join(
+                indicies::table
+                    .inner_join(generations::table)
+                    .inner_join(programs::table),
+            )
+            .filter(users::deleted.eq(false))
+            .into_boxed();
 
         if let Some(filter) = options.filter_email {
             query = query.filter(users::email.like(format!("%{}%", filter)))
@@ -319,6 +341,18 @@ impl Users {
 
         if let Some(filter) = options.filter_last_name {
             query = query.filter(users::last_name.like(format!("%{}%", filter)))
+        }
+
+        if let Some(filter) = options.filter_program {
+            query = query.filter(programs::short_name.like(format!("%{}%", filter)))
+        }
+
+        if let Some(filter) = options.filter_generation {
+            query = query.filter(generations::year.eq(filter))
+        }
+
+        if let Some(filter) = options.filter_index_number {
+            query = query.filter(indicies::number.eq(filter))
         }
 
         if let Some(order) = options.sort_by_first_name {
@@ -349,9 +383,36 @@ impl Users {
             };
         }
 
+        if let Some(order) = options.sort_by_index {
+            query = match order {
+                SortDirection::Ascending => query
+                    .then_order_by(programs::short_name.asc())
+                    .then_order_by(generations::year.asc())
+                    .then_order_by(indicies::number.asc()),
+                SortDirection::Descending => query
+                    .then_order_by(programs::short_name.desc())
+                    .then_order_by(generations::year.desc())
+                    .then_order_by(indicies::number.desc()),
+            };
+        }
+
         query
-            .load::<User>(connection)
-            .map(|users| Users { 0: users })
+            .load::<(User, Option<(Index, Generation, Program)>)>(connection)
+            .map(|mut users| {
+                let users = users
+                    .drain(..)
+                    .map(|(user, index)| {
+                        let index =
+                            index.map(|(index, generation, program)| IndexGenerationProgram {
+                                index,
+                                generation,
+                                program,
+                            });
+                        UserWithIndex { user, index }
+                    })
+                    .collect();
+                Users { 0: users }
+            })
             .map_err(Error::from)
     }
 }

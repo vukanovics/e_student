@@ -13,7 +13,7 @@ use crate::{
     error::Error,
     index::IndexNumber,
     localization::Script,
-    user::{AccountType, Administrator, User, Users, UsersRetrievalOptions},
+    user::{AccountType, Administrator, User, UserWithIndex, Users, UsersRetrievalOptions},
 };
 
 #[derive(Serialize, Debug)]
@@ -21,11 +21,15 @@ struct LayoutContext {
     #[serde(flatten)]
     base_layout_context: BaseLayoutContext,
     form: Option<FormData>,
-    users: Vec<User>,
+    users: Vec<UserWithIndex>,
 }
 
 impl LayoutContext {
-    pub async fn new(language: Script, user: &User, users: Vec<User>) -> Result<Self, Error> {
+    pub async fn new(
+        language: Script,
+        user: &User,
+        users: Vec<UserWithIndex>,
+    ) -> Result<Self, Error> {
         Ok(Self {
             base_layout_context: BaseLayoutContext::new(language, user).await?,
             form: None,
@@ -81,14 +85,14 @@ pub struct FormData {
     filter_first_name: String,
     filter_last_name: String,
     filter_index_number: Option<IndexNumber>,
-    // these can't be simply parsed from data
-    filter_program_string: Option<String>,
-    filter_generation_number: Option<u32>,
+    filter_program: String,
+    filter_generation: Option<u32>,
 
     sort_first_name: FormSortDirection,
     sort_last_name: FormSortDirection,
     sort_email: FormSortDirection,
     sort_account_type: FormSortDirection,
+    sort_index: FormSortDirection,
 }
 
 #[post("/users", data = "<form>", rank = 0)]
@@ -110,11 +114,14 @@ pub async fn post(
 
     options.filter_first_name = Some(form.filter_first_name.clone()).filter(|s| !s.is_empty());
     options.filter_last_name = Some(form.filter_last_name.clone()).filter(|s| !s.is_empty());
-
+    options.filter_program = Some(form.filter_program.clone()).filter(|s| !s.is_empty());
+    options.filter_index_number = form.filter_index_number;
+    options.filter_generation = form.filter_generation;
     options.sort_by_first_name = (&form.sort_first_name).into();
     options.sort_by_last_name = (&form.sort_last_name).into();
     options.sort_by_email = (&form.sort_email).into();
     options.sort_by_account_type = (&form.sort_account_type).into();
+    options.sort_by_index = (&form.sort_index).into();
 
     debug!("Options={:?}", options);
 
