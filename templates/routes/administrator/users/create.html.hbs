@@ -7,20 +7,20 @@
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="" method="post">
 
 {{#if account_type.Administrator}}
-<p>{{i18n "Нови администраторски налог"}}</p>
+  {{> components/text_small text=(i18n "Нови администраторски налог")}}
 {{/if}}
 
 {{#if account_type.Professor}}
-<p>{{i18n "Нови професорски налог"}}</p>
+  {{> components/text_small text=(i18n "Нови професорски налог")}}
 {{/if}}
 
 {{#if account_type.Student}}
-<p>{{i18n "Нови студентски налог"}}</p>
+  {{> components/text_small text=(i18n "Нови студентски налог")}}
 {{/if}}
 
 {{else}}
-<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="get">
-{{> components/input_select_account_type field_name="account_type"}}
+  <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="get">
+  {{> components/input_select_account_type field_name="account_type" icon="la-user-circle" border="border-ccacctype" class="bg-ccacctype" text=(i18n "Тип налога")}}
 {{/if}}
 
 {{#if account_type.Student}}
@@ -48,9 +48,9 @@
 {{/if}}
 
 {{#if account_type.Administrator}}
-{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" label_text=(i18n "Имејл адреса") value=account_type.Administrator.previous.email}}
-{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" label_text=(i18n "Име") value=account_type.Administrator.previous.first_name}}
-{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" label_text=(i18n "Презиме") value=account_type.Administrator.previous.last_name}}
+{{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Administrator.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Administrator.previous.first_name}}
+{{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Administrator.previous.last_name}}
 {{/if}}
 
 {{> components/button button_text=(i18n "Даље")}}

@@ -2,15 +2,21 @@
 
 {{#*inline "body"}}
 
-<p>This is the page for course {{name}}</p>
+<div class="flex flex-col justify-left">
+{{> components/caption text=name}}
 {{#each assignments}}
-  {{#if this.Grade}}
-    <p>Assignment: {{this.Grade.name}} - Grade: {{this.Grade.grade}}</p>
-  {{/if}}
-  {{#if this.Point}}
-    <p>Assignment: {{this.Point.name}} - Points: {{this.Point.points}} out of {{this.Point.max_points}}</p>
-  {{/if}}
+  <div class="flex flex-row justify-evenly"></div>
+    {{#if this.Grade}}     
+        {{> components/label id=this.Grade.name text=this.Grade.name}}
+        {{> components/gradebar id=this.Grade.name value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-500" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
+    {{/if}}
+    {{#if this.Point}}
+      {{> components/label id=this.Point.name text=this.Point.name}}
+      {{> components/pointbar value=this.Point.points maxvalue=this.Point.max_points icon="la-plus-circle" border="border-cccolq-500" bgcol="bg-cccolq-500 progress-bg:bg-cccolq-500" accentcol="progress:bg-cccolq-300" textcol="text-cccolq-50" iconcol="text-cccolq-200"}}
+    {{/if}}
+  </div>
 {{/each}}
+</div>
 
 {{/inline}}
 {{> base }}

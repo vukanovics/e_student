@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 <div class="border-8 lg:border-2 {{border}}">
-  <div class="flex items-center shadow-lg transition duration-300 ease-out {{bgcol}} ">
+  <div {{#if id}} id={{id}} {{/if}} class="flex items-center shadow-lg transition duration-300 ease-out {{bgcol}} ">
           <i class="mx-1 text-8xl {{icon}} las lg:text-2xl {{iconcol}}"></i>
           <div class="flex justify-center items-center w-full">
               {{> @partial-block}}
