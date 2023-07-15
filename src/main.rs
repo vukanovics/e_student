@@ -42,6 +42,10 @@ fn rocket() -> _ {
             handlebars::ConcatHelper::name(),
             handlebars::ConcatHelper::helper(),
         );
+        engines.handlebars.register_helper(
+            handlebars::RangeHelper::name(),
+            handlebars::RangeHelper::helper(),
+        );
         engines
             .handlebars
             .register_helper(handlebars::EqHelper::name(), handlebars::EqHelper::helper());
