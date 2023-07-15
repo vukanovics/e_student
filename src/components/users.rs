@@ -12,6 +12,7 @@ use crate::{
 pub struct LayoutContext {
     users: Vec<UserWithIndex>,
     form: Option<FormData>,
+    number_of_pages: u32,
 }
 
 #[derive(Serialize, FromFormField, Debug, Clone)]
@@ -47,36 +48,53 @@ pub struct FormData {
     sort_email: FormSortDirection,
     sort_account_type: FormSortDirection,
     sort_index: FormSortDirection,
+
+    page: u32,
+    max_per_page: u32,
 }
+
+const DEFAULT_USERS_PER_PAGE: u32 = 10;
 
 impl LayoutContext {
     pub async fn new(database: Database, form: Option<FormData>) -> Result<LayoutContext, Error> {
-        let mut options = UsersRetrievalOptions::new();
+        let mut options = UsersRetrievalOptions::new(0, DEFAULT_USERS_PER_PAGE);
 
         if let Some(form) = &form {
-            options.filter_email = Some(form.filter_email.clone()).filter(|s| !s.is_empty());
+            options.filters.filter_email =
+                Some(form.filter_email.clone()).filter(|s| !s.is_empty());
 
-            options.filter_account_type =
+            options.filters.filter_account_type =
                 Some(form.filter_account_type).filter(|_| form.filter_account_type_enabled);
 
-            options.filter_first_name =
+            options.filters.filter_first_name =
                 Some(form.filter_first_name.clone()).filter(|s| !s.is_empty());
-            options.filter_last_name =
+            options.filters.filter_last_name =
                 Some(form.filter_last_name.clone()).filter(|s| !s.is_empty());
-            options.filter_program = Some(form.filter_program.clone()).filter(|s| !s.is_empty());
-            options.filter_index_number = form.filter_index_number;
-            options.filter_generation = form.filter_generation;
+            options.filters.filter_program =
+                Some(form.filter_program.clone()).filter(|s| !s.is_empty());
+            options.filters.filter_index_number = form.filter_index_number;
+            options.filters.filter_generation = form.filter_generation;
+
             options.sort_by_first_name = (&form.sort_first_name).into();
             options.sort_by_last_name = (&form.sort_last_name).into();
             options.sort_by_email = (&form.sort_email).into();
             options.sort_by_account_type = (&form.sort_account_type).into();
             options.sort_by_index = (&form.sort_index).into();
+
+            options.page = form.page;
+            options.max_per_page = form.max_per_page;
         }
 
+        let filters = options.filters.clone();
+        let max_per_page = options.max_per_page;
         let users = database.run(move |c| Users::get_all(c, options)).await?;
+        let number_of_pages = database
+            .run(move |c| Users::get_number_of_pages(c, filters, max_per_page))
+            .await?;
         Ok(LayoutContext {
             users: users.0,
             form,
+            number_of_pages,
         })
     }
 }

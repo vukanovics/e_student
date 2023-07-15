@@ -2,6 +2,8 @@ use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use diesel::{
     backend::Backend,
     deserialize::FromSql,
+    helper_types::{Eq, Filter, InnerJoin, IntoBoxed, LeftJoin},
+    mysql::Mysql,
     prelude::*,
     serialize::ToSql,
     sql_types::{TinyInt, Unsigned},
@@ -275,8 +277,8 @@ impl UserBuilder {
     }
 }
 
-#[derive(Debug)]
-pub struct UsersRetrievalOptions {
+#[derive(Debug, Clone)]
+pub struct RetrievalFilters {
     pub filter_email: Option<String>,
     pub filter_account_type: Option<AccountType>,
     pub filter_first_name: Option<String>,
@@ -284,16 +286,9 @@ pub struct UsersRetrievalOptions {
     pub filter_program: Option<String>,
     pub filter_generation: Option<u32>,
     pub filter_index_number: Option<IndexNumber>,
-
-    pub sort_by_email: Option<SortDirection>,
-    pub sort_by_account_type: Option<SortDirection>,
-    pub sort_by_first_name: Option<SortDirection>,
-    pub sort_by_last_name: Option<SortDirection>,
-    // sorts by program, then generation, and finally the index number
-    pub sort_by_index: Option<SortDirection>,
 }
 
-impl UsersRetrievalOptions {
+impl RetrievalFilters {
     pub fn new() -> Self {
         Self {
             filter_email: None,
@@ -303,57 +298,102 @@ impl UsersRetrievalOptions {
             filter_program: None,
             filter_generation: None,
             filter_index_number: None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UsersRetrievalOptions {
+    pub filters: RetrievalFilters,
+    pub sort_by_email: Option<SortDirection>,
+    pub sort_by_account_type: Option<SortDirection>,
+    pub sort_by_first_name: Option<SortDirection>,
+    pub sort_by_last_name: Option<SortDirection>,
+    pub sort_by_index: Option<SortDirection>,
+
+    pub page: u32,
+    pub max_per_page: u32,
+}
+
+impl UsersRetrievalOptions {
+    pub fn new(page: u32, max_per_page: u32) -> Self {
+        Self {
+            filters: RetrievalFilters::new(),
             sort_by_email: None,
             sort_by_account_type: None,
             sort_by_first_name: None,
             sort_by_last_name: None,
             sort_by_index: None,
+            page,
+            max_per_page,
         }
     }
 }
 
 pub struct Users(pub Vec<UserWithIndex>);
+
+type UsersQuery = Filter<
+    LeftJoin<
+        users::table,
+        InnerJoin<InnerJoin<indicies::table, generations::table>, programs::table>,
+    >,
+    Eq<users::deleted, bool>,
+>;
+
+type BoxedUsersQuery<'a> = IntoBoxed<'a, UsersQuery, Mysql>;
+
 impl Users {
-    pub fn get_all(
-        connection: &mut Connection,
-        options: UsersRetrievalOptions,
-    ) -> Result<Users, Error> {
-        let mut query = users::table
+    pub fn query_new<'a>() -> BoxedUsersQuery<'a> {
+        users::table
             .left_join(
                 indicies::table
                     .inner_join(generations::table)
                     .inner_join(programs::table),
             )
             .filter(users::deleted.eq(false))
-            .into_boxed();
+            .into_boxed()
+    }
 
-        if let Some(filter) = options.filter_email {
+    pub fn query_apply_filters<'a>(
+        mut query: BoxedUsersQuery<'a>,
+        filters: RetrievalFilters,
+    ) -> BoxedUsersQuery<'a> {
+        if let Some(filter) = filters.filter_email {
             query = query.filter(users::email.like(format!("%{}%", filter)))
         }
 
-        if let Some(filter) = options.filter_account_type {
+        if let Some(filter) = filters.filter_account_type {
             query = query.filter(users::account_type.eq(filter))
         }
 
-        if let Some(filter) = options.filter_first_name {
+        if let Some(filter) = filters.filter_first_name {
             query = query.filter(users::first_name.like(format!("%{}%", filter)))
         }
 
-        if let Some(filter) = options.filter_last_name {
+        if let Some(filter) = filters.filter_last_name {
             query = query.filter(users::last_name.like(format!("%{}%", filter)))
         }
 
-        if let Some(filter) = options.filter_program {
+        if let Some(filter) = filters.filter_program {
             query = query.filter(programs::short_name.like(format!("%{}%", filter)))
         }
 
-        if let Some(filter) = options.filter_generation {
+        if let Some(filter) = filters.filter_generation {
             query = query.filter(generations::year.eq(filter))
         }
 
-        if let Some(filter) = options.filter_index_number {
+        if let Some(filter) = filters.filter_index_number {
             query = query.filter(indicies::number.eq(filter))
         }
+        query
+    }
+
+    pub fn get_all(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+    ) -> Result<Users, Error> {
+        let query = Self::query_new();
+        let mut query = Self::query_apply_filters(query, options.filters);
 
         if let Some(order) = options.sort_by_first_name {
             query = match order {
@@ -396,6 +436,10 @@ impl Users {
             };
         }
 
+        let query = query
+            .limit(options.max_per_page as i64)
+            .offset((options.max_per_page * options.page) as i64);
+
         query
             .load::<(User, Option<(Index, Generation, Program)>)>(connection)
             .map(|mut users| {
@@ -414,6 +458,20 @@ impl Users {
                 Users { 0: users }
             })
             .map_err(Error::from)
+    }
+
+    pub fn get_number_of_pages(
+        connection: &mut Connection,
+        filters: RetrievalFilters,
+        max_per_page: u32,
+    ) -> Result<u32, Error> {
+        let query = Self::query_new();
+        let query = Self::query_apply_filters(query, filters);
+        query
+            .count()
+            .get_result(connection)
+            .map_err(Error::from)
+            .map(|c: i64| (c as u32) / max_per_page + 1)
     }
 }
 
