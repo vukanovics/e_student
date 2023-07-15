@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-{{> components/users_form users=users}}
+{{> components/users_form form_name="users_form" users=users.users form=users.form}}
 <div class="flex">
   {{> components/button_link button_href="users/create" button_text="Create a new user"}}
 </div>

@@ -3,6 +3,7 @@
 
 mod assignment;
 mod base_layout_context;
+mod components;
 mod course;
 mod database;
 mod error;
