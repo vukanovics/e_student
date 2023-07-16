@@ -22,3 +22,7 @@ rocket_dyn_templates = { version = "0.1.0-rc.3", features = ["handlebars"] }
 rocket_sync_db_pools = { version = "0.1.0-rc.3", features = ["diesel_mysql_pool"] }
 serde = { version = "1.0.160", features = ["serde_derive"] }
 translitrs = "0.2.2"
+
+[profile.dev2]
+inherits = "dev"
+

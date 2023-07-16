@@ -10,7 +10,7 @@ use crate::{
     schema::{generations, programs},
 };
 
-#[derive(Queryable, Selectable, Debug, Serialize, Identifiable)]
+#[derive(Queryable, Selectable, Debug, Serialize, Identifiable, Clone)]
 pub struct Generation {
     pub id: u32,
     pub year: u32,
@@ -67,7 +67,7 @@ impl Generations {
     }
 }
 
-#[derive(Queryable, Selectable, Debug, Serialize, Identifiable)]
+#[derive(Queryable, Selectable, Debug, Serialize, Identifiable, Clone)]
 pub struct Program {
     pub id: u32,
     pub short_name: String,
@@ -138,7 +138,7 @@ impl Programs {
 
 pub type IndexNumber = u32;
 
-#[derive(Debug, Serialize, Selectable, Queryable, Identifiable)]
+#[derive(Debug, Serialize, Selectable, Queryable, Identifiable, Clone)]
 #[diesel(table_name = indicies)]
 pub struct Index {
     pub id: u32,

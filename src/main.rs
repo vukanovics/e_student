@@ -69,6 +69,8 @@ fn rocket() -> _ {
                 professor::course::assignments::create::get,
                 professor::course::assignments::create::post_grade,
                 professor::course::assignments::create::post_point,
+                professor::course::enrol::get,
+                professor::course::enrol::post,
                 administrator::courses::get,
                 administrator::users::get,
                 administrator::users::post,

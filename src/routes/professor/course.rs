@@ -1,5 +1,6 @@
 pub mod assignments;
 pub mod delete;
+pub mod enrol;
 
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;

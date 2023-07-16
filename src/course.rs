@@ -8,6 +8,58 @@ use crate::{
     user::{User, UserId},
 };
 
+#[derive(Clone, Debug, Queryable, Selectable, Serialize)]
+pub struct Enrolment {
+    pub course: u32,
+    pub student: u32,
+}
+
+impl Enrolment {
+    pub fn create(
+        connection: &mut Connection,
+        course: CourseId,
+        student: UserId,
+    ) -> Result<(), Error> {
+        diesel::insert_into(enrolments::table)
+            .values((
+                enrolments::course.eq(course),
+                enrolments::student.eq(student),
+            ))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
+    }
+
+    pub fn delete(&self, connection: &mut Connection) -> Result<(), Error> {
+        diesel::delete(
+            enrolments::table.filter(
+                enrolments::course
+                    .eq(self.course)
+                    .and(enrolments::student.eq(self.student)),
+            ),
+        )
+        .execute(connection)
+        .map_err(Error::from)
+        .map(|_| ())
+    }
+
+    pub fn get(
+        connection: &mut Connection,
+        course: CourseId,
+        student: UserId,
+    ) -> Result<Self, Error> {
+        enrolments::table
+            .filter(
+                enrolments::course
+                    .eq(course)
+                    .and(enrolments::student.eq(student)),
+            )
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+}
+
 pub type CourseId = u32;
 
 #[derive(Clone, Debug, Queryable, Selectable, Serialize, Identifiable)]

@@ -24,7 +24,7 @@ use crate::{
     error::Error,
     index::{Generation, Index, IndexNumber, Program},
     models::Session,
-    schema::{generations, indicies, programs, users},
+    schema::{enrolments, generations, indicies, programs, users},
 };
 
 #[repr(u8)]
@@ -90,18 +90,25 @@ pub struct User {
     pub deleted: bool,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct IndexGenerationProgram {
+    #[diesel(embed)]
     index: Index,
+    #[diesel(embed)]
     generation: Generation,
+    #[diesel(embed)]
     program: Program,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct UserWithIndex {
     #[serde(flatten)]
+    #[diesel(embed)]
     pub user: User,
     #[serde(flatten)]
+    #[diesel(embed)]
     pub index: Option<IndexGenerationProgram>,
 }
 
@@ -302,15 +309,31 @@ impl RetrievalFilters {
     }
 }
 
-#[derive(Debug)]
-pub struct UsersRetrievalOptions {
-    pub filters: RetrievalFilters,
+#[derive(Debug, Clone)]
+pub struct RetrievalSorts {
     pub sort_by_email: Option<SortDirection>,
     pub sort_by_account_type: Option<SortDirection>,
     pub sort_by_first_name: Option<SortDirection>,
     pub sort_by_last_name: Option<SortDirection>,
     pub sort_by_index: Option<SortDirection>,
+}
 
+impl RetrievalSorts {
+    pub fn new() -> Self {
+        Self {
+            sort_by_email: None,
+            sort_by_account_type: None,
+            sort_by_first_name: None,
+            sort_by_last_name: None,
+            sort_by_index: None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UsersRetrievalOptions {
+    pub filters: RetrievalFilters,
+    pub sorts: RetrievalSorts,
     pub page: u32,
     pub max_per_page: u32,
 }
@@ -319,18 +342,14 @@ impl UsersRetrievalOptions {
     pub fn new(page: u32, max_per_page: u32) -> Self {
         Self {
             filters: RetrievalFilters::new(),
-            sort_by_email: None,
-            sort_by_account_type: None,
-            sort_by_first_name: None,
-            sort_by_last_name: None,
-            sort_by_index: None,
+            sorts: RetrievalSorts::new(),
             page,
             max_per_page,
         }
     }
 }
 
-pub struct Users(pub Vec<UserWithIndex>);
+pub struct Users(pub Vec<User>);
 
 type UsersQuery = Filter<
     LeftJoin<
@@ -388,42 +407,39 @@ impl Users {
         query
     }
 
-    pub fn get_all(
-        connection: &mut Connection,
-        options: UsersRetrievalOptions,
-    ) -> Result<Users, Error> {
-        let query = Self::query_new();
-        let mut query = Self::query_apply_filters(query, options.filters);
-
-        if let Some(order) = options.sort_by_first_name {
+    pub fn query_apply_sorts<'a>(
+        mut query: BoxedUsersQuery<'a>,
+        sorts: RetrievalSorts,
+    ) -> BoxedUsersQuery<'a> {
+        if let Some(order) = sorts.sort_by_first_name {
             query = match order {
                 SortDirection::Ascending => query.then_order_by(users::first_name.asc()),
                 SortDirection::Descending => query.then_order_by(users::first_name.desc()),
             };
         }
 
-        if let Some(order) = options.sort_by_last_name {
+        if let Some(order) = sorts.sort_by_last_name {
             query = match order {
                 SortDirection::Ascending => query.then_order_by(users::last_name.asc()),
                 SortDirection::Descending => query.then_order_by(users::last_name.desc()),
             };
         }
 
-        if let Some(order) = options.sort_by_email {
+        if let Some(order) = sorts.sort_by_email {
             query = match order {
                 SortDirection::Ascending => query.then_order_by(users::email.asc()),
                 SortDirection::Descending => query.then_order_by(users::email.desc()),
             };
         }
 
-        if let Some(order) = options.sort_by_account_type {
+        if let Some(order) = sorts.sort_by_account_type {
             query = match order {
                 SortDirection::Ascending => query.then_order_by(users::account_type.asc()),
                 SortDirection::Descending => query.then_order_by(users::account_type.desc()),
             };
         }
 
-        if let Some(order) = options.sort_by_index {
+        if let Some(order) = sorts.sort_by_index {
             query = match order {
                 SortDirection::Ascending => query
                     .then_order_by(programs::short_name.asc())
@@ -436,27 +452,35 @@ impl Users {
             };
         }
 
-        let query = query
-            .limit(options.max_per_page as i64)
-            .offset((options.max_per_page * options.page) as i64);
+        query
+    }
+
+    pub fn query_apply_pagination<'a>(
+        query: BoxedUsersQuery<'a>,
+        max_per_page: u32,
+        page: u32,
+    ) -> BoxedUsersQuery<'a> {
+        query
+            .limit(max_per_page as i64)
+            .offset((max_per_page * page) as i64)
+    }
+}
+
+pub struct UsersWithIndex(pub Vec<UserWithIndex>);
+
+impl UsersWithIndex {
+    pub fn get(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+    ) -> Result<UsersWithIndex, Error> {
+        let query = Users::query_new();
+        let query = Users::query_apply_filters(query, options.filters);
+        let query = Users::query_apply_sorts(query, options.sorts);
+        let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
 
         query
-            .load::<(User, Option<(Index, Generation, Program)>)>(connection)
-            .map(|mut users| {
-                let users = users
-                    .drain(..)
-                    .map(|(user, index)| {
-                        let index =
-                            index.map(|(index, generation, program)| IndexGenerationProgram {
-                                index,
-                                generation,
-                                program,
-                            });
-                        UserWithIndex { user, index }
-                    })
-                    .collect();
-                Users { 0: users }
-            })
+            .load::<UserWithIndex>(connection)
+            .map(|users| UsersWithIndex { 0: users })
             .map_err(Error::from)
     }
 
@@ -465,13 +489,54 @@ impl Users {
         filters: RetrievalFilters,
         max_per_page: u32,
     ) -> Result<u32, Error> {
-        let query = Self::query_new();
-        let query = Self::query_apply_filters(query, filters);
+        let query = Users::query_new();
+        let query = Users::query_apply_filters(query, filters);
         query
             .count()
             .get_result(connection)
             .map_err(Error::from)
             .map(|c: i64| (c as u32) / max_per_page + 1)
+    }
+}
+
+#[derive(Serialize, Debug, Clone, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct UserWithIndexAndEnrolment {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub user: User,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub index: Option<IndexGenerationProgram>,
+    #[diesel(select_expression = enrolments::course.nullable().is_not_null())]
+    #[diesel(select_expression_type = diesel::dsl::IsNotNull<diesel::dsl::Nullable<enrolments::course>>)]
+    pub is_enrolled: bool,
+}
+
+pub struct UsersWithIndexAndEnrolment(pub Vec<UserWithIndexAndEnrolment>);
+
+impl UsersWithIndexAndEnrolment {
+    pub fn get(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+        course: u32,
+    ) -> Result<Self, Error> {
+        let query = Users::query_new();
+
+        let query = Users::query_apply_filters(query, options.filters);
+        let query = Users::query_apply_sorts(query, options.sorts);
+        let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
+
+        query
+            .left_join(
+                enrolments::table.on(users::id
+                    .eq(enrolments::student)
+                    .and(enrolments::course.eq(course))),
+            )
+            .select(UserWithIndexAndEnrolment::as_select())
+            .load::<UserWithIndexAndEnrolment>(connection)
+            .map_err(Error::from)
+            .map(|u| Self { 0: u })
     }
 }
 

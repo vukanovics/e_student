@@ -35,7 +35,7 @@ impl Database {
     }
 }
 
-#[derive(Debug, FromFormField, Serialize)]
+#[derive(Debug, FromFormField, Serialize, Clone)]
 pub enum SortDirection {
     Ascending,
     Descending,

@@ -14,6 +14,7 @@ pub enum Error {
     NotLoggedIn,
     InvalidLanguageCode,
     InvalidAccountTypeValue,
+    NoEnrolDropdownsReceived,
 }
 
 impl From<diesel::result::Error> for Error {

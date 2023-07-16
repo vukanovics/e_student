@@ -5,14 +5,33 @@ use crate::{
     database::{Database, SortDirection},
     error::Error,
     index::IndexNumber,
-    user::{AccountType, UserWithIndex, Users, UsersRetrievalOptions},
+    user::{
+        AccountType, UserId, UserWithIndex, UserWithIndexAndEnrolment, UsersRetrievalOptions,
+        UsersWithIndex, UsersWithIndexAndEnrolment,
+    },
 };
 
 #[derive(Serialize, Debug)]
-pub struct LayoutContext {
+pub struct EditData {
     users: Vec<UserWithIndex>,
+}
+
+#[derive(Serialize, Debug)]
+pub struct EnrolData {
+    users: Vec<UserWithIndexAndEnrolment>,
+}
+
+#[derive(Serialize, Debug)]
+pub enum ControlType {
+    Edit(EditData),
+    Enrol(EnrolData),
+}
+
+#[derive(Serialize, Debug)]
+pub struct LayoutContext {
     form: Option<FormData>,
     number_of_pages: u32,
+    control_type: ControlType,
 }
 
 #[derive(Serialize, FromFormField, Debug, Clone)]
@@ -29,6 +48,27 @@ impl Into<Option<SortDirection>> for &FormSortDirection {
             FormSortDirection::Ascending => Some(SortDirection::Ascending),
             FormSortDirection::Descending => Some(SortDirection::Descending),
         }
+    }
+}
+
+#[derive(Serialize, FromForm, Debug, Clone)]
+pub struct EnrolDropdown {
+    user: UserId,
+    old_value: bool,
+    new_value: bool,
+}
+
+impl EnrolDropdown {
+    pub fn user(&self) -> UserId {
+        self.user
+    }
+
+    pub fn value_changed(&self) -> bool {
+        self.old_value != self.new_value
+    }
+
+    pub fn new_value(&self) -> bool {
+        self.new_value
     }
 }
 
@@ -51,12 +91,33 @@ pub struct FormData {
 
     page: u32,
     max_per_page: u32,
+
+    enrol_dropdowns: Vec<EnrolDropdown>,
+}
+
+impl FormData {
+    pub fn enrol_dropdowns(&self) -> &Vec<EnrolDropdown> {
+        self.enrol_dropdowns.as_ref()
+    }
+}
+
+pub struct EnrolOptions {
+    pub course: u32,
+}
+
+pub enum ControlTypeOptions {
+    Edit,
+    Enrol(EnrolOptions),
 }
 
 const DEFAULT_USERS_PER_PAGE: u32 = 10;
 
 impl LayoutContext {
-    pub async fn new(database: Database, form: Option<FormData>) -> Result<LayoutContext, Error> {
+    pub async fn new(
+        database: Database,
+        form: Option<FormData>,
+        control_type: ControlTypeOptions,
+    ) -> Result<LayoutContext, Error> {
         let mut options = UsersRetrievalOptions::new(0, DEFAULT_USERS_PER_PAGE);
 
         if let Some(form) = &form {
@@ -75,11 +136,11 @@ impl LayoutContext {
             options.filters.filter_index_number = form.filter_index_number;
             options.filters.filter_generation = form.filter_generation;
 
-            options.sort_by_first_name = (&form.sort_first_name).into();
-            options.sort_by_last_name = (&form.sort_last_name).into();
-            options.sort_by_email = (&form.sort_email).into();
-            options.sort_by_account_type = (&form.sort_account_type).into();
-            options.sort_by_index = (&form.sort_index).into();
+            options.sorts.sort_by_first_name = (&form.sort_first_name).into();
+            options.sorts.sort_by_last_name = (&form.sort_last_name).into();
+            options.sorts.sort_by_email = (&form.sort_email).into();
+            options.sorts.sort_by_account_type = (&form.sort_account_type).into();
+            options.sorts.sort_by_index = (&form.sort_index).into();
 
             options.page = form.page;
             options.max_per_page = form.max_per_page;
@@ -87,14 +148,29 @@ impl LayoutContext {
 
         let filters = options.filters.clone();
         let max_per_page = options.max_per_page;
-        let users = database.run(move |c| Users::get_all(c, options)).await?;
         let number_of_pages = database
-            .run(move |c| Users::get_number_of_pages(c, filters, max_per_page))
+            .run(move |c| UsersWithIndex::get_number_of_pages(c, filters, max_per_page))
             .await?;
+
+        let control_type = match control_type {
+            ControlTypeOptions::Edit => {
+                let users = database
+                    .run(move |c| UsersWithIndex::get(c, options))
+                    .await?;
+                ControlType::Edit(EditData { users: users.0 })
+            }
+            ControlTypeOptions::Enrol(settings) => {
+                let users = database
+                    .run(move |c| UsersWithIndexAndEnrolment::get(c, options, settings.course))
+                    .await?;
+                ControlType::Enrol(EnrolData { users: users.0 })
+            }
+        };
+
         Ok(LayoutContext {
-            users: users.0,
             form,
             number_of_pages,
+            control_type,
         })
     }
 }

@@ -8,7 +8,7 @@ use serde::Serialize;
 
 use crate::{
     base_layout_context::BaseLayoutContext,
-    components::users,
+    components::users::{self, ControlTypeOptions},
     database::Database,
     error::Error,
     localization::Script,
@@ -43,7 +43,7 @@ pub async fn get(
 ) -> Result<Template, Status> {
     let user = administrator.0;
 
-    let users_context = users::LayoutContext::new(database, None).await?;
+    let users_context = users::LayoutContext::new(database, None, ControlTypeOptions::Edit).await?;
 
     let context = LayoutContext::new(language, user, users_context).await?;
 
@@ -64,8 +64,12 @@ pub async fn post(
 ) -> Result<Template, Status> {
     let user = administrator.0;
 
-    let users_context =
-        users::LayoutContext::new(database, Some(form.into_inner().users_form)).await?;
+    let users_context = users::LayoutContext::new(
+        database,
+        Some(form.into_inner().users_form),
+        ControlTypeOptions::Edit,
+    )
+    .await?;
     let context = LayoutContext::new(language, user, users_context).await?;
 
     Ok(Template::render("routes/administrator/users", context))
