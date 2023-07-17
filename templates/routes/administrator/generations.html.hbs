@@ -2,30 +2,32 @@
 
 {{#*inline "body"}}
 
-<div class="flex flex-col items-center lg:grid lg:grid-cols-4">
-  {{#each generations}}
-    <div>
-      {{> components/label text=this.year}}
-    </div>
-    <div class="flex flex-row items-center space-x-16">
-      <form action="generations/delete/{{this.id}}" method="get">
-        {{> components/button button_text="Delete"}}
-      </form>
-    </div>
-  {{/each}}
-</div>
-<div class="flex">
-  <form action="generations" method="post">
-    {{> components/label text="Year" }}
-    {{> components/input_base_text type="number" field_name="year" }}
-    {{> components/button button_text="Create a generation"}}
+<div class="flex flex-col items-center space-y-16">
+  <form class="flex flex-col items-center space-y-2" action="generations" method="post">
+    {{> components/input_text icon="la-calendar" border="border-cctime" class="bg-cctime"  type="number" field_name="year" text=(i18n "Година")}}
+    {{> components/button button_text=(i18n "Креирај генерацију")}}
   </form>
   {{#if show_error_duplicate_year}}
     {{> components/error text=(i18n "Генерација са том годином већ постоји!")}}
   {{/if}}
   {{#if show_success_message}}
-    {{> components/success text=(i18n "Генерација додата!")}}
+    {{> components/success text=(i18n "Генерација је додата!")}}
   {{/if}}
+</div>
+
+<div class="grid grid-cols-2 gap-4 items-center">
+  {{#each generations}}
+  <div>
+    <div class="flex flex-col items-center">
+      {{> components/label text=this.year}}
+    </div>
+    <div class="flex flex-row items-center space-x-16">
+      <form action="generations/delete/{{this.id}}" method="get">
+        {{> components/button button_text=(i18n "Обриши")}}
+      </form>
+    </div>
+  </div>    
+  {{/each}}
 </div>
 
 {{/inline}}

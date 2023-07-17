@@ -1,11 +1,11 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-{{> components/caption text=(i18n "Обриши програм")}}
+{{> components/caption text=(i18n "Обриши смер")}}
 {{> components/label text=deleting_program.short_name}}
 {{> components/label text=deleting_program.full_name}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{deleting_program.id}}" method="post">
-  {{> components/button button_text=(i18n "Обриши програм")}}
+  {{> components/button button_text=(i18n "Обриши смер")}}
 </form>
 {{/inline}}
 {{> base }}

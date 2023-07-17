@@ -20,7 +20,6 @@ module.exports = {
         icon: colors.white,
         iconbg: colors.gray[300],
         contentbg: colors.white,
-        contentbgodd: colors.gray[50],
         contentdiv: colors.gray[200],
         barbg: colors.white,
         barfg: colors.gray[200],
@@ -37,6 +36,7 @@ module.exports = {
         ccpass: colors.red[600],
         ccemail: colors.cyan[600],
         cctime: colors.blue[600],
+        ccprog: colors.lime[500],
 
         errorfg: colors.red[500],
         errorbg: colors.red[300],

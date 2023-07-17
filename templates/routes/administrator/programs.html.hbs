@@ -2,36 +2,35 @@
 
 {{#*inline "body"}}
 
-<div class="flex flex-col items-center lg:grid lg:grid-cols-4">
-  {{#each programs}}
-    <div>
-      {{> components/label text=this.short_name}}
-      {{> components/label text=this.full_name}}
-    </div>
-    <div class="flex flex-row items-center space-x-16">
-      <form action="programs/delete/{{this.id}}" method="get">
-        {{> components/button button_text="Delete"}}
-      </form>
-    </div>
-  {{/each}}
-</div>
-<div class="flex">
-  <form action="programs" method="post">
-    {{> components/label text="Short name" }}
-    {{> components/input_text field_name="short_name" }}
-    {{> components/label text="Full name" }}
-    {{> components/input_text field_name="full_name" }}
-    {{> components/button button_text="Create a program"}}
+<div class="flex flex-col items-center space-y-4">
+  <form class="flex flex-col items-center space-y-4" action="programs" method="post">
+    {{> components/input_text icon="la-graduation-cap" border="border-ccprog" class="bg-ccprog" field_name="short_name" text=(i18n "Скраћеница")}}
+    {{> components/input_text icon="la-user-graduate" border="border-ccprog" class="bg-ccprog" field_name="full_name" text=(i18n "Пуно име")}}
+    {{> components/button button_text=(i18n "Креирај смер")}}
   </form>
   {{#if show_error_duplicate_name}}
-    {{> components/error text=(i18n "Програм са тим именом већ постоји!")}}
+    {{> components/error text=(i18n "Смер са тим именом већ постоји!")}}
   {{/if}}
   {{#if show_error_short_name_too_long}}
     {{> components/error text=(i18n "Кратко име је предугачко!")}}
   {{/if}}
   {{#if show_success_message}}
-    {{> components/success text=(i18n "Програм додат!")}}
+    {{> components/success text=(i18n "Смер додат!")}}
   {{/if}}
+</div>
+
+<div class="grid grid-cols-2 gap-4 items-center">
+  {{#each programs}}
+  <div>
+    <div class="flex flex-col items-center">
+      {{> components/label text=this.short_name}}
+      {{> components/label text=this.full_name}}
+      <form action="programs/delete/{{this.id}}" method="get">
+        {{> components/button button_text=(i18n "Обриши Смер")}}
+      </form>
+    </div>
+  </div>
+  {{/each}}
 </div>
 
 {{/inline}}
