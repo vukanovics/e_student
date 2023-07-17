@@ -1,7 +1,6 @@
 {{! vim: set ft=html: }}
-
-<div class="overflow-x-auto overflow-hidden lg:w-fit w-[90vw]">
-  <form action="" method="post">
+<form class="flex flex-col items-center space-y-16" action="" method="post">
+  <div class="overflow-x-auto overflow-hidden lg:w-fit w-[90vw]">
     <table class="border-spacing-0">
       <tr>
         {{! Filters }}
@@ -45,14 +44,14 @@
               {{#if this.first_name}}
                 {{> components/cell_text text=this.first_name}}
               {{else}}
-                {{> components/cell_text text=(i18n "Није намештено")}}
+                {{> components/cell_text_gray text=(i18n "Није намештено")}}
               {{/if}}
             </td>
             <td class="h-full">
               {{#if this.last_name}}
                 {{> components/cell_text text=this.last_name}}
               {{else}}
-                {{> components/cell_text text=(i18n "Није намештено")}}
+                {{> components/cell_text_gray text=(i18n "Није намештено")}}
               {{/if}}
             </td>
             <td class="h-full">{{> components/cell_text text=this.email}}</td>
@@ -61,7 +60,7 @@
               {{#if this.index}}
                 {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
               {{else}}
-                {{> components/cell_text text=(i18n "Нема број индекса")}}
+                {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
               {{/if}}
             </td>
             <td class="flex flex-row items-center w-[32rem] lg:w-64">
@@ -78,14 +77,14 @@
               {{#if this.first_name}}
                 {{> components/cell_text text=this.first_name}}
               {{else}}
-                {{> components/cell_text text=(i18n "Није намештено")}}
+                {{> components/cell_text_gray text=(i18n "Није намештено")}}
               {{/if}}
             </td>
             <td class="h-full">
               {{#if this.last_name}}
                 {{> components/cell_text text=this.last_name}}
               {{else}}
-                {{> components/cell_text text=(i18n "Није намештено")}}
+                {{> components/cell_text_gray text=(i18n "Није намештено")}}
               {{/if}}
             </td>
             <td class="h-full">{{> components/cell_text text=this.email}}</td>
@@ -94,7 +93,7 @@
               {{#if this.index}}
                 {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
               {{else}}
-                {{> components/cell_text text=(i18n "Нема број индекса")}}
+                {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
               {{/if}}
             </td>
             <td class="flex flex-row items-center w-[32rem] lg:w-64">
@@ -108,21 +107,18 @@
           </tr>
           {{/each}}
         {{/if}}
-      </table>
-    </div>
-    <div class="flex">
-      <p>Current page:</p>
-      <select name={{concat form_name ".page"}}>
+    </table>
+  </div>
+  <div class="flex flex-row items-center space-x-8">
+      {{#> components/input_select icon="la-file-alt" border="border-cctable" class="bg-cctable" field_name=(concat form_name ".page")}}
         {{#each (range 0 1 data.number_of_pages)}}
           <option value="{{this}}" {{#if (eq ../data.form.page this)}}selected{{/if}}>{{this}}</option>
         {{/each}}
-      </select>
-      <p>Show this many per page:</p>
-      <select name={{concat form_name ".max_per_page"}}>
+      {{/components/input_select}}
+      {{#> components/input_select icon="la-stream" border="border-cctable" class="bg-cctable" field_name=(concat form_name ".max_per_page")}}
         {{#each (range 10 5 50)}}
           <option value="{{this}}" {{#if (eq ../data.form.max_per_page this)}}selected{{/if}}>{{this}}</option>
         {{/each}}
-      </select>
-    </div>
-  </form>
-</div>
+      {{/components/input_select}}
+    </div>  
+</form>
