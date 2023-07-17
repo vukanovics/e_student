@@ -96,13 +96,13 @@
                 {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
               {{/if}}
             </td>
-            <td class="flex flex-row items-center w-[32rem] lg:w-64">
+            <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".user"}} value={{this.id}} hidden>
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".old_value"}} value={{#if this.is_enrolled}}"on"{{else}}"off"{{/if}} hidden>
-              <select name={{concat ../form_name ".enrol_dropdowns." @index ".new_value"}}>
-                <option value="on" {{#if this.is_enrolled}}selected{{/if}}>Enrolled</option>
-                <option value="off"{{#unless this.is_enrolled}}selected{{/unless}}>Not enrolled</option>
-              </select>
+              {{#> components/input_cell_select border="border-cctable" class="bg-cctable" field_name=(concat ../form_name ".enrol_dropdowns." @index ".new_value")}}
+                <option value="on" {{#if this.is_enrolled}}selected{{/if}}>{{i18n "Корисник је уписан"}}</option>
+                <option value="off"{{#unless this.is_enrolled}}selected{{/unless}}>{{i18n "Корисник није уписан"}}</option>
+              {{/components/input_cell_select}}
             </td>
           </tr>
           {{/each}}
