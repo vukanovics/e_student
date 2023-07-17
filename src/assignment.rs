@@ -20,6 +20,7 @@ pub struct GradeAssignment {
     pub id: u32,
     pub course: u32,
     pub name: String,
+    pub url: String,
     pub deleted: bool,
 }
 
@@ -28,6 +29,7 @@ pub struct GradeAssignment {
 pub struct NewGradeAssignment<'a> {
     pub course: CourseId,
     pub name: &'a str,
+    pub url: &'a str,
 }
 
 impl GradeAssignment {
@@ -35,9 +37,10 @@ impl GradeAssignment {
         connection: &mut Connection,
         course: CourseId,
         name: &'a str,
+        url: &'a str,
     ) -> Result<(), Error> {
         diesel::insert_into(grade_assignments::table)
-            .values(NewGradeAssignment { course, name })
+            .values(NewGradeAssignment { course, name, url })
             .execute(connection)
             .map(|_| ())
             .map_err(Error::from)
@@ -50,6 +53,7 @@ pub struct PointAssignment {
     pub id: u32,
     pub course: u32,
     pub name: String,
+    pub url: String,
     pub max_points: u32,
     pub deleted: bool,
 }
@@ -59,6 +63,7 @@ pub struct PointAssignment {
 pub struct NewPointAssignment<'a> {
     pub course: CourseId,
     pub name: &'a str,
+    pub url: &'a str,
     pub max_points: u32,
 }
 
@@ -67,12 +72,14 @@ impl PointAssignment {
         connection: &mut Connection,
         course: CourseId,
         name: &'a str,
+        url: &'a str,
         max_points: u32,
     ) -> Result<(), Error> {
         diesel::insert_into(point_assignments::table)
             .values(NewPointAssignment {
                 course,
                 name,
+                url,
                 max_points,
             })
             .execute(connection)

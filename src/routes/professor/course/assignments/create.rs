@@ -111,8 +111,10 @@ pub async fn post_grade(
         ));
     }
 
+    let url = crate::util::string_to_url(&form.name);
+
     database
-        .run(move |c| GradeAssignment::create(c, course.id, &form.name))
+        .run(move |c| GradeAssignment::create(c, course.id, &form.name, &url))
         .await?;
 
     Ok(Template::render(
@@ -157,8 +159,10 @@ pub async fn post_point(
         ));
     }
 
+    let url = crate::util::string_to_url(&form.name);
+
     database
-        .run(move |c| PointAssignment::create(c, course.id, &form.name, form.max_points))
+        .run(move |c| PointAssignment::create(c, course.id, &form.name, &url, form.max_points))
         .await?;
 
     Ok(Template::render(

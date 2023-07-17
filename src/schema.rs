@@ -43,6 +43,7 @@ diesel::table! {
         id -> Unsigned<Integer>,
         course -> Unsigned<Integer>,
         name -> Varchar,
+        url -> Varchar,
         deleted -> Bool,
     }
 }
@@ -74,6 +75,7 @@ diesel::table! {
         created -> Nullable<Datetime>,
         course -> Unsigned<Integer>,
         name -> Varchar,
+        url -> Varchar,
         deleted -> Bool,
     }
 }
@@ -93,6 +95,7 @@ diesel::table! {
         id -> Unsigned<Integer>,
         course -> Unsigned<Integer>,
         name -> Varchar,
+        url -> Varchar,
         max_points -> Unsigned<Integer>,
         deleted -> Bool,
     }
@@ -125,6 +128,7 @@ diesel::table! {
         created -> Nullable<Datetime>,
         course -> Unsigned<Integer>,
         name -> Varchar,
+        url -> Varchar,
         max_points -> Unsigned<Integer>,
         deleted -> Bool,
     }

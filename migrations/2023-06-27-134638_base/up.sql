@@ -190,7 +190,11 @@ CREATE TABLE point_assignments (
   course INTEGER UNSIGNED NOT NULL,
   CONSTRAINT fk_point_assignments_course FOREIGN KEY (course) REFERENCES courses(id),
 
-  name NVARCHAR(255) UNIQUE NOT NULL,
+  name NVARCHAR(255) NOT NULL,
+  CONSTRAINT uq_point_assignments_name UNIQUE (course, name),
+  url VARCHAR(255) NOT NULL,
+  CONSTRAINT uq_point_assignments_url UNIQUE (course, url),
+
   max_points INTEGER UNSIGNED NOT NULL,
 
   deleted BOOL NOT NULL DEFAULT FALSE
@@ -206,6 +210,7 @@ CREATE TABLE point_assignments_revisions (
 
   course INTEGER UNSIGNED NOT NULL,
   name NVARCHAR(255) NOT NULL,
+  url VARCHAR(255) NOT NULL,
   max_points INTEGER UNSIGNED NOT NULL,
   deleted BOOL NOT NULL DEFAULT FALSE
 );
@@ -218,6 +223,7 @@ CREATE TRIGGER bu_point_assignments BEFORE UPDATE ON point_assignments FOR EACH 
     created,
     course,
     name,
+    url,
     max_points,
     deleted
   ) SELECT
@@ -227,6 +233,7 @@ CREATE TRIGGER bu_point_assignments BEFORE UPDATE ON point_assignments FOR EACH 
     NOW(),
     OLD.course,
     OLD.name,
+    OLD.url,
     OLD.max_points,
     OLD.deleted
     FROM point_assignments_revisions WHERE point_assignments_revisions.id = OLD.id;
@@ -277,14 +284,16 @@ CREATE TRIGGER bu_point_assignments_progress BEFORE UPDATE ON point_assignments_
 END;
 
 
--- GRADE ASSIGNMENTS
 CREATE TABLE grade_assignments (
   id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 
   course INTEGER UNSIGNED NOT NULL,
   CONSTRAINT fk_grade_assignments_course FOREIGN KEY (course) REFERENCES courses(id),
 
-  name NVARCHAR(255) UNIQUE NOT NULL,
+  name NVARCHAR(255) NOT NULL,
+  CONSTRAINT uq_grade_assignments_name UNIQUE (course, name),
+  url VARCHAR(255) NOT NULL,
+  CONSTRAINT uq_grade_assignments_url UNIQUE (course, url),
 
   deleted BOOL NOT NULL DEFAULT FALSE
 );
@@ -299,6 +308,7 @@ CREATE TABLE grade_assignments_revisions (
 
   course INTEGER UNSIGNED NOT NULL,
   name NVARCHAR(255) NOT NULL,
+  url VARCHAR(255) NOT NULL,
   deleted BOOL NOT NULL DEFAULT FALSE
 );
 
@@ -310,6 +320,7 @@ CREATE TRIGGER bu_grade_assignments BEFORE UPDATE ON grade_assignments FOR EACH 
     created,
     course,
     name,
+    url,
     deleted
   ) SELECT
     OLD.id,
@@ -318,6 +329,7 @@ CREATE TRIGGER bu_grade_assignments BEFORE UPDATE ON grade_assignments FOR EACH 
     NOW(),
     OLD.course,
     OLD.name,
+    OLD.url,
     OLD.deleted
     FROM grade_assignments_revisions WHERE grade_assignments_revisions.id = OLD.id;
 END;

@@ -72,16 +72,7 @@ pub async fn post(
         ));
     }
 
-    let url: String = form
-        .name
-        .to_string()
-        .chars()
-        .filter(|c| char::is_ascii_alphabetic(c) || c == &' ')
-        .map(|c| match c {
-            ' ' => '_',
-            _ => char::to_ascii_lowercase(&c),
-        })
-        .collect();
+    let url: String = crate::util::string_to_url(&form.name);
 
     println!("Url is {:?}", url);
 

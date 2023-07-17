@@ -15,6 +15,7 @@ mod models;
 mod routes;
 mod schema;
 mod user;
+mod util;
 
 use database::Database;
 use mail::Mail;
