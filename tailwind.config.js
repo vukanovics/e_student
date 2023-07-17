@@ -17,6 +17,7 @@ module.exports = {
         input: colors.gray[600],
         inputbg: colors.white,
         stext: colors.gray[600],
+        gtext: colors.gray[400],
         icon: colors.white,
         iconbg: colors.gray[300],
         contentbg: colors.white,
@@ -37,6 +38,7 @@ module.exports = {
         ccemail: colors.cyan[600],
         cctime: colors.blue[600],
         ccprog: colors.lime[500],
+        cctable: colors.emerald[500],
 
         errorfg: colors.red[500],
         errorbg: colors.red[300],
