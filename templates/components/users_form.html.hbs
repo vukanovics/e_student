@@ -26,10 +26,11 @@
           {{> components/input_select_sort field_name=(concat form_name ".sort_account_type") previous=data.form.sort_account_type border="border-ccacctype" class="bg-ccacctype"}}
         </th>
         <th class="align-bottom">
-          <div class="flex flex-row flex-shrink w-[12rem]">
-            {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_program") value=data.form.filter_program}}
+          {{> components/label id="index-input" text=(i18n "смер/број/година")}}
+          <div id="index-input" class="flex flex-row flex-shrink w-[12rem]">
+            {{> components/input_cell_text border="border-ccprog" class="bg-ccprog" field_name=(concat form_name ".filter_program") value=data.form.filter_program}}
             {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_index_number") value=data.form.filter_index_number}}
-            {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_generation") value=data.form.filter_generation}}
+            {{> components/input_cell_text border="border-cctime" class="bg-cctime" field_name=(concat form_name ".filter_generation") value=data.form.filter_generation}}
           </div>
           {{> components/input_select_sort field_name=(concat form_name ".sort_index") previous=data.form.sort_index border="border-ccuser" class="bg-ccuser"}}
         </th>
