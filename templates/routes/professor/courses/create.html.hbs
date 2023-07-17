@@ -1,21 +1,23 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
+<div class="flex flex-col items-center"></div>
+  <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="post">
+    {{#> components/input_select icon="la-calendar" border="border-cctime" class="bg-cctime" field_name="year" text=(i18n "Година курса")}}
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+    {{/components/input_select}}
+    {{> components/input_text icon="la-comment" border="border-cccolq-500" class="bg-cccolq-500" field_name="name" text=(i18n "Име курса")}}
+    {{> components/button button_text="Create a course"}}
+  </form>
 
-<form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="post">
-  {{#> components/input_select icon="la-calendar" border="border-cctime" class="bg-cctime" field_name="year" text=(i18n "Година курса")}}
-    <option value="2022">2022</option>
-    <option value="2023">2023</option>
-    <option value="2024">2024</option>
-    <option value="2025">2025</option>
-  {{/components/input_select}}
-  {{> components/input_text icon="la-comment" border="border-cccolq-500" class="bg-cccolq-500" field_name="name" text=(i18n "Име курса")}}
-  {{> components/button button_text="Create a course"}}
-</form>
+  {{#if show_success_message}}
+    {{> components/success text=(i18n "Курс успешно креиран!")}}
+  {{/if}}
 
-{{#if show_success_message}}
-  {{> components/success text=(i18n "Курс успешно креиран!")}}
-{{/if}}
-
+  {{> components/button_link button_href="/courses" button_text=(i18n "Назад")}}
+</div>
 {{/inline}}
 {{> base }}
