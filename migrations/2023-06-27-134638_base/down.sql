@@ -1,18 +1,9 @@
-DROP TRIGGER bu_point_assignments_progress;
-DROP TABLE point_assignments_progress_revisions;
 DROP TABLE point_assignments_progress;
-
-DROP TRIGGER bu_point_assignments;
-DROP TABLE point_assignments_revisions;
 DROP TABLE point_assignments;
-
-DROP TRIGGER bu_grade_assignments_progress;
-DROP TABLE grade_assignments_progress_revisions;
 DROP TABLE grade_assignments_progress;
-
-DROP TRIGGER bu_grade_assignments;
-DROP TABLE grade_assignments_revisions;
 DROP TABLE grade_assignments;
+
+DROP TABLE assignments;
 
 DROP TABLE enrolments;
 

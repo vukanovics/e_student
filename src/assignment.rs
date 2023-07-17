@@ -1,8 +1,8 @@
 use crate::{
-    schema::{grade_assignments_progress, point_assignments_progress},
+    schema::{assignments, grade_assignments_progress, point_assignments_progress},
     user::UserId,
 };
-use diesel::{Insertable, Queryable, Selectable};
+use diesel::{prelude::*, Insertable, Queryable, Selectable};
 use rocket::FromFormField;
 use serde::Serialize;
 
@@ -12,11 +12,10 @@ use crate::{
     error::Error,
     schema::{grade_assignments, point_assignments},
 };
-use diesel::prelude::*;
 
 #[derive(Serialize, Debug, Queryable, Insertable, Selectable)]
-#[diesel(table_name = grade_assignments)]
-pub struct GradeAssignment {
+#[diesel(table_name = assignments)]
+pub struct BaseAssignment {
     pub id: u32,
     pub course: u32,
     pub name: String,
@@ -24,50 +23,120 @@ pub struct GradeAssignment {
     pub deleted: bool,
 }
 
-#[derive(Insertable)]
-#[diesel(table_name = grade_assignments)]
-pub struct NewGradeAssignment<'a> {
-    pub course: CourseId,
-    pub name: &'a str,
-    pub url: &'a str,
-}
-
-impl GradeAssignment {
-    pub fn create<'a>(
-        connection: &mut Connection,
-        course: CourseId,
-        name: &'a str,
-        url: &'a str,
-    ) -> Result<(), Error> {
-        diesel::insert_into(grade_assignments::table)
-            .values(NewGradeAssignment { course, name, url })
-            .execute(connection)
-            .map(|_| ())
+impl BaseAssignment {
+    pub fn get(connection: &mut Connection, course: u32, name: &str) -> Result<Self, Error> {
+        assignments::table
+            .filter(
+                assignments::course
+                    .eq(course)
+                    .and(assignments::name.eq(name)),
+            )
+            .limit(1)
+            .first(connection)
             .map_err(Error::from)
+    }
+
+    pub fn create(
+        connection: &mut Connection,
+        course: u32,
+        name: &str,
+        url: &str,
+    ) -> Result<(), Error> {
+        diesel::insert_into(assignments::table)
+            .values(&(
+                assignments::course.eq(course),
+                assignments::name.eq(name),
+                assignments::url.eq(url),
+            ))
+            .execute(connection)
+            .map_err(Error::from)
+            .map(|_| ())
     }
 }
 
-#[derive(Serialize, Debug, Queryable, Insertable, Selectable)]
-#[diesel(table_name = point_assignments)]
-pub struct PointAssignment {
+#[derive(Serialize, Debug, Queryable, Selectable)]
+#[diesel(table_name = grade_assignments)]
+pub struct GradeAssignmentData {
     pub id: u32,
-    pub course: u32,
-    pub name: String,
-    pub url: String,
-    pub max_points: u32,
-    pub deleted: bool,
+    pub assignment: u32,
 }
 
-#[derive(Insertable)]
+#[derive(Serialize, Debug, Queryable, Selectable)]
+#[diesel(table_name = grade_assignments)]
+pub struct GradeAssignment {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub data: GradeAssignmentData,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub base: BaseAssignment,
+}
+
+impl GradeAssignment {
+    pub fn get(
+        connection: &mut Connection,
+        course: CourseId,
+        url: &str,
+    ) -> Result<GradeAssignment, Error> {
+        grade_assignments::table
+            .inner_join(assignments::table)
+            .filter(assignments::course.eq(course).and(assignments::url.eq(url)))
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+
+    pub fn create(
+        connection: &mut Connection,
+        course: CourseId,
+        name: &str,
+        url: &str,
+    ) -> Result<(), Error> {
+        diesel::Connection::transaction(connection, |connection| {
+            BaseAssignment::create(connection, course, name, url)?;
+            let assignment = BaseAssignment::get(connection, course, name)?;
+            diesel::insert_into(grade_assignments::table)
+                .values(grade_assignments::assignment.eq(assignment.id))
+                .execute(connection)
+                .map_err(Error::from)
+        })
+        .map(|_| ())
+    }
+}
+
+#[derive(Serialize, Debug, Queryable, Selectable)]
 #[diesel(table_name = point_assignments)]
-pub struct NewPointAssignment<'a> {
-    pub course: CourseId,
-    pub name: &'a str,
-    pub url: &'a str,
+pub struct PointAssignmentData {
+    pub id: u32,
+    pub assignment: u32,
     pub max_points: u32,
+}
+
+#[derive(Serialize, Debug, Queryable, Selectable)]
+#[diesel(table_name = point_assignments)]
+pub struct PointAssignment {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub data: PointAssignmentData,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub base: BaseAssignment,
 }
 
 impl PointAssignment {
+    pub fn get(
+        connection: &mut Connection,
+        course: CourseId,
+        url: &str,
+    ) -> Result<PointAssignment, Error> {
+        point_assignments::table
+            .inner_join(assignments::table)
+            .filter(assignments::course.eq(course).and(assignments::url.eq(url)))
+            .limit(1)
+            .first(connection)
+            .map_err(Error::from)
+    }
+
     pub fn create<'a>(
         connection: &mut Connection,
         course: CourseId,
@@ -75,16 +144,18 @@ impl PointAssignment {
         url: &'a str,
         max_points: u32,
     ) -> Result<(), Error> {
-        diesel::insert_into(point_assignments::table)
-            .values(NewPointAssignment {
-                course,
-                name,
-                url,
-                max_points,
-            })
-            .execute(connection)
-            .map(|_| ())
-            .map_err(Error::from)
+        diesel::Connection::transaction(connection, |connection| {
+            BaseAssignment::create(connection, course, name, url)?;
+            let assignment = BaseAssignment::get(connection, course, name)?;
+            diesel::insert_into(point_assignments::table)
+                .values((
+                    point_assignments::assignment.eq(assignment.id),
+                    point_assignments::max_points.eq(max_points),
+                ))
+                .execute(connection)
+                .map_err(Error::from)
+        })
+        .map(|_| ())
     }
 }
 
@@ -94,18 +165,33 @@ pub enum Assignment {
     Point(PointAssignment),
 }
 
+impl Assignment {
+    pub fn get(
+        connection: &mut Connection,
+        course: CourseId,
+        url: &str,
+    ) -> Result<Assignment, Error> {
+        PointAssignment::get(connection, course, url)
+            .map(|p| Assignment::Point(p))
+            .or_else(|_| {
+                GradeAssignment::get(connection, course, url).map(|g| Assignment::Grade(g))
+            })
+    }
+}
 pub struct Assignments(pub Vec<Assignment>);
 
 impl Assignments {
     pub fn get(connection: &mut Connection, course: CourseId) -> Result<Assignments, Error> {
         let mut point_assignments = point_assignments::table
-            .filter(point_assignments::course.eq(course))
+            .inner_join(assignments::table)
+            .filter(assignments::course.eq(course))
             .load::<PointAssignment>(connection)
             .map(|a| a.into_iter().map(Assignment::Point).collect())
             .map_err(Error::from)?;
 
         grade_assignments::table
-            .filter(grade_assignments::course.eq(course))
+            .inner_join(assignments::table)
+            .filter(assignments::course.eq(course))
             .load::<GradeAssignment>(connection)
             .map(|a| a.into_iter().map(Assignment::Grade).collect())
             .map_err(Error::from)
@@ -116,10 +202,32 @@ impl Assignments {
     }
 }
 
+#[derive(Serialize, Debug, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct GradedGradeAssignment {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub assignment: GradeAssignment,
+    #[diesel(select_expression = grade_assignments_progress::grade.nullable())]
+    #[diesel(select_expression_type = diesel::dsl::Nullable<grade_assignments_progress::grade>)]
+    pub grade: Option<f32>,
+}
+
+#[derive(Serialize, Debug, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct GradedPointAssignment {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub assignment: PointAssignment,
+    #[diesel(select_expression = point_assignments_progress::points.nullable())]
+    #[diesel(select_expression_type = diesel::dsl::Nullable<point_assignments_progress::points>)]
+    pub points: Option<u32>,
+}
+
 #[derive(Serialize, Debug)]
 pub enum GradedAssignment {
-    Grade((GradeAssignment, Option<f32>)),
-    Point((PointAssignment, Option<u32>)),
+    Grade(GradedGradeAssignment),
+    Point(GradedPointAssignment),
 }
 
 pub struct GradedAssignments(pub Vec<GradedAssignment>);
@@ -136,35 +244,31 @@ impl GradedAssignments {
                     .eq(point_assignments_progress::assignment)
                     .and(point_assignments_progress::student.eq(student))),
             )
+            .inner_join(assignments::table)
             .filter(
-                point_assignments::course
+                assignments::course
                     .eq(course)
-                    .and(point_assignments::deleted.eq(false)),
+                    .and(assignments::deleted.eq(false)),
             )
-            .select((
-                point_assignments::all_columns,
-                point_assignments_progress::points.nullable(),
-            ))
-            .load::<(PointAssignment, Option<u32>)>(connection)
+            .select(GradedPointAssignment::as_select())
+            .load::<GradedPointAssignment>(connection)
             .map(|a| a.into_iter().map(GradedAssignment::Point).collect())
             .map_err(Error::from)?;
 
         grade_assignments::table
+            .inner_join(assignments::table)
             .left_join(
                 grade_assignments_progress::table.on(grade_assignments::id
                     .eq(grade_assignments_progress::assignment)
                     .and(grade_assignments_progress::student.eq(student))),
             )
             .filter(
-                grade_assignments::course
+                assignments::course
                     .eq(course)
-                    .and(grade_assignments::deleted.eq(false)),
+                    .and(assignments::deleted.eq(false)),
             )
-            .select((
-                grade_assignments::all_columns,
-                grade_assignments_progress::grade.nullable(),
-            ))
-            .load::<(GradeAssignment, Option<f32>)>(connection)
+            .select(GradedGradeAssignment::as_select())
+            .load::<GradedGradeAssignment>(connection)
             .map(|a| a.into_iter().map(GradedAssignment::Grade).collect())
             .map_err(Error::from)
             .map(|mut a: Vec<GradedAssignment>| {
