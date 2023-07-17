@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#> components/input_cell_base}}
-  <select class="p-4 w-full text-5xl cursor-pointer min-w-fit lg:h-12 lg:text-base lg:p-2 bg-inputbg shadow-l-lg text-input" name={{field_name}}>
+  <select class="p-4 pr-16 w-full text-5xl cursor-pointer lg:pr-8 min-w-fit lg:h-12 lg:text-base lg:p-2 bg-inputbg shadow-l-lg text-input" name={{field_name}}>
     <option value="None" {{#if (eq previous "None")}}selected{{/if}}>{{i18n "Не сортирај"}}</option>
     <option value="Ascending" {{#if (eq previous "Ascending")}}selected{{/if}}>{{i18n "Сортирај растуће"}}</option>
     <option value="Descending" {{#if (eq previous "Descending")}}selected{{/if}}>{{i18n "Сортирај опадајуће"}}</option>
