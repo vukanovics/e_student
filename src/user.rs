@@ -12,7 +12,7 @@ use diesel::{
 use log::info;
 use rocket::{
     form::FromFormField,
-    http::{Cookie, CookieJar, Status},
+    http::{Cookie, CookieJar},
     outcome::try_outcome,
     request::{FromRequest, Outcome},
     Request,
@@ -545,7 +545,7 @@ impl<'r> FromRequest<'r> for &'r User {
     type Error = Error;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let user_result: &Result<Option<User>, Error> = request
+        let user_result: &Option<User> = request
             .local_cache_async(async {
                 let jar = request.guard::<&CookieJar>().await.unwrap();
                 let session_key = jar
@@ -553,13 +553,16 @@ impl<'r> FromRequest<'r> for &'r User {
                     .or(jar.get("session_key").cloned())
                     .map(|c| hex::decode(c.value().to_owned()))
                     .transpose()
-                    .map_err(Error::Hex)?;
+                    .ok()
+                    .flatten();
 
                 let database = request.guard::<Database>().await.unwrap();
+
                 if let Some(session_key) = session_key {
                     let session: Session = database
                         .run(move |c| Database::get_session_by_key(c, session_key))
-                        .await?;
+                        .await
+                        .ok()?;
 
                     let now = Utc::now();
                     let session_expires = DateTime::<Utc>::from_utc(session.last_refreshed, Utc)
@@ -568,20 +571,20 @@ impl<'r> FromRequest<'r> for &'r User {
                     if now < session_expires {
                         let user = database
                             .run(move |c| User::get_by_id(c, session.user))
-                            .await?;
-                        return Ok(Some(user));
+                            .await
+                            .ok()?;
+                        return Some(user);
                     }
 
                     info!("User has supplied an expired session_key cookie, removing it");
                     jar.remove(Cookie::new("session_key", ""));
                 }
-                Ok(None)
+                None
             })
             .await;
         match user_result {
-            Ok(Some(user)) => Outcome::Success(user),
-            Ok(None) => Outcome::Forward(()),
-            Err(e) => Outcome::Failure((Status::InternalServerError, e.clone())),
+            Some(user) => Outcome::Success(user),
+            None => Outcome::Forward(()),
         }
     }
 }
