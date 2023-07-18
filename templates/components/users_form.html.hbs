@@ -25,7 +25,7 @@
           {{> components/input_select_sort field_name=(concat form_name ".sort_account_type") previous=data.form.sort_account_type border="border-ccacctypebd" class="bg-ccacctype"}}
         </th>
         <th class="align-bottom">
-          {{> components/label id="index-input" text=(i18n "смер/број/година")}}
+          {{> components/label id="index-input" text=(i18n "Индекс")}}
           <div id="index-input" class="flex flex-row flex-shrink w-[32rem] lg:w-[12rem]">
             {{> components/input_cell_text border="border-ccprogbd" class="bg-ccprog" field_name=(concat form_name ".filter_program") value=data.form.filter_program}}
             {{> components/input_cell_text border="border-ccuserbd" class="bg-ccuser" field_name=(concat form_name ".filter_index_number") value=data.form.filter_index_number}}
@@ -40,8 +40,8 @@
         {{#if data.control_type.Edit}}
           {{#> components/user_table_row users=data.control_type.Edit.users}}
             <td class="flex flex-row items-center w-[32rem] lg:w-64">
-              {{> components/button_link_table button_href=(concat "users/delete/" this.id) button_text="Delete"}}
-              {{> components/button_link_table button_href=(concat "users/edit/" this.id) button_text="Edit"}}
+              {{> components/button_link_table button_href=(concat "users/delete/" this.id) button_text=(i18n "Обриши")}}
+              {{> components/button_link_table button_href=(concat "users/edit/" this.id) button_text=(i18n "Измени")}}
             </td>
           {{/components/user_table_row}}
         {{/if}}
