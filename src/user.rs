@@ -25,8 +25,8 @@ use crate::{
     index::{Generation, Index, IndexNumber, Program},
     models::Session,
     schema::{
-        enrolments, generations, grade_assignments_progress, indicies, point_assignments_progress,
-        programs, users,
+        assignments, enrolments, generations, grade_assignments, grade_assignments_progress,
+        indicies, point_assignments, point_assignments_progress, programs, users,
     },
 };
 
@@ -572,6 +572,16 @@ impl UsersWithIndexAndPointProgress {
         let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
 
         query
+            .inner_join(
+                point_assignments::table
+                    .inner_join(
+                        assignments::table.on(point_assignments::assignment
+                            .eq(assignments::id)
+                            .and(point_assignments::id.eq(point_assignment))),
+                    )
+                    .inner_join(enrolments::table.on(enrolments::course.eq(assignments::course)))
+                    .on(enrolments::student.eq(users::id)),
+            )
             .left_join(
                 point_assignments_progress::table.on(users::id
                     .eq(point_assignments_progress::student)
@@ -613,6 +623,16 @@ impl UsersWithIndexAndGradeProgress {
         let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
 
         query
+            .inner_join(
+                grade_assignments::table
+                    .inner_join(
+                        assignments::table.on(grade_assignments::assignment
+                            .eq(assignments::id)
+                            .and(grade_assignments::id.eq(grade_assignment))),
+                    )
+                    .inner_join(enrolments::table.on(enrolments::course.eq(assignments::course)))
+                    .on(enrolments::student.eq(users::id)),
+            )
             .left_join(
                 grade_assignments_progress::table.on(users::id
                     .eq(grade_assignments_progress::student)
