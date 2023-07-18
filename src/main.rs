@@ -3,6 +3,7 @@
 
 mod assignment;
 mod base_layout_context;
+mod catchers;
 mod components;
 mod course;
 mod database;
@@ -19,6 +20,7 @@ mod util;
 
 use database::Database;
 use mail::Mail;
+use rocket::catchers;
 use rocket::fs::FileServer;
 use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
@@ -97,6 +99,7 @@ fn rocket() -> _ {
                 administrator::programs::delete::post,
             ],
         )
+        .register("/", catchers![catchers::not_found])
         .attach(handlebars)
         .attach(Database::fairing())
         .manage(Mail::new().unwrap())
