@@ -2,10 +2,10 @@
 
 {{#*inline "body"}}
 
-<div class="flex flex-col justify-left">
+<div class="flex flex-col space-y-8 justify-left">
 {{> components/caption text=name}}
 {{#each assignments}}
-  <div class="flex flex-row justify-evenly"></div>
+  <div class="flex flex-row justify-between space-x-16">
     {{#if this.Grade}}     
         {{> components/label id=this.Grade.name text=this.Grade.name}}
         {{> components/gradebar id=this.Grade.name value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-500" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}

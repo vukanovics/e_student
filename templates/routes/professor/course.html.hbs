@@ -2,10 +2,10 @@
 
 {{#*inline "body"}}
 
-<div class="flex flex-col justify-left">
+<div class="flex flex-col space-y-8 justify-left">
 {{> components/caption text=course.name}}
 {{#each course.assignments}}
-  <div class="flex flex-row justify-evenly"></div>
+  <div class="flex flex-row justify-between space-x-16">
     {{#if this.Grade}}     
         {{> components/label id=this.Grade.name text=this.Grade.name}}
         {{> components/gradebar id=this.Grade.name value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-500" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
@@ -16,6 +16,11 @@
     {{/if}}
   </div>
 {{/each}}
+<div class="flex flex-row space-x-4 align-center">
+  {{> components/button_link button_href=(concat "/course/" course.url "/enrol") button_text=(i18n "Упиши студенте")}}
+  {{> components/button_link button_href=(concat "/course/" course.url "/assignments/create") button_text=(i18n "Креирај задатке")}}
+  {{> components/button_link button_href=(concat "/course/" course.url "/delete") button_text=(i18n "Обриши курс")}}
+</div>
 </div>
 
 {{/inline}}

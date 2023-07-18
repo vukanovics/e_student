@@ -14,7 +14,7 @@
   {{#if show_you_can_only_delete_own_courses}}
     {{> components/error text=(i18n "Можете брисати само своје курсеве!")}}
   {{/if}}
-  {{> components/button_link button_href="/courses" button_text=(i18n "Назад")}}
+  {{> components/button_link button_href=(concat "/course/" deleting_course.url) button_text=(i18n "Назад")}}
 </div>
 {{/inline}}
 {{> base }}
