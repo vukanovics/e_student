@@ -9,10 +9,10 @@ use diesel::{
     sql_types::{TinyInt, Unsigned},
     AsExpression, FromSqlRow,
 };
-use log::info;
+use log::warn;
 use rocket::{
     form::FromFormField,
-    http::{Cookie, CookieJar},
+    http::CookieJar,
     outcome::try_outcome,
     request::{FromRequest, Outcome},
     Request,
@@ -627,49 +627,60 @@ impl UsersWithIndexAndGradeProgress {
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for &'r User {
-    type Error = Error;
+    type Error = &'r Error;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let user_result: &Option<User> = request
+        let user_result: &Result<Option<User>, Error> = request
             .local_cache_async(async {
                 let jar = request.guard::<&CookieJar>().await.unwrap();
-                let session_key = jar
+                let session_key = match jar
                     .get_pending("session_key")
                     .or(jar.get("session_key").cloned())
                     .map(|c| hex::decode(c.value().to_owned()))
                     .transpose()
-                    .ok()
-                    .flatten();
+                {
+                    Ok(session_key) => session_key,
+                    Err(e) => {
+                        warn!("failed to decode provided session key: {:?}", e);
+                        return Ok(None);
+                    }
+                };
 
                 let database = request.guard::<Database>().await.unwrap();
 
                 if let Some(session_key) = session_key {
-                    let session: Session = database
+                    let session: Session = match database
                         .run(move |c| Database::get_session_by_key(c, session_key))
                         .await
-                        .ok()?;
+                    {
+                        Ok(session_key) => session_key,
+                        Err(Error::DatabaseEntryNotFound) => return Ok(None),
+                        Err(e) => return Err(e),
+                    };
 
                     let now = Utc::now();
                     let session_expires = DateTime::<Utc>::from_utc(session.last_refreshed, Utc)
                         + Duration::seconds(session.timeout_duration_seconds as i64);
 
                     if now < session_expires {
-                        let user = database
+                        match database
                             .run(move |c| User::get_by_id(c, session.user))
                             .await
-                            .ok()?;
-                        return Some(user);
+                        {
+                            Ok(user) => return Ok(Some(user)),
+                            Err(Error::DatabaseEntryNotFound) => return Ok(None),
+                            Err(e) => return Err(e),
+                        }
                     }
-
-                    info!("User has supplied an expired session_key cookie, removing it");
-                    jar.remove(Cookie::new("session_key", ""));
                 }
-                None
+
+                Ok(None)
             })
             .await;
         match user_result {
-            Some(user) => Outcome::Success(user),
-            None => Outcome::Forward(()),
+            Ok(Some(user)) => Outcome::Success(user),
+            Ok(None) => Outcome::Forward(()),
+            Err(e) => Outcome::Failure((rocket::http::Status::InternalServerError, e)),
         }
     }
 }
@@ -678,7 +689,7 @@ pub struct Professor<'r>(pub &'r User);
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for Professor<'r> {
-    type Error = Error;
+    type Error = &'r Error;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let user = try_outcome!(request.guard::<&User>().await);
@@ -694,7 +705,7 @@ pub struct Administrator<'r>(pub &'r User);
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for Administrator<'r> {
-    type Error = Error;
+    type Error = &'r Error;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let user = try_outcome!(request.guard::<&User>().await);
