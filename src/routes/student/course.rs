@@ -39,7 +39,7 @@ impl LayoutContext {
     }
 }
 
-#[get("/course/<course>", rank = 0)]
+#[get("/course/<course>", rank = 2)]
 pub async fn get(
     language: Script,
     user: &User,
