@@ -38,64 +38,15 @@
         </th>
       </tr>
         {{#if data.control_type.Edit}}
-          {{#each data.control_type.Edit.users}}
-          <tr class="h-full">
-            <td class="h-full">
-              {{#if this.first_name}}
-                {{> components/cell_text text=this.first_name}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Није намештено")}}
-              {{/if}}
-            </td>
-            <td class="h-full">
-              {{#if this.last_name}}
-                {{> components/cell_text text=this.last_name}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Није намештено")}}
-              {{/if}}
-            </td>
-            <td class="h-full">{{> components/cell_text text=this.email}}</td>
-            <td class="h-full">{{> components/cell_text text=this.account_type}}</td>
-            <td class="h-full">
-              {{#if this.index}}
-                {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
-              {{/if}}
-            </td>
+          {{#> components/user_table_row users=data.control_type.Edit.users}}
             <td class="flex flex-row items-center w-[32rem] lg:w-64">
               {{> components/button_link_table button_href=(concat "users/delete/" this.id) button_text="Delete"}}
               {{> components/button_link_table button_href=(concat "users/edit/" this.id) button_text="Edit"}}
             </td>
-          </tr>
-          {{/each}}
+          {{/components/user_table_row}}
         {{/if}}
         {{#if data.control_type.Enrol}}
-          {{#each data.control_type.Enrol.users}}
-          <tr class="h-full">
-            <td class="h-full">
-              {{#if this.first_name}}
-                {{> components/cell_text text=this.first_name}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Није намештено")}}
-              {{/if}}
-            </td>
-            <td class="h-full">
-              {{#if this.last_name}}
-                {{> components/cell_text text=this.last_name}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Није намештено")}}
-              {{/if}}
-            </td>
-            <td class="h-full">{{> components/cell_text text=this.email}}</td>
-            <td class="h-full">{{> components/cell_text text=this.account_type}}</td>
-            <td class="h-full">
-              {{#if this.index}}
-                {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
-              {{else}}
-                {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
-              {{/if}}
-            </td>
+          {{#> components/user_table_row users=data.control_type.Enrol.users}}
             <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".user"}} value={{this.id}} hidden>
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".old_value"}} value={{#if this.is_enrolled}}"on"{{else}}"off"{{/if}} hidden>
@@ -104,8 +55,8 @@
                 <option value="off"{{#unless this.is_enrolled}}selected{{/unless}}>{{i18n "Корисник није уписан"}}</option>
               {{/components/input_cell_select}}
             </td>
-          </tr>
-          {{/each}}
+          {{/components/user_table_row}}
+        {{/if}}
         {{/if}}
     </table>
   </div>

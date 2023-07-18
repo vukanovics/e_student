@@ -1,0 +1,30 @@
+{{! vim: set ft=html: }}
+
+{{#each users}}
+  <tr class="h-full">
+    <td class="h-full">
+      {{#if this.first_name}}
+        {{> components/cell_text text=this.first_name}}
+      {{else}}
+        {{> components/cell_text_gray text=(i18n "Није намештено")}}
+      {{/if}}
+    </td>
+    <td class="h-full">
+      {{#if this.last_name}}
+        {{> components/cell_text text=this.last_name}}
+      {{else}}
+        {{> components/cell_text_gray text=(i18n "Није намештено")}}
+      {{/if}}
+    </td>
+    <td class="h-full">{{> components/cell_text text=this.email}}</td>
+    <td class="h-full">{{> components/cell_text text=this.account_type}}</td>
+    <td class="h-full">
+      {{#if this.index}}
+        {{> components/cell_text text=(concat this.program.short_name this.index.number "/" this.generation.year)}}
+      {{else}}
+        {{> components/cell_text_gray text=(i18n "Нема број индекса")}}
+      {{/if}}
+    </td>
+	{{> @partial-block }}
+  </tr>
+{{/each}}
