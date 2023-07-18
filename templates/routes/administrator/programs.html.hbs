@@ -4,8 +4,8 @@
 
 <div class="flex flex-col items-center space-y-4">
   <form class="flex flex-col items-center space-y-4" action="programs" method="post">
-    {{> components/input_text icon="la-graduation-cap" border="border-ccprog" class="bg-ccprog" field_name="short_name" text=(i18n "Скраћеница")}}
-    {{> components/input_text icon="la-user-graduate" border="border-ccprog" class="bg-ccprog" field_name="full_name" text=(i18n "Пуно име")}}
+    {{> components/input_text icon="la-graduation-cap" border="border-ccprogbd" class="bg-ccprog" field_name="short_name" text=(i18n "Скраћеница")}}
+    {{> components/input_text icon="la-user-graduate" border="border-ccprogbd" class="bg-ccprog" field_name="full_name" text=(i18n "Пуно име")}}
     {{> components/button button_text=(i18n "Креирај смер")}}
   </form>
   {{#if show_error_duplicate_name}}

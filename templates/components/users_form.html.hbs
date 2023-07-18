@@ -1,37 +1,37 @@
 {{! vim: set ft=html: }}
 <form class="flex flex-col items-center space-y-16" action="" method="post">
   <div class="overflow-x-auto overflow-hidden lg:w-fit w-[90vw]">
-    <table class="border-spacing-0">
+    <table class="">
       <tr>
         {{! Filters }}
         <th class="align-bottom">
           {{> components/label id="filer_first_name" text=(i18n "Име")}}
-          {{> components/input_cell_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_first_name") value=data.form.filter_first_name}}
-          {{> components/input_select_sort field_name=(concat form_name ".sort_first_name") previous=data.form.sort_first_name border="border-ccuser" class="bg-ccuser"}}
+          {{> components/input_cell_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name=(concat form_name ".filter_first_name") value=data.form.filter_first_name}}
+          {{> components/input_select_sort field_name=(concat form_name ".sort_first_name") previous=data.form.sort_first_name border="border-ccuserbd" class="bg-ccuser"}}
         </th>
         <th class="align-bottom">
           {{> components/label id="filter_last_name" text=(i18n "Презиме")}}
-          {{> components/input_cell_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_last_name") value=data.form.filter_last_name}}
-          {{> components/input_select_sort field_name=(concat form_name ".sort_last_name") previous=data.form.sort_last_name border="border-ccuser" class="bg-ccuser"}}
+          {{> components/input_cell_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" field_name=(concat form_name ".filter_last_name") value=data.form.filter_last_name}}
+          {{> components/input_select_sort field_name=(concat form_name ".sort_last_name") previous=data.form.sort_last_name border="border-ccuserbd" class="bg-ccuser"}}
         </th>
         <th class="align-bottom">
           {{> components/label id="filter_email" text=(i18n "Имејл адреса")}}
-          {{> components/input_cell_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name=(concat form_name ".filter_email") value=data.form.filter_email}}
-          {{> components/input_select_sort field_name=(concat form_name ".sort_email") previous=data.form.sort_email border="border-ccemail" class="bg-ccemail"}}
+          {{> components/input_cell_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" field_name=(concat form_name ".filter_email") value=data.form.filter_email}}
+          {{> components/input_select_sort field_name=(concat form_name ".sort_email") previous=data.form.sort_email border="border-ccemailbd" class="bg-ccemail"}}
         </th>
         <th class="align-bottom">
-          {{> components/checkbox border="border-ccacctype" color="text-ccacctype" bg="bg-icon" field_name=(concat form_name ".filter_account_type_enabled") text=(i18n "Филтрирај према типу налога") value=data.form.filter_account_type_enabled}}
+          {{> components/checkbox border="border-ccacctypebd" color="text-ccacctype" bg="bg-icon" field_name=(concat form_name ".filter_account_type_enabled") text=(i18n "Филтрирај према типу налога") value=data.form.filter_account_type_enabled}}
           {{> components/input_select_account_type field_name=(concat form_name ".filter_account_type") previous=data.form.filter_account_type icon="la-user-circle" border="border-ccacctype" class="bg-ccacctype" text=(i18n "Тип налога")}}
-          {{> components/input_select_sort field_name=(concat form_name ".sort_account_type") previous=data.form.sort_account_type border="border-ccacctype" class="bg-ccacctype"}}
+          {{> components/input_select_sort field_name=(concat form_name ".sort_account_type") previous=data.form.sort_account_type border="border-ccacctypebd" class="bg-ccacctype"}}
         </th>
         <th class="align-bottom">
           {{> components/label id="index-input" text=(i18n "смер/број/година")}}
           <div id="index-input" class="flex flex-row flex-shrink w-[32rem] lg:w-[12rem]">
-            {{> components/input_cell_text border="border-ccprog" class="bg-ccprog" field_name=(concat form_name ".filter_program") value=data.form.filter_program}}
-            {{> components/input_cell_text border="border-ccuser" class="bg-ccuser" field_name=(concat form_name ".filter_index_number") value=data.form.filter_index_number}}
-            {{> components/input_cell_text border="border-cctime" class="bg-cctime" field_name=(concat form_name ".filter_generation") value=data.form.filter_generation}}
+            {{> components/input_cell_text border="border-ccprogbd" class="bg-ccprog" field_name=(concat form_name ".filter_program") value=data.form.filter_program}}
+            {{> components/input_cell_text border="border-ccuserbd" class="bg-ccuser" field_name=(concat form_name ".filter_index_number") value=data.form.filter_index_number}}
+            {{> components/input_cell_text border="border-cctimebd" class="bg-cctime" field_name=(concat form_name ".filter_generation") value=data.form.filter_generation}}
           </div>
-          {{> components/input_select_sort field_name=(concat form_name ".sort_index") previous=data.form.sort_index border="border-ccuser" class="bg-ccuser"}}
+          {{> components/input_select_sort field_name=(concat form_name ".sort_index") previous=data.form.sort_index border="border-ccuserbd" class="bg-ccuser"}}
         </th>
         <th class="min-h-full align-bottom">
           {{> components/button_table button_text=(i18n "Примени")}}
@@ -50,7 +50,7 @@
             <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".user"}} value={{this.id}} hidden>
               <input type="text" name={{concat ../form_name ".enrol_dropdowns." @index ".old_value"}} value={{#if this.is_enrolled}}"on"{{else}}"off"{{/if}} hidden>
-              {{#> components/input_cell_select border="border-cctable" class="bg-cctable" field_name=(concat ../form_name ".enrol_dropdowns." @index ".new_value")}}
+              {{#> components/input_cell_select border="border-cctablebd" class="bg-cctable" field_name=(concat ../form_name ".enrol_dropdowns." @index ".new_value")}}
                 <option value="on" {{#if this.is_enrolled}}selected{{/if}}>{{i18n "Корисник је уписан"}}</option>
                 <option value="off"{{#unless this.is_enrolled}}selected{{/unless}}>{{i18n "Корисник није уписан"}}</option>
               {{/components/input_cell_select}}
@@ -78,12 +78,12 @@
     </table>
   </div>
   <div class="flex flex-row items-center space-x-8">
-      {{#> components/input_select icon="la-file-alt" border="border-cctable" class="bg-cctable" field_name=(concat form_name ".page")}}
+      {{#> components/input_select icon="la-file-alt" border="border-cctablebd" class="bg-cctable" field_name=(concat form_name ".page")}}
         {{#each (range 0 1 data.number_of_pages)}}
           <option value="{{this}}" {{#if (eq ../data.form.page this)}}selected{{/if}}>{{this}}</option>
         {{/each}}
       {{/components/input_select}}
-      {{#> components/input_select icon="la-stream" border="border-cctable" class="bg-cctable" field_name=(concat form_name ".max_per_page")}}
+      {{#> components/input_select icon="la-stream" border="border-cctablebd" class="bg-cctable" field_name=(concat form_name ".max_per_page")}}
         {{#each (range 10 5 50)}}
           <option value="{{this}}" {{#if (eq ../data.form.max_per_page this)}}selected{{/if}}>{{this}}</option>
         {{/each}}

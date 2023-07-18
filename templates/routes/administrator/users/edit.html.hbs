@@ -3,14 +3,14 @@
 {{#*inline "body"}}
 {{> components/caption text=(i18n "Измени корисника")}}
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{editing_user.id}}" method="post">
-  {{#> components/input_select icon="la-user-circle" border="border-ccacctype" class="bg-ccacctype" field_name="account_type" text=(i18n "Нови тип налога")}}
+  {{#> components/input_select icon="la-user-circle" border="border-ccacctypebd" class="bg-ccacctype" field_name="account_type" text=(i18n "Нови тип налога")}}
     <option value="0">{{i18n "Студент"}}</option>
     <option value="1">{{i18n "Професор"}}</option>
     <option value="2">{{i18n "Администратор"}}</option>
   {{/components/input_select}}
-  {{> components/input_text icon="la-envelope" border="border-ccemail" class="bg-ccemail" field_name="email" value=editing_user.email text=(i18n "Нова имејл адреса")}}
-  {{> components/input_text icon="la-user" border="border-ccuser" class="bg-ccuser" field_name="first_name" value=editing_user.first_name text=(i18n "Ново име")}}
-  {{> components/input_text icon="la-users" border="border-ccuser" class="bg-ccuser" field_name="last_name" value=editing_user.last_name text=(i18n "Ново презиме")}}
+  {{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" field_name="email" value=editing_user.email text=(i18n "Нова имејл адреса")}}
+  {{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="first_name" value=editing_user.first_name text=(i18n "Ново име")}}
+  {{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" field_name="last_name" value=editing_user.last_name text=(i18n "Ново презиме")}}
   {{> components/button_link button_href="users/create" button_text=(i18n "Потврди")}}
 </form>
 

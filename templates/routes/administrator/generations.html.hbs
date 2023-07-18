@@ -4,7 +4,7 @@
 
 <div class="flex flex-col items-center space-y-16">
   <form class="flex flex-col items-center space-y-2" action="generations" method="post">
-    {{> components/input_text icon="la-calendar" border="border-cctime" class="bg-cctime"  type="number" field_name="year" text=(i18n "Година")}}
+    {{> components/input_text icon="la-calendar" border="border-cctimebd" class="bg-cctime"  type="number" field_name="year" text=(i18n "Година")}}
     {{> components/button button_text=(i18n "Креирај генерацију")}}
   </form>
   {{#if show_error_duplicate_year}}

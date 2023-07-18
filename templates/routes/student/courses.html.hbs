@@ -8,10 +8,10 @@
   <div class="flex flex-col space-y-8 w-full lg:space-y-4">
     {{#each this.assignments}}
       {{#if this.Grade}}
-        {{> components/gradebar value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-500" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
+        {{> components/gradebar value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-600" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
       {{/if}}
       {{#if this.Point}}
-        {{> components/pointbar value=this.Point.points maxvalue=this.Point.max_points icon="la-plus-circle" border="border-cccolq-500" bgcol="bg-cccolq-500 progress-bg:bg-cccolq-500" accentcol="progress:bg-cccolq-300" textcol="text-cccolq-50" iconcol="text-cccolq-200"}}
+        {{> components/pointbar value=this.Point.points maxvalue=this.Point.max_points icon="la-plus-circle" border="border-cccolq-600" bgcol="bg-cccolq-500 progress-bg:bg-cccolq-500" accentcol="progress:bg-cccolq-300" textcol="text-cccolq-50" iconcol="text-cccolq-200"}}
       {{/if}}
     {{/each}}
   </div>
