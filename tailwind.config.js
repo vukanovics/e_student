@@ -31,6 +31,18 @@ module.exports = {
         highbgact: colors.violet[400],
         highfgact: colors.violet[50],
 
+        dark_caption: colors.gray[50],
+        dark_input: colors.gray[50],
+        dark_inputbg: colors.gray[500],
+        dark_stext: colors.gray[50],
+        dark_gtext: colors.gray[100],
+        dark_icon: colors.white,
+        dark_contentbg: colors.gray[900],
+        dark_contentbd: colors.gray[950],
+        dark_barbg: colors.gray[900],
+        dark_barfg: colors.gray[100],
+        dark_barborder: colors.gray[950],
+
         ccuser: colors.yellow[500],
         ccuserbd: colors.yellow[600],
         ccacctype: colors.orange[500],
