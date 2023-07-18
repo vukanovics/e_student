@@ -24,7 +24,10 @@ use crate::{
     error::Error,
     index::{Generation, Index, IndexNumber, Program},
     models::Session,
-    schema::{enrolments, generations, indicies, programs, users},
+    schema::{
+        enrolments, generations, grade_assignments_progress, indicies, point_assignments_progress,
+        programs, users,
+    },
 };
 
 #[repr(u8)]
@@ -535,6 +538,88 @@ impl UsersWithIndexAndEnrolment {
             )
             .select(UserWithIndexAndEnrolment::as_select())
             .load::<UserWithIndexAndEnrolment>(connection)
+            .map_err(Error::from)
+            .map(|u| Self { 0: u })
+    }
+}
+
+#[derive(Serialize, Debug, Clone, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct UserWithIndexAndPointProgress {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub user: User,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub index: Option<IndexGenerationProgram>,
+    #[diesel(select_expression = point_assignments_progress::points.nullable())]
+    #[diesel(select_expression_type = diesel::dsl::Nullable<point_assignments_progress::points>)]
+    pub points: Option<u32>,
+}
+
+pub struct UsersWithIndexAndPointProgress(pub Vec<UserWithIndexAndPointProgress>);
+
+impl UsersWithIndexAndPointProgress {
+    pub fn get(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+        point_assignment: u32,
+    ) -> Result<Self, Error> {
+        let query = Users::query_new();
+
+        let query = Users::query_apply_filters(query, options.filters);
+        let query = Users::query_apply_sorts(query, options.sorts);
+        let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
+
+        query
+            .left_join(
+                point_assignments_progress::table.on(users::id
+                    .eq(point_assignments_progress::student)
+                    .and(point_assignments_progress::assignment.eq(point_assignment))),
+            )
+            .select(UserWithIndexAndPointProgress::as_select())
+            .load::<UserWithIndexAndPointProgress>(connection)
+            .map_err(Error::from)
+            .map(|u| Self { 0: u })
+    }
+}
+
+#[derive(Serialize, Debug, Clone, Selectable, Queryable)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct UserWithIndexAndGradeProgress {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub user: User,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub index: Option<IndexGenerationProgram>,
+    #[diesel(select_expression = grade_assignments_progress::grade.nullable())]
+    #[diesel(select_expression_type = diesel::dsl::Nullable<grade_assignments_progress::grade>)]
+    pub grade: Option<f32>,
+}
+
+pub struct UsersWithIndexAndGradeProgress(pub Vec<UserWithIndexAndGradeProgress>);
+
+impl UsersWithIndexAndGradeProgress {
+    pub fn get(
+        connection: &mut Connection,
+        options: UsersRetrievalOptions,
+        grade_assignment: u32,
+    ) -> Result<Self, Error> {
+        let query = Users::query_new();
+
+        let query = Users::query_apply_filters(query, options.filters);
+        let query = Users::query_apply_sorts(query, options.sorts);
+        let query = Users::query_apply_pagination(query, options.max_per_page, options.page);
+
+        query
+            .left_join(
+                grade_assignments_progress::table.on(users::id
+                    .eq(grade_assignments_progress::student)
+                    .and(grade_assignments_progress::assignment.eq(grade_assignment))),
+            )
+            .select(UserWithIndexAndGradeProgress::as_select())
+            .load::<UserWithIndexAndGradeProgress>(connection)
             .map_err(Error::from)
             .map(|u| Self { 0: u })
     }

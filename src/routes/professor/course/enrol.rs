@@ -74,7 +74,7 @@ pub async fn post(
 
     for dropdown in form.users_form.enrol_dropdowns() {
         if dropdown.value_changed() {
-            if dropdown.new_value() == true {
+            if *dropdown.new_value() == true {
                 let student = dropdown.user();
                 database
                     .run(move |c| Enrolment::create(c, course.id, student))

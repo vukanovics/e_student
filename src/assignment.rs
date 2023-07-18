@@ -102,6 +102,51 @@ impl GradeAssignment {
         })
         .map(|_| ())
     }
+
+    pub fn grade(
+        connection: &mut Connection,
+        grade_assignment_id: u32,
+        student: UserId,
+        grade: f32,
+    ) -> Result<(), Error> {
+        #[derive(Selectable, Queryable, Identifiable)]
+        #[diesel(table_name = grade_assignments_progress)]
+        #[diesel(primary_key(assignment, student))]
+        struct Grade {
+            assignment: u32,
+            student: u32,
+            #[diesel(column_name = "grade")]
+            _grade: f32,
+        }
+        let previous_grade = grade_assignments_progress::table
+            .filter(
+                grade_assignments_progress::assignment
+                    .eq(grade_assignment_id)
+                    .and(grade_assignments_progress::student.eq(student)),
+            )
+            .limit(1)
+            .first::<Grade>(connection)
+            .map_err(Error::from);
+        match previous_grade {
+            Ok(previous_grade) => diesel::update(&previous_grade)
+                .set(grade_assignments_progress::grade.eq(grade))
+                .execute(connection)
+                .map_err(Error::from)
+                .map(|_| ()),
+            Err(Error::DatabaseEntryNotFound) => {
+                diesel::insert_into(grade_assignments_progress::table)
+                    .values((
+                        grade_assignments_progress::assignment.eq(grade_assignment_id),
+                        grade_assignments_progress::student.eq(student),
+                        grade_assignments_progress::grade.eq(grade),
+                    ))
+                    .execute(connection)
+                    .map_err(Error::from)
+                    .map(|_| ())
+            }
+            Err(e) => Err(e),
+        }
+    }
 }
 
 #[derive(Serialize, Debug, Queryable, Selectable)]
@@ -156,6 +201,51 @@ impl PointAssignment {
                 .map_err(Error::from)
         })
         .map(|_| ())
+    }
+
+    pub fn grade(
+        connection: &mut Connection,
+        points_assignment_id: u32,
+        student: UserId,
+        points: u32,
+    ) -> Result<(), Error> {
+        #[derive(Selectable, Queryable, Identifiable)]
+        #[diesel(table_name = point_assignments_progress)]
+        #[diesel(primary_key(assignment, student))]
+        struct Grade {
+            assignment: u32,
+            student: u32,
+            #[diesel(column_name = "points")]
+            _points: u32,
+        }
+        let previous_grade = point_assignments_progress::table
+            .filter(
+                point_assignments_progress::assignment
+                    .eq(points_assignment_id)
+                    .and(point_assignments_progress::student.eq(student)),
+            )
+            .limit(1)
+            .first::<Grade>(connection)
+            .map_err(Error::from);
+        match previous_grade {
+            Ok(previous_grade) => diesel::update(&previous_grade)
+                .set(point_assignments_progress::points.eq(points))
+                .execute(connection)
+                .map_err(Error::from)
+                .map(|_| ()),
+            Err(Error::DatabaseEntryNotFound) => {
+                diesel::insert_into(point_assignments_progress::table)
+                    .values((
+                        point_assignments_progress::assignment.eq(points_assignment_id),
+                        point_assignments_progress::student.eq(student),
+                        point_assignments_progress::points.eq(points),
+                    ))
+                    .execute(connection)
+                    .map_err(Error::from)
+                    .map(|_| ())
+            }
+            Err(e) => Err(e),
+        }
     }
 }
 

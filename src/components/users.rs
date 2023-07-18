@@ -6,8 +6,10 @@ use crate::{
     error::Error,
     index::IndexNumber,
     user::{
-        AccountType, UserId, UserWithIndex, UserWithIndexAndEnrolment, UsersRetrievalOptions,
-        UsersWithIndex, UsersWithIndexAndEnrolment,
+        AccountType, UserId, UserWithIndex, UserWithIndexAndEnrolment,
+        UserWithIndexAndGradeProgress, UserWithIndexAndPointProgress, UsersRetrievalOptions,
+        UsersWithIndex, UsersWithIndexAndEnrolment, UsersWithIndexAndGradeProgress,
+        UsersWithIndexAndPointProgress,
     },
 };
 
@@ -22,9 +24,21 @@ pub struct EnrolData {
 }
 
 #[derive(Serialize, Debug)]
+pub struct PointProgressData {
+    users: Vec<UserWithIndexAndPointProgress>,
+}
+
+#[derive(Serialize, Debug)]
+pub struct GradeProgressData {
+    users: Vec<UserWithIndexAndGradeProgress>,
+}
+
+#[derive(Serialize, Debug)]
 pub enum ControlType {
     Edit(EditData),
     Enrol(EnrolData),
+    PointProgress(PointProgressData),
+    GradeProgress(GradeProgressData),
 }
 
 #[derive(Serialize, Debug)]
@@ -52,13 +66,16 @@ impl Into<Option<SortDirection>> for &FormSortDirection {
 }
 
 #[derive(Serialize, FromForm, Debug, Clone)]
-pub struct EnrolDropdown {
+pub struct UserValueDifference<T> {
     user: UserId,
-    old_value: bool,
-    new_value: bool,
+    old_value: T,
+    new_value: T,
 }
 
-impl EnrolDropdown {
+impl<T> UserValueDifference<T>
+where
+    T: PartialEq,
+{
     pub fn user(&self) -> UserId {
         self.user
     }
@@ -67,10 +84,14 @@ impl EnrolDropdown {
         self.old_value != self.new_value
     }
 
-    pub fn new_value(&self) -> bool {
-        self.new_value
+    pub fn new_value(&self) -> &T {
+        &self.new_value
     }
 }
+
+pub type PointProgress = UserValueDifference<Option<u32>>;
+pub type GradeProgress = UserValueDifference<Option<f32>>;
+pub type EnrolDropdown = UserValueDifference<bool>;
 
 #[derive(Serialize, FromForm, Debug, Clone)]
 pub struct FormData {
@@ -93,11 +114,19 @@ pub struct FormData {
     max_per_page: u32,
 
     enrol_dropdowns: Vec<EnrolDropdown>,
+    point_progresses: Vec<PointProgress>,
+    grade_progresses: Vec<GradeProgress>,
 }
 
 impl FormData {
     pub fn enrol_dropdowns(&self) -> &Vec<EnrolDropdown> {
         self.enrol_dropdowns.as_ref()
+    }
+    pub fn point_progresses(&self) -> &Vec<PointProgress> {
+        self.point_progresses.as_ref()
+    }
+    pub fn grade_progresses(&self) -> &Vec<GradeProgress> {
+        self.grade_progresses.as_ref()
     }
 }
 
@@ -105,9 +134,19 @@ pub struct EnrolOptions {
     pub course: u32,
 }
 
+pub struct PointProgressOptions {
+    pub assignment: u32,
+}
+
+pub struct GradeProgressOptions {
+    pub assignment: u32,
+}
+
 pub enum ControlTypeOptions {
     Edit,
     Enrol(EnrolOptions),
+    PointProgress(PointProgressOptions),
+    GradeProgress(GradeProgressOptions),
 }
 
 const DEFAULT_USERS_PER_PAGE: u32 = 10;
@@ -164,6 +203,22 @@ impl LayoutContext {
                     .run(move |c| UsersWithIndexAndEnrolment::get(c, options, settings.course))
                     .await?;
                 ControlType::Enrol(EnrolData { users: users.0 })
+            }
+            ControlTypeOptions::PointProgress(settings) => {
+                let users = database
+                    .run(move |c| {
+                        UsersWithIndexAndPointProgress::get(c, options, settings.assignment)
+                    })
+                    .await?;
+                ControlType::PointProgress(PointProgressData { users: users.0 })
+            }
+            ControlTypeOptions::GradeProgress(settings) => {
+                let users = database
+                    .run(move |c| {
+                        UsersWithIndexAndGradeProgress::get(c, options, settings.assignment)
+                    })
+                    .await?;
+                ControlType::GradeProgress(GradeProgressData { users: users.0 })
             }
         };
 

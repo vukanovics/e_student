@@ -57,6 +57,23 @@
             </td>
           {{/components/user_table_row}}
         {{/if}}
+        {{#if data.control_type.PointProgress}}
+          {{#> components/user_table_row users=data.control_type.PointProgress.users}}
+            <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
+              <input type="text" name={{concat ../form_name ".point_progresses." @index ".user"}} value={{this.id}} hidden>
+              <input type="text" name={{concat ../form_name ".point_progresses." @index ".old_value"}} value="{{this.points}}" hidden>
+              <input type="text" name={{concat ../form_name ".point_progresses." @index ".new_value"}} value="{{this.points}}">
+            </td>
+          {{/components/user_table_row}}
+        {{/if}}
+        {{#if data.control_type.GradeProgress}}
+          {{#> components/user_table_row users=data.control_type.GradeProgress.users}}
+            <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
+              <input type="text" name={{concat ../form_name ".grade_progresses." @index ".user"}} value={{this.id}} hidden>
+              <input type="text" name={{concat ../form_name ".grade_progresses." @index ".old_value"}} value="{{this.grade}}" hidden>
+              <input type="text" name={{concat ../form_name ".grade_progresses." @index ".new_value"}} value="{{this.grade}}">
+            </td>
+          {{/components/user_table_row}}
         {{/if}}
     </table>
   </div>

@@ -1,3 +1,4 @@
+pub mod assignment;
 pub mod assignments;
 pub mod delete;
 pub mod enrol;
