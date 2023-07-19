@@ -75,18 +75,20 @@ pub async fn post(
 
     for dropdown in form.users_form.enrol_dropdowns() {
         if dropdown.value_changed() {
-            if *dropdown.new_value() == true {
-                let student = dropdown.user();
-                database
-                    .run(move |c| Enrolment::create(c, course.id, student))
-                    .await?;
-            } else {
-                let student = dropdown.user();
-                database
-                    .run(move |c| {
-                        c.transaction(move |c| Enrolment::get(c, course.id, student)?.delete(c))
-                    })
-                    .await?;
+            let student = dropdown.user();
+            match *dropdown.new_value() {
+                true => {
+                    database
+                        .run(move |c| Enrolment::create(c, course.id, student))
+                        .await?
+                }
+                false => {
+                    database
+                        .run(move |c| {
+                            c.transaction(move |c| Enrolment::get(c, course.id, student)?.delete(c))
+                        })
+                        .await?
+                }
             }
         }
     }
