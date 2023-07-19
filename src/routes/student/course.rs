@@ -1,3 +1,4 @@
+use diesel::Connection;
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
@@ -7,6 +8,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     course::Course,
     database::Database,
+    discussion::DiscussionWithComments,
     error::Error,
     localization::Script,
     user::User,
@@ -16,6 +18,8 @@ use crate::{
 struct CourseWithAssignments {
     #[serde(flatten)]
     course: Course,
+    #[serde(flatten)]
+    discussion: DiscussionWithComments,
     assignments: Vec<GradedAssignment>,
 }
 
@@ -46,21 +50,22 @@ pub async fn get(
     database: Database,
     course: String,
 ) -> Result<Template, Status> {
-    let course = database
-        .run(move |c| Course::get_by_url(c, &course))
-        .await?;
-
     let user_id = user.id;
+    let course = database
+        .run(move |c| {
+            c.transaction(move |c| {
+                let course = Course::get_by_url(c, &course)?;
+                let assignments = GradedAssignments::get(c, course.id, user_id)?.0;
+                let discussion = DiscussionWithComments::get(c, course.discussion)?;
 
-    let assignments = database
-        .run(move |c| GradedAssignments::get(c, course.id, user_id))
-        .await?
-        .0;
-
-    let course = CourseWithAssignments {
-        course,
-        assignments,
-    };
+                Ok::<_, Error>(CourseWithAssignments {
+                    course,
+                    discussion,
+                    assignments,
+                })
+            })
+        })
+        .await?;
 
     let context = LayoutContext::new(language, user, course).await?;
 
