@@ -24,9 +24,9 @@
 {{/if}}
 
 {{#if account_type.Student}}
-{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Student.previous.email}}
-{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Student.previous.first_name}}
-{{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Student.previous.last_name}}
+{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" required="true" field_name="email" text=(i18n "Имејл адреса") value=account_type.Student.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="first_name" text=(i18n "Име") value=account_type.Student.previous.first_name}}
+{{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="last_name" text=(i18n "Презиме") value=account_type.Student.previous.last_name}}
 {{#> components/input_select icon="la-clock" border="border-cctimebd" class="bg-cctime" field_name="program" text=(i18n "Програм")}}
   {{#each account_type.Student.programs}}
     <option value="{{this.short_name}}" {{#if (eq ../account_type.Student.previous.program this.short_name)}}selected{{/if}}>{{i18n (concat this.short_name " - " this.full_name)}}</option>
@@ -37,20 +37,20 @@
     <option value="{{this.year}}"{{#if (eq ../account_type.Student.previous.generation this.year)}}selected{{/if}}>{{this.year}}</option>
   {{/each}}
 {{/components/input_select}}
-{{> components/input_base_text type="number" field_name="index_number" value=account_type.Student.previous.index_number}}
+{{> components/input_base_text type="number" required="true" field_name="index_number" value=account_type.Student.previous.index_number}}
 
 {{/if}}
 
 {{#if account_type.Professor}}
-{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Professor.previous.email}}
-{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Professor.previous.first_name}}
-{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Professor.previous.last_name}}
+{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" required="true" field_name="email" text=(i18n "Имејл адреса") value=account_type.Professor.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="first_name" text=(i18n "Име") value=account_type.Professor.previous.first_name}}
+{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="last_name" text=(i18n "Презиме") value=account_type.Professor.previous.last_name}}
 {{/if}}
 
 {{#if account_type.Administrator}}
-{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" field_name="email" text=(i18n "Имејл адреса") value=account_type.Administrator.previous.email}}
-{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="first_name" text=(i18n "Име") value=account_type.Administrator.previous.first_name}}
-{{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" field_name="last_name" text=(i18n "Презиме") value=account_type.Administrator.previous.last_name}}
+{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" required="true" field_name="email" text=(i18n "Имејл адреса") value=account_type.Administrator.previous.email}}
+{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="first_name" text=(i18n "Име") value=account_type.Administrator.previous.first_name}}
+{{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="last_name" text=(i18n "Презиме") value=account_type.Administrator.previous.last_name}}
 {{/if}}
 
 {{> components/button button_text=(i18n "Даље")}}

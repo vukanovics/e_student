@@ -4,8 +4,8 @@
 <div class="flex flex-col items-center">
   {{> components/caption text=(i18n "Улогуј се")}}
   <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="login" method="post">
-    {{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="username_or_email" text=(i18n "Корисничко име или имејл адреса")}}
-    {{> components/input_password icon="la-key" border="border-ccpassbd" class="bg-ccpass" field_name="password" text=(i18n "Лозинка")}}
+    {{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="username_or_email" text=(i18n "Корисничко име или имејл адреса")}}
+    {{> components/input_password icon="la-key" border="border-ccpassbd" class="bg-ccpass" required="true" field_name="password" text=(i18n "Лозинка")}}
     {{#> components/input_select icon="la-clock" border="border-cctimebd" class="bg-cctime" field_name="timeout" text=(i18n "Остани улогован")}}
         <option value="99999999">{{i18n "ОК време"}}</option>
         <option value="300">5 {{i18n "минута"}}</option>

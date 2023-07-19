@@ -10,8 +10,8 @@
   <option value="Grade" disabled>{{i18n "Оцена"}}</option>
   <option value="Point" selected>{{i18n "Поени"}}</option>
 {{/components/input_select}}
-{{> components/input_text icon="la-plus-circle" border="border-cccolq-500" class="bg-cccolq-500" field_name="name" text=(i18n "Име")}}
-{{> components/input_number icon="la-plus-circle" border="border-cccolq-500" class="bg-cccolq-500" field_name="max_points" text=(i18n "Максимално поена")}}
+{{> components/input_text icon="la-plus-circle" border="border-cccolq-500" class="bg-cccolq-500" required="true" field_name="name" text=(i18n "Име")}}
+{{> components/input_number icon="la-plus-circle" border="border-cccolq-500" class="bg-cccolq-500" required="true" field_name="max_points" text=(i18n "Максимално поена")}}
 {{> components/button button_text=(i18n "Направи")}}
 
 {{#if show_success_message}}
