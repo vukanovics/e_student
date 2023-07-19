@@ -18,9 +18,9 @@
       </div>
       {{#if (eq user.account_type "Administrator")}}
       <div>
-        {{> components/button_link button_href="generations" button_text=(i18n "Генерације")}}
-        {{> components/button_link button_href="programs" button_text=(i18n "Смерови")}}
-        {{> components/button_link button_href="users" button_text=(i18n "Корисници")}}
+        {{> components/button_link button_href="/generations" button_text=(i18n "Генерације")}}
+        {{> components/button_link button_href="/programs" button_text=(i18n "Смерови")}}
+        {{> components/button_link button_href="/users" button_text=(i18n "Корисници")}}
       </div>
       {{/if}}
       {{> components/login_information}}
