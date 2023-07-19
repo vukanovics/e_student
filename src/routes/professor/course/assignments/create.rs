@@ -56,6 +56,10 @@ pub async fn get(
 
     let user = professor.0;
 
+    if !course.authorized_to_edit(user) {
+        return Err(Status::Unauthorized);
+    }
+
     match assignment_type {
         None => Ok(Template::render(
             "routes/professor/course/assignments/create",
