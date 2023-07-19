@@ -7,7 +7,6 @@ CREATE TABLE users (
   -- Type selected according to 
   -- https://stackoverflow.com/questions/9295513/nvarchar-for-email-addresses-in-sql-server
   email NVARCHAR(320) UNIQUE NOT NULL,
-  -- Envisioned to have only three values (student, professor, admin)
   account_type TINYINT UNSIGNED NOT NULL,
 
   password_reset_required BOOL NOT NULL DEFAULT TRUE,
@@ -15,7 +14,6 @@ CREATE TABLE users (
   first_name NVARCHAR(32),
   last_name NVARCHAR(32),
 
-  -- Can be NULL, in which case the user hasn't logged in yet
   last_login_time DATETIME DEFAULT NULL,
 
   deleted BOOL NOT NULL DEFAULT FALSE,
@@ -23,7 +21,6 @@ CREATE TABLE users (
   INDEX in_email (email)
 );
 
--- Stores historic values of users
 CREATE TABLE users_revisions (
   id INTEGER UNSIGNED NOT NULL,
   CONSTRAINT fk_users_revisions_id FOREIGN KEY (id) REFERENCES users(id),
@@ -42,7 +39,6 @@ CREATE TABLE users_revisions (
   deleted BOOL NOT NULL
 );
 
--- Copies all data for user being updated into users_revisions table
 CREATE TRIGGER bu_users BEFORE UPDATE ON users FOR EACH ROW BEGIN
   INSERT INTO users_revisions (
     id,
@@ -115,15 +111,11 @@ CREATE TABLE sessions (
 CREATE TABLE courses (
   id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 
-  -- Year the course is created during
   year INTEGER UNSIGNED NOT NULL,
   name NVARCHAR(255) NOT NULL,
 
-  -- Combination of year & name is unique
   CONSTRAINT uq_year_name UNIQUE (year, name),
 
-  -- URL over which the course can be accessed
-  -- VARCHAR because it can only be ASCII
   url VARCHAR(255) UNIQUE NOT NULL,
 
   professor INTEGER UNSIGNED NOT NULL,
@@ -150,7 +142,6 @@ CREATE TABLE courses_revisions (
   deleted BOOL NOT NULL DEFAULT FALSE
 );
 
--- Copies all data for course being updated into courses_revisions table
 CREATE TRIGGER bu_courses BEFORE UPDATE ON courses FOR EACH ROW BEGIN
   INSERT INTO courses_revisions (
     id,
