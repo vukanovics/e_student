@@ -13,7 +13,13 @@ use serde::Serialize;
 
 use rocket_dyn_templates::Template;
 
-use crate::{database::Database, error::Error, localization::Script, models::Session, user::User};
+use crate::{
+    database::Database,
+    error::Error,
+    localization::Script,
+    models::Session,
+    user::{User, SESSION_KEY_COOKIE_NAME},
+};
 
 #[derive(Clone, Serialize, Debug)]
 struct LoginLayoutContext {
@@ -140,7 +146,7 @@ pub async fn post(
         .run(move |c| Database::insert_session(c, &session))
         .await?;
 
-    let mut cookie = Cookie::new("session_key", hex::encode(session_key));
+    let mut cookie = Cookie::new(SESSION_KEY_COOKIE_NAME, hex::encode(session_key));
 
     cookie.set_secure(true);
     cookie.set_http_only(true);

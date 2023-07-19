@@ -30,6 +30,8 @@ use crate::{
     },
 };
 
+pub const SESSION_KEY_COOKIE_NAME: &'static str = "session_key";
+
 #[repr(u8)]
 #[derive(FromFormField, AsExpression, FromSqlRow, Serialize, PartialEq, Debug, Clone, Copy)]
 #[diesel(sql_type = Unsigned<TinyInt>)]
@@ -654,8 +656,8 @@ impl<'r> FromRequest<'r> for &'r User {
             .local_cache_async(async {
                 let jar = request.guard::<&CookieJar>().await.unwrap();
                 let session_key = match jar
-                    .get_pending("session_key")
-                    .or(jar.get("session_key").cloned())
+                    .get_pending(SESSION_KEY_COOKIE_NAME)
+                    .or(jar.get(SESSION_KEY_COOKIE_NAME).cloned())
                     .map(|c| hex::decode(c.value().to_owned()))
                     .transpose()
                 {
