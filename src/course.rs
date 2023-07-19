@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::{
     database::Connection,
+    discussion::Discussion,
     error::Error,
     schema::{courses, enrolments},
     user::{User, UserId},
@@ -70,6 +71,7 @@ pub struct Course {
     pub name: String,
     pub url: String,
     pub professor: u32,
+    pub discussion: u32,
     pub deleted: bool,
 }
 
@@ -80,6 +82,7 @@ pub struct NewCourse<'a> {
     pub name: &'a str,
     pub url: &'a str,
     pub professor: u32,
+    pub discussion: u32,
 }
 
 #[derive(Debug)]
@@ -123,12 +126,15 @@ impl Course {
         url: &'a str,
         professor: UserId,
     ) -> Result<(), Error> {
+        let discussion = Discussion::create(connection)?;
+
         diesel::insert_into(courses::table)
             .values(NewCourse {
                 year,
                 name,
                 url,
                 professor,
+                discussion,
             })
             .execute(connection)
             .map(|_| ())

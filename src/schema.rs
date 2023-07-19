@@ -6,7 +6,18 @@ diesel::table! {
         course -> Unsigned<Integer>,
         name -> Varchar,
         url -> Varchar,
+        discussion -> Unsigned<Integer>,
         deleted -> Bool,
+    }
+}
+
+diesel::table! {
+    comments (id) {
+        id -> Unsigned<Integer>,
+        discussion -> Unsigned<Integer>,
+        author -> Unsigned<Integer>,
+        markdown -> Text,
+        created -> Datetime,
     }
 }
 
@@ -17,6 +28,7 @@ diesel::table! {
         name -> Varchar,
         url -> Varchar,
         professor -> Unsigned<Integer>,
+        discussion -> Unsigned<Integer>,
         deleted -> Bool,
     }
 }
@@ -31,6 +43,13 @@ diesel::table! {
         url -> Varchar,
         professor -> Unsigned<Integer>,
         deleted -> Bool,
+    }
+}
+
+diesel::table! {
+    discussions (id) {
+        id -> Unsigned<Integer>,
+        markdown -> Nullable<Text>,
     }
 }
 
@@ -139,6 +158,10 @@ diesel::table! {
 }
 
 diesel::joinable!(assignments -> courses (course));
+diesel::joinable!(assignments -> discussions (discussion));
+diesel::joinable!(comments -> discussions (discussion));
+diesel::joinable!(comments -> users (author));
+diesel::joinable!(courses -> discussions (discussion));
 diesel::joinable!(courses -> users (professor));
 diesel::joinable!(courses_revisions -> courses (id));
 diesel::joinable!(enrolments -> courses (course));
@@ -157,8 +180,10 @@ diesel::joinable!(users_revisions -> users (id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     assignments,
+    comments,
     courses,
     courses_revisions,
+    discussions,
     enrolments,
     generations,
     grade_assignments,

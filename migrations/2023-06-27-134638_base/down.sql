@@ -11,6 +11,9 @@ DROP TRIGGER bu_courses;
 DROP TABLE courses_revisions;
 DROP TABLE courses;
 
+DROP TABLE comments;
+DROP TABLE discussions;
+
 DROP TABLE sessions;
 
 DROP TABLE indicies;

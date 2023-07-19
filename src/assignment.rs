@@ -20,6 +20,7 @@ pub struct BaseAssignment {
     pub course: u32,
     pub name: String,
     pub url: String,
+    pub discussion: u32,
     pub deleted: bool,
 }
 
