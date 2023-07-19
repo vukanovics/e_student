@@ -20,6 +20,7 @@ use rocket::{
 use serde::Serialize;
 
 use crate::{
+    assignment::GradeAssignmentGrade,
     database::{Connection, Database, SortDirection},
     error::Error,
     index::{Generation, Index, IndexNumber, Program},
@@ -605,9 +606,8 @@ pub struct UserWithIndexAndGradeProgress {
     #[serde(flatten)]
     #[diesel(embed)]
     pub index: Option<IndexGenerationProgram>,
-    #[diesel(select_expression = grade_assignments_progress::grade.nullable())]
-    #[diesel(select_expression_type = diesel::dsl::Nullable<grade_assignments_progress::grade>)]
-    pub grade: Option<f32>,
+    #[diesel(embed)]
+    pub grade: Option<GradeAssignmentGrade>,
 }
 
 pub struct UsersWithIndexAndGradeProgress(pub Vec<UserWithIndexAndGradeProgress>);

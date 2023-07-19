@@ -59,7 +59,8 @@ diesel::table! {
     grade_assignments_progress (assignment, student) {
         assignment -> Unsigned<Integer>,
         student -> Unsigned<Integer>,
-        grade -> Float,
+        grade_major -> Unsigned<Tinyint>,
+        grade_minor -> Unsigned<Tinyint>,
     }
 }
 

@@ -220,6 +220,7 @@ CREATE TABLE grade_assignments_progress (
   CONSTRAINT fk_grade_assignments_progress_student FOREIGN KEY (student) REFERENCES users(id),
   CONSTRAINT PRIMARY KEY (assignment, student),
 
-  grade FLOAT NOT NULL
+  grade_major TINYINT UNSIGNED NOT NULL,
+  grade_minor TINYINT UNSIGNED NOT NULL
 );
 

@@ -2,6 +2,7 @@ use rocket::{FromForm, FromFormField};
 use serde::Serialize;
 
 use crate::{
+    assignment::GradeAssignmentGrade,
     database::{Database, SortDirection},
     error::Error,
     index::IndexNumber,
@@ -90,7 +91,7 @@ where
 }
 
 pub type PointProgress = UserValueDifference<Option<u32>>;
-pub type GradeProgress = UserValueDifference<Option<f32>>;
+pub type GradeProgress = UserValueDifference<Option<GradeAssignmentGrade>>;
 pub type EnrolDropdown = UserValueDifference<bool>;
 
 #[derive(Serialize, FromForm, Debug, Clone)]

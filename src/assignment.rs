@@ -3,7 +3,7 @@ use crate::{
     user::UserId,
 };
 use diesel::{prelude::*, Insertable, Queryable, Selectable};
-use rocket::FromFormField;
+use rocket::{FromForm, FromFormField};
 use serde::Serialize;
 
 use crate::{
@@ -107,7 +107,7 @@ impl GradeAssignment {
         connection: &mut Connection,
         grade_assignment_id: u32,
         student: UserId,
-        grade: f32,
+        grade: GradeAssignmentGrade,
     ) -> Result<(), Error> {
         #[derive(Selectable, Queryable, Identifiable)]
         #[diesel(table_name = grade_assignments_progress)]
@@ -115,8 +115,10 @@ impl GradeAssignment {
         struct Grade {
             assignment: u32,
             student: u32,
-            #[diesel(column_name = "grade")]
-            _grade: f32,
+            #[diesel(column_name = "grade_major")]
+            _grade_major: u8,
+            #[diesel(column_name = "grade_minor")]
+            _grade_minor: u8,
         }
         let previous_grade = grade_assignments_progress::table
             .filter(
@@ -129,7 +131,10 @@ impl GradeAssignment {
             .map_err(Error::from);
         match previous_grade {
             Ok(previous_grade) => diesel::update(&previous_grade)
-                .set(grade_assignments_progress::grade.eq(grade))
+                .set((
+                    grade_assignments_progress::grade_minor.eq(grade.minor),
+                    grade_assignments_progress::grade_major.eq(grade.major),
+                ))
                 .execute(connection)
                 .map_err(Error::from)
                 .map(|_| ()),
@@ -138,7 +143,8 @@ impl GradeAssignment {
                     .values((
                         grade_assignments_progress::assignment.eq(grade_assignment_id),
                         grade_assignments_progress::student.eq(student),
-                        grade_assignments_progress::grade.eq(grade),
+                        grade_assignments_progress::grade_major.eq(grade.minor),
+                        grade_assignments_progress::grade_minor.eq(grade.major),
                     ))
                     .execute(connection)
                     .map_err(Error::from)
@@ -292,15 +298,30 @@ impl Assignments {
     }
 }
 
+pub const GRADE_MAJOR_MAX: u8 = 10;
+pub const GRADE_MINOR_MAX: u8 = 99;
+
+#[derive(Serialize, Debug, Selectable, Queryable, Clone, FromForm, PartialEq, Default)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+#[diesel(table_name = grade_assignments_progress)]
+pub struct GradeAssignmentGrade {
+    #[diesel(column_name = "grade_major")]
+    #[field(validate = range(0..=GRADE_MAJOR_MAX as isize))]
+    pub major: u8,
+    #[diesel(column_name = "grade_minor")]
+    #[field(validate = range(0..=GRADE_MINOR_MAX as isize))]
+    pub minor: u8,
+}
+
 #[derive(Serialize, Debug, Selectable, Queryable)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct GradedGradeAssignment {
     #[serde(flatten)]
     #[diesel(embed)]
     pub assignment: GradeAssignment,
-    #[diesel(select_expression = grade_assignments_progress::grade.nullable())]
-    #[diesel(select_expression_type = diesel::dsl::Nullable<grade_assignments_progress::grade>)]
-    pub grade: Option<f32>,
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub grade: Option<GradeAssignmentGrade>,
 }
 
 #[derive(Serialize, Debug, Selectable, Queryable)]

@@ -3,7 +3,7 @@ use rocket_dyn_templates::Template;
 use serde::Serialize;
 
 use crate::{
-    assignment::{Assignment, GradeAssignment, PointAssignment},
+    assignment::{Assignment, GradeAssignment, PointAssignment, GRADE_MAJOR_MAX},
     base_layout_context::BaseLayoutContext,
     components::users::{self, ControlTypeOptions, GradeProgressOptions, PointProgressOptions},
     course::Course,
@@ -126,7 +126,12 @@ pub async fn post(
                 }
 
                 let user = grade_progress.user();
-                let grade = grade_progress.new_value().unwrap_or_default();
+                let mut grade = grade_progress.new_value().clone().unwrap_or_default();
+
+                if grade.major == GRADE_MAJOR_MAX {
+                    grade.minor = 0;
+                }
+
                 let assignment_id = assignment.data.id;
 
                 database
