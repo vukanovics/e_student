@@ -1,3 +1,4 @@
+pub mod locale;
 pub mod login;
 pub mod root;
 

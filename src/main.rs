@@ -26,6 +26,7 @@ use rocket::{build, launch, routes};
 use rocket_dyn_templates::Template;
 
 use routes::administrator;
+use routes::locale;
 use routes::login;
 use routes::professor;
 use routes::root;
@@ -62,6 +63,7 @@ fn rocket() -> _ {
                 root::get,
                 login::get,
                 login::post,
+                locale::get,
                 student::courses::get,
                 student::course::get,
                 professor::courses::get,
