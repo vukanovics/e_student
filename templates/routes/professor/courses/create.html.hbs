@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-<div class="flex flex-col items-center"></div>
+<div class="flex flex-col items-center">
   <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="create" method="post">
     {{#> components/input_select icon="la-calendar" border="border-cctimebd" class="bg-cctime" field_name="year" text=(i18n "Година курса")}}
       <option value="2022">2022</option>
@@ -10,7 +10,7 @@
       <option value="2025">2025</option>
     {{/components/input_select}}
     {{> components/input_text icon="la-comment" border="border-cccolq-500" class="bg-cccolq-500" required="true" field_name="name" text=(i18n "Име курса")}}
-    {{> components/button button_text="Create a course"}}
+    {{> components/button button_text=(i18n "Креирај курс")}}
   </form>
 
   {{#if show_success_message}}
