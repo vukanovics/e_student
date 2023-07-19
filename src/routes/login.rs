@@ -1,5 +1,4 @@
 use chrono::Utc;
-use log::debug;
 use rand::{Fill, SeedableRng};
 use rocket::{
     form::{Form, FromForm},
@@ -43,11 +42,15 @@ impl LoginLayoutContext {
     }
 }
 
-#[get("/login")]
+#[get("/login", rank = 2)]
 pub async fn get(language: Script) -> Result<Template, Status> {
     let context = LoginLayoutContext::new(language).await?;
-    debug!("Context is {:?}", context);
     Ok(Template::render("routes/login", context))
+}
+
+#[get("/login", rank = 1)]
+pub async fn get_logged_in(_user: &User) -> Redirect {
+    Redirect::to("/courses")
 }
 
 #[derive(FromForm, Debug)]

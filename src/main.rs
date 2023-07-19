@@ -62,6 +62,7 @@ fn rocket() -> _ {
             routes![
                 root::get,
                 login::get,
+                login::get_logged_in,
                 login::post,
                 locale::get,
                 student::courses::get,
