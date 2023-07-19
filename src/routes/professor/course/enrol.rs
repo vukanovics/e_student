@@ -46,6 +46,10 @@ pub async fn get(
         .run(move |c| Course::get_by_url(c, &course))
         .await?;
 
+    if !course.authorized_to_edit(user) {
+        return Err(Status::Unauthorized);
+    }
+
     let options = ControlTypeOptions::Enrol(EnrolOptions { course: course.id });
 
     let users_context = users::LayoutContext::new(database, None, options).await?;
@@ -72,6 +76,10 @@ pub async fn post(
     let course = database
         .run(move |c| Course::get_by_url(c, &course))
         .await?;
+
+    if !course.authorized_to_edit(user) {
+        return Err(Status::Unauthorized);
+    }
 
     for dropdown in form.users_form.enrol_dropdowns() {
         if dropdown.value_changed() {
