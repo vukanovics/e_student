@@ -1,3 +1,4 @@
+use diesel::Connection;
 use rocket::{form::Form, get, http::Status, post, FromForm};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
@@ -81,10 +82,11 @@ pub async fn post(
                     .await?;
             } else {
                 let student = dropdown.user();
-                let enrolment = database
-                    .run(move |c| Enrolment::get(c, course.id, student))
+                database
+                    .run(move |c| {
+                        c.transaction(move |c| Enrolment::get(c, course.id, student)?.delete(c))
+                    })
                     .await?;
-                database.run(move |c| enrolment.delete(c)).await?;
             }
         }
     }
