@@ -6,5 +6,6 @@
 <form class="flex flex-col items-center py-16 space-y-32 lg:space-y-16 lg:py-8" action="{{deleting_generation.id}}" method="post">
   {{> components/button button_text=(i18n "Обриши генерацију")}}
 </form>
+{{> components/button_link button_href=(concat "/courses") button_text=(i18n "Назад")}}
 {{/inline}}
 {{> base }}

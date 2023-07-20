@@ -12,6 +12,7 @@
   {{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" field_name="first_name" value=editing_user.first_name text=(i18n "Ново име")}}
   {{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" field_name="last_name" value=editing_user.last_name text=(i18n "Ново презиме")}}
   {{> components/button_link button_href="users/create" button_text=(i18n "Потврди")}}
+  {{> components/button_link button_href=(concat "/users") button_text=(i18n "Назад")}}
 </form>
 
 {{/inline}}

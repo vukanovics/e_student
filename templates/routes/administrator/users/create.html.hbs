@@ -54,6 +54,7 @@
 {{/if}}
 
 {{> components/button button_text=(i18n "Даље")}}
+{{> components/button_link button_href=(concat "/users") button_text=(i18n "Назад")}}
 </form>
 {{#if show_success_message}}
   {{> components/success text=(i18n "Корисник је успешно креиран!")}}
