@@ -17,11 +17,11 @@
         </a>
         <div class="grid grid-cols-2 lg:flex lg:flex-col lg:items-start lg:space-y-2">
           {{#if (eq user.account_type "Administrator")}}
-            {{> components/button_link button_href="/generations" button_text=(i18n "Генерације")}}
-            {{> components/button_link button_href="/programs" button_text=(i18n "Смерови")}}
-            {{> components/button_link button_href="/users" button_text=(i18n "Корисници")}}
+            {{> components/button_link button_href="/generations" icon="la-calendar" button_text=(i18n "Генерације")}}
+            {{> components/button_link button_href="/programs" icon="la-graduation-cap" button_text=(i18n "Смерови")}}
+            {{> components/button_link button_href="/users" icon="la-users" button_text=(i18n "Корисници")}}
           {{/if}}
-          {{> components/button_link button_href="/logout" button_text=(i18n "Излогуј се")}}
+          {{> components/button_link button_href="/logout" icon="la-sign-out-alt" button_text=(i18n "Излогуј се")}}
         </div>
       </div>
       <div class="flex overflow-hidden flex-col items-center p-32 space-y-8 w-full max-w-full border-4 shadow-md lg:mx-32 lg:p-16 lg:border-2 lg:space-y-4 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">

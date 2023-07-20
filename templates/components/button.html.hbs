@@ -1,5 +1,8 @@
 {{! vim: set ft=html: }}
 
-<div class="border-4 lg:border-2 border-highborder w-fit">
+<div class="border-4 bg-highbg hover:bg-highbghov active:bg-highbgact lg:border-2 border-highborder w-fit">
+    {{#if icon}}
+        <i class="text-8xl w-32 lg:w-10 las {{icon}} lg:text-4xl text-icon"></i>
+    {{/if}}
     <input class="p-8 px-16 text-4xl font-bold shadow-lg transition duration-300 ease-out cursor-pointer lg:text-base lg:p-2 lg:px-8 text-highfg bg-highbg hover:bg-highbghov active:bg-highbgact active:text-highfgact" type="submit" value="{{button_text}}">
 </div>
