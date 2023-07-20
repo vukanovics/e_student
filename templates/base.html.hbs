@@ -21,6 +21,9 @@
             {{> components/button_link button_href="/programs" icon="la-graduation-cap" button_text=(i18n "Смерови")}}
             {{> components/button_link button_href="/users" icon="la-users" button_text=(i18n "Корисници")}}
           {{/if}}
+          {{#if (eq user.account_type "Professor")}}
+            {{> components/button_link button_href="/courses/create" icon="la-comment" button_text=(i18n "Нови Курс")}}
+          {{/if}}
           {{> components/button_link button_href="/logout" icon="la-sign-out-alt" button_text=(i18n "Излогуј се")}}
         </div>
       </div>
