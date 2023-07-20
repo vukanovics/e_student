@@ -8,21 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet"> 
     <title>E-Student</title>
   </head>
-  <body class="bg-fixed w-full bg-center bg-cover bg-no-repeat bg-[url('/test1.webp')] m-auto items-center flex flex-col flex-grow">
-    <div class="flex flex-row justify-between pt-16 w-full h-full">
-      <div class="flex flex-col p-16 border-4 w-fit shrink-0 items-left lg:p-8 lg:border-2 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">
+  <body class="bg-fixed w-full bg-center bg-cover bg-no-repeat bg-[url('/test1.webp')]">
+    <div class="flex flex-col justify-between pt-16 space-y-16 w-full h-full lg:space-y-0 lg:flex-row">
+      <div class="flex flex-row flex-wrap items-center p-16 w-full border-4 lg:space-y-4 lg:flex-col lg:w-fit shrink-0 lg:items-start lg:p-8 lg:border-2 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">
         <a href="/courses" class="flex flex-row items-center">
           <i class="text-8xl las la-laptop-code lg:text-4xl text-maincap"></i>
-          <p class="text-maincap">e-Student</p>
+          <p class="text-4xl text-maincap lg:text-base">e-Student</p>
         </a>
-        {{#if (eq user.account_type "Administrator")}}
-          {{> components/button_link button_href="/generations" button_text=(i18n "Генерације")}}
-          {{> components/button_link button_href="/programs" button_text=(i18n "Смерови")}}
-          {{> components/button_link button_href="/users" button_text=(i18n "Корисници")}}
-        {{/if}}
-        {{> components/button_link button_href="/logout" button_text=(i18n "Излогуј се")}}
+        <div class="grid grid-cols-2 lg:flex lg:flex-col lg:items-start lg:space-y-2">
+          {{#if (eq user.account_type "Administrator")}}
+            {{> components/button_link button_href="/generations" button_text=(i18n "Генерације")}}
+            {{> components/button_link button_href="/programs" button_text=(i18n "Смерови")}}
+            {{> components/button_link button_href="/users" button_text=(i18n "Корисници")}}
+          {{/if}}
+          {{> components/button_link button_href="/logout" button_text=(i18n "Излогуј се")}}
+        </div>
       </div>
-      <div class="flex flex-col items-center p-32 space-y-8 w-full border-4 shadow-md lg:mx-32 lg:p-16 lg:border-2 lg:space-y-4 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">
+      <div class="flex overflow-hidden flex-col items-center p-32 space-y-8 w-full max-w-full border-4 shadow-md lg:mx-32 lg:p-16 lg:border-2 lg:space-y-4 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">
         {{> body}}
       </div>
         <div class="flex flex-col p-16 border-4 shrink-0 items-right lg:p-8 lg:border-2 dark:bg-dark_contentbg dark:border-dark_contentbd border-contentbd bg-contentbg">

@@ -4,7 +4,7 @@
 
 {{#each courses}}
 <a class="flex flex-row items-center" href="/course/{{this.url}}">
-  <div class="font-sans text-2xl font-bold text-caption" >{{this.name}}</div>
+  {{> components/caption text=this.name}}
 </a>
 {{/each}}
 

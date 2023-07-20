@@ -1,7 +1,6 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-{{log "test"}}
 <div class="flex flex-col space-y-8 justify-left">
   {{> components/caption text=course.name}}
   <div class="flex flex-col space-y-4 justify-left">
@@ -20,7 +19,7 @@
       </div>
     {{/each}}
   </div>
-  <div class="flex flex-row items-center space-x-4">
+  <div class="grid grid-cols-2 items-center lg:flex lg:flex-row lg:space-x-4">
     {{> components/button_link button_href=(concat "/course/" course.url "/enrol") button_text=(i18n "Упиши студенте")}}
     {{> components/button_link button_href=(concat "/course/" course.url "/assignments/create") button_text=(i18n "Креирај задатке")}}
     {{> components/button_link button_href=(concat "/course/" course.url "/delete") button_text=(i18n "Обриши курс")}}

@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#> components/input_cell_base}}
-    <select class="min-w-full h-16 text-5xl cursor-pointer lg:text-base bg-inputbg text-input" name={{field_name}} {{#if readonly}}readonly="readonly"{{/if}}>
+    <select class="min-w-full h-32 text-5xl cursor-pointer lg:h-16 lg:text-base bg-inputbg text-input" name={{field_name}} {{#if readonly}}readonly="readonly"{{/if}}>
     {{> @partial-block}}
     </select>
 {{/components/input_cell_base}}
