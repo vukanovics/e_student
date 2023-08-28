@@ -62,7 +62,8 @@
             <td class="flex h-full flex-row items-center w-[32rem] lg:w-64">
               <input type="text" name={{concat ../form_name ".point_progresses." @index ".user"}} value={{this.id}} hidden>
               <input type="text" name={{concat ../form_name ".point_progresses." @index ".old_value"}} value="{{this.points}}" hidden>
-              {{> components/input_cell_point field_name=(concat ../form_name ".point_progresses." @index ".new_value") value=this.points max=this.max_points icon="la-plus-circle" border="border-cccolq-600" class="bg-cccolq-500"}}
+              {{> components/input_cell_point field_name=(concat ../form_name
+              ".point_progresses." @index ".new_value") value=this.points max=../max_points icon="la-plus-circle" border="border-cccolq-600" class="bg-cccolq-500"}}
             </td>
           {{/components/user_table_row}}
         {{/if}}

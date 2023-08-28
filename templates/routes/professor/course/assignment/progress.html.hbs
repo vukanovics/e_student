@@ -1,12 +1,13 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-{{> components/users_form form_name="users_form" data=users}}
 {{#if assignment.Point}}
-	{{> components/button_link button_href=(concat "/course/" course.url) button_text=(i18n "Назад")}}
+	{{> components/users_form form_name="users_form" data=users max_points=assignment.Point.max_points}}
 {{/if}}
 {{#if assignment.Grade}}
-	{{> components/button_link button_href=(concat "/course/" course.url) button_text=(i18n "Назад")}}
+	{{> components/users_form form_name="users_form" data=users}}
 {{/if}}
+{{> components/button_link button_href=(concat "/course/" course.url) button_text=(i18n "Назад")}}
+
 {{/inline}}
 {{> base }}
