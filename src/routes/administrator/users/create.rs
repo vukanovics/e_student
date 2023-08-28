@@ -187,8 +187,8 @@ pub async fn post_administrator(
     };
 
     let plain_password: String = generate_random_password();
-    let first_name = Some(form.first_name.clone()).filter(|s| s.is_empty());
-    let last_name = Some(form.last_name.clone()).filter(|s| s.is_empty());
+    let first_name = Some(form.first_name.clone()).filter(|s| !s.is_empty());
+    let last_name = Some(form.last_name.clone()).filter(|s| !s.is_empty());
 
     let password = bcrypt::hash(plain_password.clone(), DEFAULT_COST).map_err(Error::from)?;
 
@@ -240,8 +240,8 @@ pub async fn post_professor(
     };
 
     let plain_password: String = generate_random_password();
-    let first_name = Some(form.first_name.clone()).filter(|s| s.is_empty());
-    let last_name = Some(form.last_name.clone()).filter(|s| s.is_empty());
+    let first_name = Some(form.first_name.clone()).filter(|s| !s.is_empty());
+    let last_name = Some(form.last_name.clone()).filter(|s| !s.is_empty());
 
     let password = bcrypt::hash(plain_password.clone(), DEFAULT_COST).map_err(Error::from)?;
 
@@ -296,8 +296,8 @@ pub async fn post_student(
     };
 
     let plain_password: String = generate_random_password();
-    let first_name = Some(form.first_name.clone()).filter(|s| s.is_empty());
-    let last_name = Some(form.last_name.clone()).filter(|s| s.is_empty());
+    let first_name = Some(form.first_name.clone()).filter(|s| !s.is_empty());
+    let last_name = Some(form.last_name.clone()).filter(|s| !s.is_empty());
 
     let password = bcrypt::hash(plain_password.clone(), DEFAULT_COST).map_err(Error::from)?;
 
