@@ -143,8 +143,8 @@ impl GradeAssignment {
                     .values((
                         grade_assignments_progress::assignment.eq(grade_assignment_id),
                         grade_assignments_progress::student.eq(student),
-                        grade_assignments_progress::grade_major.eq(grade.minor),
-                        grade_assignments_progress::grade_minor.eq(grade.major),
+                        grade_assignments_progress::grade_minor.eq(grade.minor),
+                        grade_assignments_progress::grade_major.eq(grade.major),
                     ))
                     .execute(connection)
                     .map_err(Error::from)
