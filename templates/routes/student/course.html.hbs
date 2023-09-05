@@ -8,7 +8,7 @@
   <div class="flex flex-row justify-between items-center space-x-16">
     {{#if this.Grade}}     
         {{> components/label id=this.Grade.name text=this.Grade.name}}
-        {{> components/gradebar id=this.Grade.name value=this.Grade.grade icon="la-plus-circle" border="border-ccexam-600" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
+        {{> components/gradebar id=this.Grade.name value=this.Grade.major icon="la-plus-circle" border="border-ccexam-600" bgcol="bg-ccexam-500 progress-bg:bg-ccexam-500" accentcol="progress:bg-ccexam-300" textcol="text-ccexam-50" iconcol="text-ccexam-200"}}
     {{/if}}
     {{#if this.Point}}
       {{> components/label id=this.Point.name text=this.Point.name}}
