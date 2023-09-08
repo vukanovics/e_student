@@ -37,7 +37,7 @@
     <option value="{{this.year}}"{{#if (eq ../account_type.Student.previous.generation this.year)}}selected{{/if}}>{{this.year}}</option>
   {{/each}}
 {{/components/input_select}}
-{{> components/input_base_text type="number" required="true" field_name="index_number" value=account_type.Student.previous.index_number}}
+{{> components/input_base_text icon="la-calendar" border="border-ccprogbd" class="bg-ccprog" type="number" required="true" field_name="index_number" value=account_type.Student.previous.index_number text=(i18n "Број индекса")}}
 
 {{/if}}
 
