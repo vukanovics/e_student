@@ -1,7 +1,7 @@
 {{! vim: set ft=html: }}
 
 {{#*inline "body"}}
-<div class="flex flex-col items-center space-y-8">
+<div class="flex flex-col items-center space-y-8 w-full">
   {{> components/users_form form_name="users_form" data=users}}
   {{> components/button_link button_href="/users/create" button_text=(i18n "Креирај новог корисника")}}
   {{> components/button_link button_href=(concat "/courses") button_text=(i18n "Назад")}}
