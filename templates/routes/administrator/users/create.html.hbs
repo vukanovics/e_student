@@ -24,21 +24,26 @@
 {{/if}}
 
 {{#if account_type.Student}}
-{{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" required="true" field_name="email" text=(i18n "Имејл адреса") value=account_type.Student.previous.email}}
-{{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="first_name" text=(i18n "Име") value=account_type.Student.previous.first_name}}
-{{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="last_name" text=(i18n "Презиме") value=account_type.Student.previous.last_name}}
-{{#> components/input_select icon="la-clock" border="border-cctimebd" class="bg-cctime" field_name="program" text=(i18n "Програм")}}
-  {{#each account_type.Student.programs}}
-    <option value="{{this.short_name}}" {{#if (eq ../account_type.Student.previous.program this.short_name)}}selected{{/if}}>{{i18n (concat this.short_name " - " this.full_name)}}</option>
-  {{/each}}
-{{/components/input_select}}
-{{#> components/input_select icon="la-clock" border="border-cctimebd" class="bg-cctime" field_name="generation" text=(i18n "Генерација")}}
-  {{#each account_type.Student.generations}}
-    <option value="{{this.year}}"{{#if (eq ../account_type.Student.previous.generation this.year)}}selected{{/if}}>{{this.year}}</option>
-  {{/each}}
-{{/components/input_select}}
-{{> components/input_base_text icon="la-calendar" border="border-ccprogbd" class="bg-ccprog" type="number" required="true" field_name="index_number" value=account_type.Student.previous.index_number text=(i18n "Број индекса")}}
-
+<div class="flex flex-col space-x-16 lg:flex-row lg:space-x-8">
+  <div class="flex flex-col space-y-16 lg:space-y-8">
+    {{> components/input_text icon="la-envelope" border="border-ccemailbd" class="bg-ccemail" required="true" field_name="email" text=(i18n "Имејл адреса") value=account_type.Student.previous.email}}
+    {{> components/input_text icon="la-user" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="first_name" text=(i18n "Име") value=account_type.Student.previous.first_name}}
+    {{> components/input_text icon="la-users" border="border-ccuserbd" class="bg-ccuser" required="true" field_name="last_name" text=(i18n "Презиме") value=account_type.Student.previous.last_name}}
+  </div>
+  <div class="flex flex-col space-y-16 lg:space-y-8">
+    {{#> components/input_select icon="la-clock" border="border-cctimebd" class="bg-cctime" field_name="program" text=(i18n "Програм")}}
+      {{#each account_type.Student.programs}}
+        <option value="{{this.short_name}}" {{#if (eq ../account_type.Student.previous.program this.short_name)}}selected{{/if}}>{{i18n (concat this.short_name " - " this.full_name)}}</option>
+      {{/each}}
+    {{/components/input_select}}
+    {{#> components/input_select icon="la-calendar" border="border-cctimebd" class="bg-cctime" field_name="generation" text=(i18n "Генерација")}}
+      {{#each account_type.Student.generations}}
+        <option value="{{this.year}}"{{#if (eq ../account_type.Student.previous.generation this.year)}}selected{{/if}}>{{this.year}}</option>
+      {{/each}}
+    {{/components/input_select}}
+    {{> components/input_base_text icon="la-calendar" border="border-ccprogbd" class="bg-ccprog" type="number" required="true" field_name="index_number" value=account_type.Student.previous.index_number text=(i18n "Број индекса")}}
+  </div>
+</div>
 {{/if}}
 
 {{#if account_type.Professor}}
