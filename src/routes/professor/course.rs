@@ -3,6 +3,7 @@ pub mod assignments;
 pub mod delete;
 pub mod enrol;
 
+use diesel::Connection;
 use rocket::{get, http::Status};
 use rocket_dyn_templates::Template;
 use serde::Serialize;
@@ -12,6 +13,7 @@ use crate::{
     base_layout_context::BaseLayoutContext,
     course::Course,
     database::Database,
+    discussion::DiscussionWithComments,
     error::Error,
     localization::Script,
     user::Professor,
@@ -22,6 +24,8 @@ use crate::{
 struct CourseWithAssignments {
     #[serde(flatten)]
     course: Course,
+    #[serde(flatten)]
+    discussion: DiscussionWithComments,
     assignments: Vec<Assignment>,
 }
 
@@ -55,18 +59,20 @@ pub async fn get(
     let user = professor.0;
 
     let course = database
-        .run(move |c| Course::get_by_url(c, &course))
+        .run(move |c| {
+            c.transaction(move |c| {
+                let course = Course::get_by_url(c, &course)?;
+                let discussion = DiscussionWithComments::get(c, course.discussion)?;
+                let assignments = Assignments::get(c, course.id)?.0;
+
+                Ok::<_, Error>(CourseWithAssignments {
+                    course,
+                    discussion,
+                    assignments,
+                })
+            })
+        })
         .await?;
-
-    let assignments = database
-        .run(move |c| Assignments::get(c, course.id))
-        .await?
-        .0;
-
-    let course = CourseWithAssignments {
-        course,
-        assignments,
-    };
 
     let context = LayoutContext::new(language, user, course).await?;
 

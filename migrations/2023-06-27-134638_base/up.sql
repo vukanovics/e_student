@@ -108,6 +108,26 @@ CREATE TABLE sessions (
   CONSTRAINT fk_user FOREIGN KEY (user) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE discussions (
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+
+  markdown TEXT
+);
+
+CREATE TABLE comments (
+  id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+
+  discussion INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_comment_discussion FOREIGN KEY (discussion) REFERENCES discussions(id),
+
+  author INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_comment_author FOREIGN KEY (author) REFERENCES users(id),
+
+  markdown TEXT NOT NULL,
+
+  created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE courses (
   id INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT,
 
@@ -120,6 +140,9 @@ CREATE TABLE courses (
 
   professor INTEGER UNSIGNED NOT NULL,
   CONSTRAINT fk_professor FOREIGN KEY (professor) REFERENCES users(id),
+
+  discussion INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_course_discussion FOREIGN KEY (discussion) REFERENCES discussions(id),
 
   deleted BOOL NOT NULL DEFAULT FALSE,
 
@@ -185,6 +208,9 @@ CREATE TABLE assignments (
   CONSTRAINT uq_assignments_name UNIQUE (course, name),
   url VARCHAR(255) NOT NULL,
   CONSTRAINT uq_assignments_url UNIQUE (course, url),
+
+  discussion INTEGER UNSIGNED NOT NULL,
+  CONSTRAINT fk_assignment_discussion FOREIGN KEY (discussion) REFERENCES discussions(id),
 
   deleted BOOL NOT NULL DEFAULT FALSE
 );

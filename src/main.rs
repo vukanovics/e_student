@@ -7,6 +7,7 @@ mod catchers;
 mod components;
 mod course;
 mod database;
+mod discussion;
 mod error;
 mod handlebars;
 mod index;
@@ -50,6 +51,10 @@ fn rocket() -> _ {
         engines.handlebars.register_helper(
             handlebars::RangeHelper::name(),
             handlebars::RangeHelper::helper(),
+        );
+        engines.handlebars.register_helper(
+            handlebars::MarkdownHelper::name(),
+            handlebars::MarkdownHelper::helper(),
         );
         engines
             .handlebars

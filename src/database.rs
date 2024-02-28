@@ -40,3 +40,5 @@ pub enum SortDirection {
     Ascending,
     Descending,
 }
+
+sql_function!(fn last_insert_id() -> diesel::sql_types::Integer);

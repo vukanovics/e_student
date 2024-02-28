@@ -1,3 +1,4 @@
+use comrak::ComrakOptions;
 use handlebars::{
     Context, Handlebars, Helper, HelperDef, HelperResult, Output, RenderContext, RenderError,
     ScopedJson,
@@ -132,5 +133,38 @@ impl RangeHelper {
 
     pub fn helper() -> Box<dyn HelperDef + Send + Sync + 'static> {
         Box::new(RangeHelper {})
+    }
+}
+
+pub struct MarkdownHelper {}
+
+impl HelperDef for MarkdownHelper {
+    fn call_inner<'reg: 'rc, 'rc>(
+        &self,
+        h: &Helper,
+        _: &'reg Handlebars,
+        _: &'rc Context,
+        _: &mut RenderContext,
+    ) -> Result<ScopedJson<'reg, 'rc>, RenderError> {
+        let markdown = h
+            .param(0)
+            .ok_or(RenderError::new("markdown code to render not provided"))?
+            .value()
+            .as_str()
+            .ok_or(RenderError::new("markdown code provided isn't a valid str"))?;
+
+        let html = comrak::markdown_to_html(markdown, &ComrakOptions::default());
+
+        Ok(ScopedJson::Derived(to_json(html)))
+    }
+}
+
+impl MarkdownHelper {
+    pub fn name() -> &'static str {
+        "markdown"
+    }
+
+    pub fn helper() -> Box<dyn HelperDef + Send + Sync + 'static> {
+        Box::new(MarkdownHelper {})
     }
 }

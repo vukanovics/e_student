@@ -3,6 +3,7 @@
 {{#*inline "body"}}
 <div class="flex flex-col space-y-8 justify-left">
   {{> components/caption text=course.name}}
+  {{{markdown course.discussion.markdown}}}
   <div class="flex flex-col space-y-4 justify-left">
     {{#each course.assignments}}
       <div class="flex flex-row justify-between space-x-16">
